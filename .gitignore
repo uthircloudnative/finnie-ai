@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+__pycache__/
+*.pyc
+.env
+dist/
+build/
+.venv/
+env/
+prototype/dashboard_mockup.png

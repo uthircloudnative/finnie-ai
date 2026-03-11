@@ -113,6 +113,133 @@ Keep RAG in the **same codebase** but separated:
 1.  **`backend/scripts/ingest/`**: For "off-line" scraping and DB filling.
 2.  **`backend/src/tools/rag_tool.py`**: For "on-line" retrieval used by Agents.
 
+### Summary: One Codebase, One Database, Many Collections
+**Yes, your understanding is 100% correct.** We store the 5 different data sources into 5 separate **Collections** (like folders) in ChromaDB:
+- `educational_kb`: Definitions for the Q&A agent.
+- `tax_policy_kb`: IRS and tax rules for the Strategist agent.
+- `regulatory_kb`: Compliance rules for the Guardian agent.
+- `analytical_kb`: Theoretical papers for the Analyst agent.
+- `transient_news`: Live news for the Insights agent.
+
+### Why separate them into 5 collections?
+1.  **Specialization**: You don't want the Q&A agent accidentally giving an "IRS Tax Rule" when the user just asked for a simple "Investopedia definition." 
+2.  **Accuracy**: We can tune the "Search" differently for each (e.g., search IRS data more strictly).
+3.  **Speed**: Searching a small collection of 500 definitions is much faster than searching a giant database of everything.
+
+---
+
+## 🌍 Scaling Internationally: Multi-Country Support
+Should you create new collections for every country (USA, UK, India, etc.)? 
+
+**No. Use "Metadata Filtering" instead.**
+
+Instead of 100 collections, you keep your 5 core collections but tag every piece of data with a `country` code.
+
+### How it works:
+1.  **Ingestion**: When you load a tax code for India, you save it to `tax_policy_kb` with a label (metadata): `{"country": "IND"}`.
+2.  **Retrieval**: When a user from India asks a question, the Agent sends a "Filter" to ChromaDB:
+    - *"Find the answer in `tax_policy_kb` WHERE `country` is `IND`."*
+
+### Why this is better:
+- **Efficiency**: One single search query handles everything.
+- **Maintenance**: You don't have to manage 500 collections; you just manage 5.
+- **Flexibility**: If a user has a "Global" portfolio, the agent can search multiple countries at once by just changing the filter to `{"country": ["USA", "IND"]}`.
+
+---
+
+## 🧪 Testing & Evaluation: How to Know Finnie is Smart?
+Testing RAG is unique because you have to test two different things: **Retrieval** (finding facts) and **Generation** (writing answers).
+
+### 1. Retrieval Testing (The "Librarian" Test)
+- **Metric**: **Context Precision** & **Recall**.
+- **The Test**: If I ask "What is the 401k limit?", does the system actually find the IRS chunk?
+- **How to verify**: We will write a script to print out the `source_chunks` for every query. If the chunks are irrelevant, we need to fix our "Chunking" or "Embedding" logic.
+
+### 2. Generation Testing (The "Truth" Test)
+- **Metric**: **Faithfulness** (Groundedness).
+- **The Test**: Does the AI's answer only use facts from the retrieved chunks? Or is it "hallucinating" from its own memory?
+- **How to verify**: We use a technique called **LLM-as-a-Judge**. We ask a second, "senior" LLM to grade the answer's adherence to the context on a scale of 1-10.
+
+### 3. Automated Framework: **RAGAS**
+For a production app, we will use the **RAGAS** (RAG Assessment) framework. It provides automated scores for:
+- **Faithfulness**: Is the answer factually accurate to the context?
+- **Answer Relevance**: Did it actually answer the user's specific question?
+- **Context Relevancy**: Were the retrieved chunks actually useful?
+
+### 4. Human "Red-Teaming"
+Before launch, we should try to "trick" Finnie:
+- *"Tell me the 401k limit for the year 2050"* (Finnie should say "I don't have that data" rather than making it up).
+- *"Which stock should I buy for 100% profit?"* (The Compliance Guardian should block this via RAG).
+
+---
+
+## 🎨 Diagram: The 5 RAG Implementation Flows
+Click the "Diagram" tab or render the code below to see the specialized flows for each agent.
+
+```mermaid
+graph TD
+    subgraph "External Data Sources"
+        S1["Investopedia (Web)"]
+        S2["IRS.gov (Web/HTML)"]
+        S3["SEC.gov (API/Text)"]
+        S4["Vanguard (PDF)"]
+        S5["Alpha Vantage (Live JSON)"]
+    end
+
+    subgraph "Shared Ingestion Pipeline"
+        P1["Scraper / API Client"] --> P2["Recursive Character Splitter"]
+        P2 --> P3["OpenAI Embeddings (Vectorization)"]
+    end
+
+    S1 & S2 & S3 & S4 --> P1
+    S5 -.->|On-the-fly| P2
+
+    subgraph "ChromaDB (The Brain)"
+        C1[("educational_kb")]
+        C2[("tax_policy_kb")]
+        C3[("regulatory_kb")]
+        C4[("analytical_kb")]
+        C5[("transient_news (RAM)")]
+    end
+
+    P3 --> C1 & C2 & C3 & C4
+    P2 -.->|Temporary| C5
+
+    subgraph "Specialist Agents (LangGraph Nodes)"
+        A1["Financial Q&A Agent"]
+        A2["Goal Strategist Agent"]
+        A3["Compliance Guardian"]
+        A4["Portfolio Analyst Agent"]
+        A5["Market Insights Agent"]
+    end
+
+    C1 --> A1
+    C2 --> A2
+    C3 --> A3
+    C4 --> A4
+    C5 --> A5
+
+    A1 & A2 & A3 & A4 & A5 --> Final["Grounded User Response"]
+```
+
+---
+
+## 📊 Data Sourcing & Refresh Strategy
+This table serves as your "Shopping List" for data. Explore these links to understand the raw material we will be feeding into Finnie.
+
+| Collection Name | Data Type | Primary Source (Link) | Content Description | Refresh Frequency |
+| :--- | :--- | :--- | :--- | :--- |
+| **`educational_kb`** | Static | [Investopedia Academy](https://www.investopedia.com/financial-term-dictionary-4769738) | Glossary of terms, basics of ETFs, Stocks, and Bond logic. | Every 3-6 Months |
+| **`tax_policy_kb`** | Semi-Static | [IRS Tax Brackets/Limits](https://www.irs.gov/newsroom/tax-year-2024-annual-inflation-adjustments) | Current year 401k/IRA limits, standard deductions, and tax brackets. | Annually (Jan) |
+| **`regulatory_kb`** | Static | [SEC Fast Answers](https://www.sec.gov/fast-answers) | Rules on investment advice, fraud protection, and mandatory disclosures. | Every 6-12 Months |
+| **`analytical_kb`** | Static | [Vanguard Research](https://corporate.vanguard.com/content/corporatesite/us/en/corp/articles/investment-stewardship-principles-and-policies.html) | Whitepapers on "Modern Portfolio Theory" and historical asset class returns. | Every 6-12 Months |
+| **`transient_news`** | Real-Time | [Alpha Vantage NEWS](https://www.alphavantage.co/documentation/#news-sentiment) | Live stock news, earnings call summaries, and market sentiment scores. | Every Session (Live) |
+
+### 🛠️ How to "Inspect" these sources:
+1.  **Investopedia**: Look at how a term like "Diversification" is explained. Our script will turn that text into 3-4 "Chunks."
+2.  **IRS**: Note the exact numbers (e.g., $23,000 limit for 401k). Our agent needs to "retrieve" these numbers to validate user goals.
+3.  **Alpha Vantage**: Look at the "Sentiment" field in their JSON result. This is what we extract to power the UI's Sentiment Bar.
+
 ---
 
 ## Step 7: Agent Integration (LangGraph)

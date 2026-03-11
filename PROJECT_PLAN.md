@@ -26,16 +26,17 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 
 ## 3. Implementation Plan (Detailed)
 
-### Phase 1: Foundation (Current)
-- **Backend**: Setup LangGraph, define Global State, and implement Supervisor routing logic.
-- **Frontend**: Scaffolding with Vite/React, implementing the "Glass-Finance" theme and tab navigation.
+### Phase 1: Intelligence & Data Grounding (Current)
+- **RAG Pipeline**: Implement the core ingestion script. Scrape and index initial financial literacy resources (Investopedia, IRS).
+- **Vector Storage**: Setup ChromaDB collections and verify retrieval accuracy.
+- **Tool Development**: Create initial wrappers for Market News APIs (Alpha Vantage).
 
-### Phase 2: Intelligence & Grounding
-- **RAG Pipeline**: Scrape and index financial literacy resources. Implement the Financial Q&A agent.
-- **Tool Integration**: Connect Market Insights agent to real-time APIs.
+### Phase 2: Foundation (Skeleton)
+- **Backend Infrastructure**: Setup LangGraph, define Global State, and implement Supervisor routing logic.
+- **Frontend Scaffolding**: Initialize React/Vite, implement the "Glass-Finance" theme and tab-based navigation shell.
 
-### Phase 3: Analysis & Simulation
-- **Portfolio Logic**: Implement the Portfolio Analyst with math-heavy tools.
+### Phase 3: Agent Integration & Analysis
+- **Worker Workers**: Connect the specialized Agents (Portfolio, Market, Goal) to the RAG tools built in Phase 1.
 - **Goal Engine**: Developing Monte Carlo simulation tools for the Goal Strategist.
 
 ### Phase 4: Hardening & Compliance
@@ -46,10 +47,10 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **Infrastructure**: CI/CD pipeline, FastAPI performance tuning, and Cloud deployment.
 ## 4. RAG Integration Matrix (Learning Reference)
 
-| UI Tab / Feature | Specialist Agent | RAG Intelligence & Data Sources | Learning Goal |
+| UI Tab / Feature | RAG Required? | Data Sources | Implementation Summary |
 | :--- | :--- | :--- | :--- |
-| **Q&A Chatbot** | Financial Q&A Agent | **Source**: Investopedia, Financial Textbooks.<br>**Use Case**: Defining terms (e.g., "Wash Sale", "ETF vs Mutual Fund"). | Grounding AI in verified educational definitions. |
-| **Market Insights** | Market Insights Agent | **Source**: SEC 10-K/10-Q Filings, NewsAPI.<br>**Use Case**: Explaining price movements using official company reports vs rumors. | Bridging real-time news with official regulatory data. |
-| **Portfolio Analyst** | Analyst Agent | **Source**: Academic Whitepapers (e.g., Modern Portfolio Theory).<br>**Use Case**: Comparing current allocation against professional benchmarks. | Applying professional investment theories to personal data. |
-| **Goal Planning** | Goal Strategist | **Source**: IRS Tax Guidelines, 401k/IRA Limit Databases.<br>**Use Case**: Ensuring simulations account for tax-advantaged account rules. | Validating probabilistic models against rigid legal/tax rules. |
-| **Compliance** | Guardian Agent | **Source**: SEC/FINRA Safety Standards, Disclaimer Repository.<br>**Use Case**: Scanning all AI outputs for mandatory risk disclosures. | Ensuring every agentic output is safe and compliant. |
+| **Q&A Chatbot** | **YES** | Investopedia, Textbooks | **Static Pipeline**: Scrape -> Chunk -> Index in ChromaDB. Agent uses `similarity_search` to define terms. |
+| **Market Insights** | **YES** | NewsAPI, SEC Filings | **Transient Pipeline**: Fetch live news -> In-memory indexing -> Summary. Results expire after session. |
+| **Portfolio Analyst** | **AUGMENTED** | Academic Papers | **Reference Pipeline**: Math is done locally; RAG is used to provide theoretical context (e.g., "Why diversification matters"). |
+| **Goal Planning** | **YES** | IRS Tax Codes | **Validation Pipeline**: Agent queries tax limits/rules during simulation to ensure legal accuracy. |
+| **Compliance** | **YES** | SEC Safety Guides | **Guardian Pipeline**: Check every final answer against SEC safety docs before user delivery. |

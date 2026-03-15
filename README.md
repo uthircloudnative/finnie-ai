@@ -18,10 +18,10 @@ To visualize the project vision and all 5 navigation screens:
 - **Styling**: "Glass-Finance" (Vanilla CSS / Custom Tokens).
 
 ## 📂 Core Documentation
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md): Mission, Features, and Roadmap.
-- [DESIGN.md](./DESIGN.md): Technical Architecture and Graph Logic.
-- [UI_DESIGN.md](./UI_DESIGN.md): Visual framework and "Glass-Finance" aesthetics.
-- [STANDARDS.md](./STANDARDS.md): Engineering guidelines and folder structure.
+- [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md): Mission, Features, and Roadmap.
+- [DESIGN.md](./docs/DESIGN.md): Technical Architecture and Graph Logic.
+- [UI_DESIGN.md](./docs/UI_DESIGN.md): Visual framework and "Glass-Finance" aesthetics.
+- [STANDARDS.md](./docs/STANDARDS.md): Engineering guidelines and folder structure.
 
 ## 👨‍💻 How to Contribute
-Please adhere to the coding standards defined in [STANDARDS.md](./STANDARDS.md) when contributing to the backend or frontend modules.
+Please adhere to the coding standards defined in [STANDARDS.md](./docs/STANDARDS.md) when contributing to the backend or frontend modules.

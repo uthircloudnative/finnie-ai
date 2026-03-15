@@ -9,4 +9,4 @@ build/
 env/
 prototype/dashboard_mockup.png
 backend/venv/
-backend/chroma_db/
+backend/src/chroma_db/

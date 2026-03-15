@@ -1,11 +1,15 @@
-# Finnie AI: RAG Ingestion Pipeline (Phase 1)
+# Finnie AI: Data Ingestion Pipelines
 **Developer Technical Guide & Architecture**
 
-This guide provides a comprehensive, step-by-step technical walkthrough of the **Intelligence & Data Grounding** phase of Finnie AI. It is designed to help new developers understand how the foundational knowledge base is collected, processed, and validated before it is connected to the LangGraph autonomous agents.
+This guide provides a comprehensive, step-by-step technical walkthrough of the various data ingestion pipelines that power Finnie AI's intelligence. It is designed to help new developers understand how the foundational knowledge bases are collected, processed, and validated.
 
 ---
 
-## 🏗️ Architecture & Component Flow
+## Pipeline 1: Educational Knowledge Base (`educational_kb`)
+**Target:** Investor.gov Glossary (Phase 1)
+**Usage:** Provides definitive, beginner-friendly financial definitions for the Financial Q&A Agent.
+
+### 🏗️ Architecture & Component Flow
 
 The ingestion pipeline follows an **Extract, Transform, Load (ETL)** pattern, tailored for AI Retrieval-Augmented Generation (RAG).
 

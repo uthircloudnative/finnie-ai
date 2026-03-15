@@ -45,5 +45,5 @@ We are starting **Phase 1: Intelligence & Data Grounding (Bottom-Up)**.
 ## 📂 Key Files to Review Upon Resume
 - [RAG_GUIDE.md](./RAG_GUIDE.md) (The master blueprint for AI intelligence)
 - [PROJECT_PLAN.md](./PROJECT_PLAN.md)
-- [prototype/index.html](./prototype/index.html)
+- [prototype/index.html](../prototype/index.html)
 - [implementation_plan.md](file:///Users/prajosh/.gemini/antigravity/brain/8afa938f-6d31-40b1-8bf1-6ac9000cf8dd/implementation_plan.md)

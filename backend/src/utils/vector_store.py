@@ -31,6 +31,12 @@ class VectorStoreManager:
         self.db.add_documents(documents)
         print("Data added successfully.")
 
-    def search(self, query: str, k: int = 3):
-        """Searches the vector store for the top k most similar chunks."""
+    def search(self, query: str, k: int = 3, target_country: str = None):
+        """Searches the vector store for the top k most similar chunks, with optional country filtering."""
+        filter_dict = None
+        if target_country:
+             filter_dict = {"country": target_country}
+             
+        if filter_dict:
+            return self.db.similarity_search(query, k=k, filter=filter_dict)
         return self.db.similarity_search(query, k=k)

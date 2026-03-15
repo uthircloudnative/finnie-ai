@@ -77,6 +77,7 @@ def scrape_term(term, slug):
             "source": url,
             "term": term,
             "type": "definition",
+            "country": "USA", # Crucial for multi-country RAG routing
             "ingested_date": "2026-03-15" # Hardcoded vintage for Phase 1 as discussed
         }
     }

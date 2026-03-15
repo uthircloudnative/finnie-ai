@@ -10,11 +10,13 @@ from src.utils.vector_store import VectorStoreManager
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python test_retrieval.py \"Your financial question here\"")
+        print("Usage: python test_retrieval.py \"Your financial question here\" [optional_country_code]")
         print("Example: python test_retrieval.py \"What is an ETF?\"")
+        print("Example: python test_retrieval.py \"What is an ETF?\" USA")
         sys.exit(1)
 
     query = sys.argv[1]
+    target_country = sys.argv[2] if len(sys.argv) > 2 else None
     
     print(f"\n[Test] Connecting to ChromaDB 'educational_kb' collection...\n")
     try:
@@ -23,11 +25,13 @@ def main():
         print(f"Error connecting to DB: {e}")
         sys.exit(1)
         
-    print(f"[Query] User Question: '{query}'\n")
+    print(f"[Query] User Question: '{query}'")
+    if target_country:
+        print(f"[Filter] Target Country: '{target_country}'")
     print(f"Executing Similarity Search...\n")
     
-    # Retrieve top 3 closest chunks
-    results = vector_store.search(query, k=3)
+    # Retrieve top 3 closest chunks using the new optional filter
+    results = vector_store.search(query, k=3, target_country=target_country)
     
     if not results:
         print("No results found in the database. Did you run the ingestion script?")

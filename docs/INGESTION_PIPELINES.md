@@ -89,7 +89,7 @@ Make sure you have Python 3 installed and you are navigating to the `/backend` d
 
 ```bash
 # 1. Navigate to the backend directory
-cd /Users/prajosh/Development/finnie-ai/backend
+cd /Users/<your_username>/Development/finnie-ai/backend
 
 # 2. Create and activate an isolated Python Virtual Environment
 python3 -m venv venv

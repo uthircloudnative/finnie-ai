@@ -8,3 +8,5 @@ build/
 .venv/
 env/
 prototype/dashboard_mockup.png
+backend/venv/
+backend/chroma_db/

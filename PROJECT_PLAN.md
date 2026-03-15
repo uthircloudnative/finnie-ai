@@ -6,7 +6,7 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 ## 2. Comprehensive Requirements
 ### 2.1 Multi-Agent Financial Intelligence
 - **Supervisor (Orchestrator)**: Uses LLM reasoning to decompose complex user queries and route them to specialized workers.
-- **Financial Q&A Worker**: RAG-grounded agent using curated knowledge (Vanguard, Investopedia, SEC).
+- **Financial Q&A Worker**: RAG-grounded agent using curated knowledge (Vanguard, Investor.gov, SEC).
 - **Market Insights Worker**: Real-time tool-use agent (Alpha Vantage, NewsAPI) for stock trends and sentiment.
 - **Portfolio Analyst Worker**: Mathematical engine calculating Sharpe ratios, diversification, and risk scores.
 - **Goal Strategist Worker**: Probabilistic forecasting using Monte Carlo simulations for goals (e.g., retirement, home buying).
@@ -27,7 +27,7 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 ## 3. Implementation Plan (Detailed)
 
 ### Phase 1: Intelligence & Data Grounding (Current)
-- **RAG Pipeline**: Implement the core ingestion script. Scrape and index initial financial literacy resources (Investopedia, IRS).
+- **RAG Pipeline**: Implement the core ingestion script. Scrape and index initial financial literacy resources (Investor.gov, IRS).
 - **Vector Storage**: Setup ChromaDB collections and verify retrieval accuracy.
 - **Tool Development**: Create initial wrappers for Market News APIs (Alpha Vantage).
 
@@ -49,7 +49,7 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 
 | UI Tab / Feature | RAG Required? | Data Sources | Implementation Summary |
 | :--- | :--- | :--- | :--- |
-| **Q&A Chatbot** | **YES** | Investopedia, Textbooks | **Static Pipeline**: Scrape -> Chunk -> Index in ChromaDB. Agent uses `similarity_search` to define terms. |
+| **Q&A Chatbot** | **YES** | Investor.gov, Textbooks | **Static Pipeline**: Scrape -> Chunk -> Index in ChromaDB. Agent uses `similarity_search` to define terms. |
 | **Market Insights** | **YES** | NewsAPI, SEC Filings | **Transient Pipeline**: Fetch live news -> In-memory indexing -> Summary. Results expire after session. |
 | **Portfolio Analyst** | **AUGMENTED** | Academic Papers | **Reference Pipeline**: Math is done locally; RAG is used to provide theoretical context (e.g., "Why diversification matters"). |
 | **Goal Planning** | **YES** | IRS Tax Codes | **Validation Pipeline**: Agent queries tax limits/rules during simulation to ensure legal accuracy. |

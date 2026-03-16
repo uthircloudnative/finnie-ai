@@ -25,7 +25,7 @@ graph TD
     end
 
     subgraph "Vector Database Engine (vector_store.py)"
-        E1["OpenAI Embeddings (Translation)"]
+        E1["Embeddings Factory (Translation)"]
         C1[("ChromaDB Cluster (Load)")]
         C2[("educational_kb Collection")]
     end
@@ -58,6 +58,9 @@ graph TD
 
 *   **Mechanism:** We use a simple web crawler constructed with the Python `requests` library and parsed using `BeautifulSoup`.
 *   **Depth Strategy:** We use a strict **Depth 1 Strategy**. We define a dictionary of exact term slugs (e.g., `"mutual-funds"`) and fetch only the body text of those exact definition pages. The script explicitly ignores child links to avoid polluting the database with irrelevant tangental context (context bloat).
+*   **Internationalization (i18n) Strategy:** Metadata Filtering. Every scraped document is hard-tagged with `{"country": "USA"}` before embedding.
+    *   *Pros:* Allows a single, unified database to serve global users. The LangGraph agent simply appends a `$filter` to its search query based on the user's origin, preventing USA tax rules from being served to UK users. Massively reduces vector store maintenance.
+    *   *Cons:* Requires strict discipline during ingestion; if a developer forgets to tag a document, it becomes "global" and could leak across borders.
 
 ### 2. Transformation: The Splitter
 **Goal:** Language Models perform best when given small, dense pockets of information to reason over, rather than entire web pages.
@@ -68,9 +71,14 @@ graph TD
 ### 3. Translation & Load: The Vector Store Manager (`vector_store.py`)
 **Goal:** Convert human language into mathematical arrays (vectors) that a computer can rapidly compare for "similarity."
 
-*   **Embeddings Engine**: The script takes the 500-character string chunks and passes them through an Embedding Model.
-    *   *Development Note:* The `VectorStoreManager` is intentionally designed with a fallback mechanism. If no valid `OPENAI_API_KEY` is present in the environment (or if it's set to `"dummy_key_for_testing"`), the system natively falls back to `FakeEmbeddings`. This allows local developers to run the pipeline offline and for free.
-*   **Storage Framework:** The mathematical vectors (and the original text as metadata) are persistently saved to the local disk in a folder named `backend/chroma_db` using the **ChromaDB** framework. Specifically, the definitions are routed into the `educational_kb` collection.
+*   **Embeddings Factory Engine**: The script takes the 500-character string chunks and passes them through an **Embeddings Factory**.
+    *   *Vendor Agnosticism:* The `VectorStoreManager` calls `get_embeddings()`, which reads the `EMBEDDING_PROVIDER` env var. This allows switching between OpenAI, Azure OpenAI, or Hugging Face without a single line of code change.
+    *   *Development Note:* If `OPENAI_API_KEY` is missing or set to `"dummy_key_for_testing"`, the system natively falls back to `FakeEmbeddings` to allow free development.
+*   **Storage Framework:** Data is persisted via **ChromaDB**. The system supports a **Hybrid Storage Mode**:
+    *   **Local Mode:** If `CHROMA_API_KEY` is empty, data is saved to `backend/src/chroma_db`.
+    *   **Cloud Mode:** If `CHROMA_API_KEY` is provided, the system connects directly to Chroma Cloud (e.g., `finnie-ai-db`).
+*   **Update Strategy:** Drop-and-Replace. Before insertion, the script executes `db.delete_collection()`.
+    *   *Storage Optimization:* In local mode, the pipeline performs a **physical directory cleanup** (`shutil.rmtree`) before initialization to prevent the accumulation of orphaned UUID subdirectories.
 
 ### 4. Verification: The Retrieval Test (`test_retrieval.py`)
 **Goal:** Prove that the Chunking limits and the Embedded Math actually work *before* wiring up an expensive LLM.
@@ -85,38 +93,44 @@ graph TD
 If you are a new developer setting up this environment for the first time, run the following commands sequentially to build the vector database on your local machine.
 
 ### Prerequisites
-Make sure you have Python 3 installed and you are navigating to the `/backend` directory of the project in your terminal.
+Make sure you have `uv` installed via Homebrew (`brew install uv`) and you are navigating to the `/backend` directory of the project in your terminal.
 
 ```bash
 # 1. Navigate to the backend directory
 cd /Users/<your_username>/Development/finnie-ai/backend
 
-# 2. Create and activate an isolated Python Virtual Environment
-python3 -m venv venv
-source venv/bin/activate
+# 2. Setup your Environment Variables
+cp .env.example .env
+# Open .env and insert your real OPENAI_API_KEY (or leave as dummy_key_for_testing)
 
-# 3. Install the required RAG dependencies (LangChain, ChromaDB, etc.)
-pip install -r requirements.txt
+# 3. Sync dependencies (uv handles the virtual environment automatically!)
+uv sync
 ```
 
 ### Running the Pipeline
 
+### Running the Pipeline
+
 **Step 1: Execute the Ingestion (Scraping) Script**
-We need to populate the database with definitions. This command sets a dummy OpenAI key to trigger the `FakeEmbeddings` fallback logic for local, offline development.
+We need to populate the database with definitions. First run will scrape Investor.gov, chunk the text, apply the USA country tag, and load it into ChromaDB.
 
 ```bash
-export OPENAI_API_KEY="dummy_key_for_testing" \
-export CHROMA_USER_AGENT="finnie-ai" \
-python3 scripts/ingest/investor_gov_scraper.py
+# Auto-detect (Cloud if API key present, else Local)
+uv run scripts/ingest/investor_gov_scraper.py
+
+# Force specific mode via CLI flag
+uv run scripts/ingest/investor_gov_scraper.py --db local
+uv run scripts/ingest/investor_gov_scraper.py --db cloud
 ```
-*Expected Output:* You should see terminal logs indicating 15 terms were scraped and 22 chunks successfully added to ChromaDB.
 
 **Step 2: Execute the Retrieval Validation Test**
-Now, verify the system can look up facts. Pick a term we scraped (like "ETF", "Bonds", or "Inflation").
+Now, verify the system can look up facts using metadata filtering.
 
 ```bash
-export OPENAI_API_KEY="dummy_key_for_testing" \
-export CHROMA_USER_AGENT="finnie-ai" \
-python3 scripts/test_retrieval.py "How does an Index Fund work?"
+# General usage
+uv run scripts/test_retrieval.py "How does an Index Fund work?" USA
+
+# Force specific mode
+uv run scripts/test_retrieval.py "What is an ETF?" USA --db cloud
 ```
-*Expected Output:* The terminal will print out the top 3 chunks retrieved from the database. Read the text to verify they accurately explain what an Index Fund is based on the Investor.gov data.
+*Expected Output:* The terminal will print out the top 3 chunks retrieved from the database. Read the text to verify they accurately explain the term.

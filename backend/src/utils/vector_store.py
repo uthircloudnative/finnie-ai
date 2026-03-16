@@ -1,29 +1,93 @@
 import os
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
+import chromadb
+from langchain_chroma import Chroma
+from dotenv import load_dotenv
+from src.utils.embeddings_factory import get_embeddings
 
-# Define the absolute path for persistent storage
+# Load environment variables from .env file if present
+load_dotenv()
+
+# Local fallback: absolute path for persistent storage when running without Chroma Cloud
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_DIR = os.path.join(BASE_DIR, "chroma_db")
+LOCAL_DB_DIR = os.path.join(BASE_DIR, "chroma_db")
+
 
 class VectorStoreManager:
-    """Manages connections and operations to the local ChromaDB instance."""
-    
-    def __init__(self, collection_name: str = "educational_kb"):
-        # We will use the standard ada-002 embeddings for now (can upgrade to text-embedding-ada-002 later)
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key or api_key == "dummy_key_for_testing":
-            print("Warning: No valid OPENAI_API_KEY found. Using FakeEmbeddings for testing/development.")
-            from langchain_core.embeddings import FakeEmbeddings
-            self.embeddings = FakeEmbeddings(size=1536) # Same size as OpenAI text-embedding-ada-002
-        else:
-            self.embeddings = OpenAIEmbeddings()
+    """
+    Manages connections and operations to ChromaDB.
+    Automatically connects to Chroma Cloud when CHROMA_API_KEY is set,
+    otherwise falls back to a local on-disk instance for development.
+    """
+
+    def __init__(self, collection_name: str = "educational_kb", use_cloud: bool = None):
+        # --- Embeddings Setup (vendor-agnostic via factory) ---
+        # Change the EMBEDDING_PROVIDER env var to switch providers without code changes.
+        self.embeddings = get_embeddings()
         self.collection_name = collection_name
-        self.db = Chroma(
-            collection_name=self.collection_name,
-            embedding_function=self.embeddings,
-            persist_directory=DB_DIR
-        )
+
+        # --- Database Connection Setup ---
+        # use_cloud can be explicitly passed (e.g. from CLI flag), otherwise auto-detect from env.
+        chroma_api_key = os.environ.get("CHROMA_API_KEY")
+        chroma_tenant = os.environ.get("CHROMA_TENANT", "")
+        chroma_database = os.environ.get("CHROMA_DATABASE", "")
+
+        connect_to_cloud = use_cloud if use_cloud is not None else bool(chroma_api_key and chroma_api_key.strip())
+
+        if connect_to_cloud:
+            # Production: Connect to Chroma Cloud
+            print(f"Connecting to Chroma Cloud (database: '{chroma_database}')...")
+            cloud_client = chromadb.CloudClient(
+                api_key=chroma_api_key,
+                tenant=chroma_tenant,
+                database=chroma_database,
+            )
+            self.db = Chroma(
+                client=cloud_client,
+                collection_name=self.collection_name,
+                embedding_function=self.embeddings,
+            )
+            self._is_cloud = True
+            print("Connected to Chroma Cloud successfully.")
+        else:
+            # Development: Use local on-disk ChromaDB
+            print("No CHROMA_API_KEY found. Using local ChromaDB instance.")
+            self.db = Chroma(
+                collection_name=self.collection_name,
+                embedding_function=self.embeddings,
+                persist_directory=LOCAL_DB_DIR,
+            )
+            self._is_cloud = False
+
+    def _make_chroma_db(self):
+        """Helper to re-instantiate the Chroma DB connection (used after reset)."""
+        if self._is_cloud:
+            chroma_api_key = os.environ.get("CHROMA_API_KEY")
+            cloud_client = chromadb.CloudClient(
+                api_key=chroma_api_key,
+                tenant=os.environ.get("CHROMA_TENANT", ""),
+                database=os.environ.get("CHROMA_DATABASE", ""),
+            )
+            return Chroma(
+                client=cloud_client,
+                collection_name=self.collection_name,
+                embedding_function=self.embeddings,
+            )
+        else:
+            return Chroma(
+                collection_name=self.collection_name,
+                embedding_function=self.embeddings,
+                persist_directory=LOCAL_DB_DIR,
+            )
+
+    def reset_collection(self):
+        """
+        Completely deletes the current collection and all its documents (Drop-and-Replace strategy).
+        Works for both local and Chroma Cloud instances.
+        """
+        print(f"Resetting the '{self.collection_name}' collection...")
+        self.db.delete_collection()
+        self.db = self._make_chroma_db()
+        print("Collection reset successfully.")
 
     def add_documents(self, documents):
         """Adds LangChain Document objects to the vector store."""
@@ -35,8 +99,8 @@ class VectorStoreManager:
         """Searches the vector store for the top k most similar chunks, with optional country filtering."""
         filter_dict = None
         if target_country:
-             filter_dict = {"country": target_country}
-             
+            filter_dict = {"country": target_country}
+
         if filter_dict:
             return self.db.similarity_search(query, k=k, filter=filter_dict)
         return self.db.similarity_search(query, k=k)

@@ -1,5 +1,7 @@
 import os
+import sys
 import requests
+from datetime import date
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
@@ -78,11 +80,11 @@ def scrape_term(term, slug):
             "term": term,
             "type": "definition",
             "country": "USA", # Crucial for multi-country RAG routing
-            "ingested_date": "2026-03-15" # Hardcoded vintage for Phase 1 as discussed
+            "ingested_date": str(date.today()) # Dynamically set to today's date
         }
     }
 
-def process_and_store():
+def process_and_store(use_cloud: bool = None):
     documents_to_store = []
     
     print("--- Starting Investor.gov Ingestion Pipeline (Phase 1) ---")
@@ -118,9 +120,43 @@ def process_and_store():
 
     # 3. Embedding and Storage
     print("Connecting to ChromaDB and generating embeddings...")
-    vector_store = VectorStoreManager(collection_name="educational_kb")
+    
+    # Pre-initialization physical cleanup for local mode to prevent directory bloat
+    if use_cloud is False:
+        # Import dynamically here to avoid cluttering global scope
+        import shutil
+        from src.utils.vector_store import LOCAL_DB_DIR
+        if os.path.exists(LOCAL_DB_DIR):
+            print(f"Pre-emptive cleanup of local database directory: {LOCAL_DB_DIR}")
+            try:
+                shutil.rmtree(LOCAL_DB_DIR)
+                print("Local database directory cleared.")
+            except Exception as e:
+                print(f"Warning: Could not clear local database directory: {e}")
+
+    vector_store = VectorStoreManager(collection_name="educational_kb", use_cloud=use_cloud)
+    
+    # Crucial: Drop and Replace strategy to prevent document duplication
+    vector_store.reset_collection()
+    
     vector_store.add_documents(chunked_documents)
     print("--- Pipeline Complete ---")
 
 if __name__ == "__main__":
-    process_and_store()
+    import argparse
+    parser = argparse.ArgumentParser(description="Investor.gov RAG Ingestion Pipeline")
+    parser.add_argument(
+        "--db",
+        choices=["local", "cloud"],
+        default=None,
+        help="Force database mode: 'local' (on-disk) or 'cloud' (Chroma Cloud). Defaults to auto-detect from CHROMA_API_KEY in .env"
+    )
+    args = parser.parse_args()
+
+    use_cloud = None
+    if args.db == "cloud":
+        use_cloud = True
+    elif args.db == "local":
+        use_cloud = False
+
+    process_and_store(use_cloud=use_cloud)

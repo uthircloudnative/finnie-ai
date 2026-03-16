@@ -10,7 +10,7 @@ Welcome to the world of Agentic RAG! This guide explains how we will build the i
 ---
 
 ## Step 1: Ingestion (The "Loading" Phase)
-First, we need to gather our financial knowledge base (Investopedia articles, SEC Filings).
+First, we need to gather our financial knowledge base (Investor.gov glossary, SEC Filings).
 1.  **Extract**: Use a library like `LangChain` to load raw data from PDFs or websites.
 2.  **Partition**: Convert HTML/Text into clean strings.
 
@@ -61,8 +61,8 @@ This is where the agentic magic happens. We send a prompt to the LLM that looks 
 For a beginner-friendly app, here is exactly where we will get the data for each use case:
 
 ### 1. Q&A Chatbot (Educational Data)
-- **Source**: [Investopedia](https://www.investopedia.com/financial-term-dictionary-4769738)
-- **Strategy**: Use a web-scraper (like `BeautifulSoup`) to pull definitions for the top 500 financial terms.
+- **Source**: [Investor.gov Glossary](https://www.investor.gov/introduction-investing/investing-basics/glossary)
+- **Strategy**: Use a web-scraper (like `BeautifulSoup`) to pull basic definitions for core financial terms.
 - **Alternative**: [HuggingFace Datasets](https://huggingface.co/datasets) (Search for "Financial" or "Economics" textbooks).
 
 ### 2. Market Insights (Regulatory & News Data)
@@ -88,7 +88,7 @@ For a beginner-friendly app, here is exactly where we will get the data for each
 A common question: *"Do I store real-time news in my long-term RAG database?"*
 
 ### The Answer: Short-Term vs. Long-Term
-1.  **Static RAG**: For facts that don't change often (Investopedia, Taxes, SEC 10-Ks).
+1.  **Static RAG**: For facts that don't change often (Investor.gov, Taxes, SEC 10-Ks).
 2.  **Short-Term RAG / SAG**: For news (e.g., "Earnings report released 5 mins ago"). We usually **don't** store this permanently in the vector DB because it becomes stale within hours.
 
 ### Where to get it:
@@ -122,7 +122,7 @@ Keep RAG in the **same codebase** but separated:
 - `transient_news`: Live news for the Insights agent.
 
 ### Why separate them into 5 collections?
-1.  **Specialization**: You don't want the Q&A agent accidentally giving an "IRS Tax Rule" when the user just asked for a simple "Investopedia definition." 
+1.  **Specialization**: You don't want the Q&A agent accidentally giving an "IRS Tax Rule" when the user just asked for a simple "Investor.gov definition." 
 2.  **Accuracy**: We can tune the "Search" differently for each (e.g., search IRS data more strictly).
 3.  **Speed**: Searching a small collection of 500 definitions is much faster than searching a giant database of everything.
 
@@ -179,7 +179,7 @@ Click the "Diagram" tab or render the code below to see the specialized flows fo
 ```mermaid
 graph TD
     subgraph "External Data Sources"
-        S1["Investopedia (Web)"]
+        S1["Investor.gov (Web)"]
         S2["IRS.gov (Web/HTML)"]
         S3["SEC.gov (API/Text)"]
         S4["Vanguard (PDF)"]
@@ -229,14 +229,14 @@ This table serves as your "Shopping List" for data. Explore these links to under
 
 | Collection Name | Data Type | Primary Source (Link) | Content Description | Refresh Frequency |
 | :--- | :--- | :--- | :--- | :--- |
-| **`educational_kb`** | Static | [Investopedia Academy](https://www.investopedia.com/financial-term-dictionary-4769738) | Glossary of terms, basics of ETFs, Stocks, and Bond logic. | Every 3-6 Months |
+| **`educational_kb`** | Static | [Investor.gov](https://www.investor.gov/introduction-investing/investing-basics/glossary) | Glossary of terms, basics of ETFs, Stocks, and Bond logic. | Every 3-6 Months |
 | **`tax_policy_kb`** | Semi-Static | [IRS Tax Brackets/Limits](https://www.irs.gov/newsroom/tax-year-2024-annual-inflation-adjustments) | Current year 401k/IRA limits, standard deductions, and tax brackets. | Annually (Jan) |
 | **`regulatory_kb`** | Static | [SEC Fast Answers](https://www.sec.gov/fast-answers) | Rules on investment advice, fraud protection, and mandatory disclosures. | Every 6-12 Months |
 | **`analytical_kb`** | Static | [Vanguard Research](https://corporate.vanguard.com/content/corporatesite/us/en/corp/articles/investment-stewardship-principles-and-policies.html) | Whitepapers on "Modern Portfolio Theory" and historical asset class returns. | Every 6-12 Months |
 | **`transient_news`** | Real-Time | [Alpha Vantage NEWS](https://www.alphavantage.co/documentation/#news-sentiment) | Live stock news, earnings call summaries, and market sentiment scores. | Every Session (Live) |
 
 ### 🛠️ How to "Inspect" these sources:
-1.  **Investopedia**: Look at how a term like "Diversification" is explained. Our script will turn that text into 3-4 "Chunks."
+1.  **Investor.gov**: Look at how a term like "Diversification" is explained. Our script will turn that text into 3-4 "Chunks."
 2.  **IRS**: Note the exact numbers (e.g., $23,000 limit for 401k). Our agent needs to "retrieve" these numbers to validate user goals.
 3.  **Alpha Vantage**: Look at the "Sentiment" field in their JSON result. This is what we extract to power the UI's Sentiment Bar.
 

@@ -2,26 +2,60 @@
 
 Finnie AI is a production-grade financial assistant that delivers personalized advice, real-time market insights, and portfolio analysis through a specialized multi-agent system.
 
-## 🚀 Current Status: Design & Prototyping
-We have finalized the architectural design and created a high-fidelity interactive prototype. The next phase is implementing the LangGraph backend and React frontend.
+## 🚀 Current Status: Phase 1 Complete (RAG & Data Grounding)
+We have successfully implemented the foundational Retrieval-Augmented Generation (RAG) pipeline. The system can now autonomously scrape, vectorize, and retrieve financial definitions from Investor.gov using ChromaDB and OpenAI Embeddings. 
+
+The next phase is Phase 2: Building the LangGraph Supervisor backend and React frontend.
+
+## ⚡ Quickstart (Backend Development)
+Finnie AI uses the modern **[uv](https://docs.astral.sh/uv/)** package manager for blazing-fast, deterministic Python environments.
+
+```bash
+# 1. Install uv (macOS)
+brew install uv
+
+# 2. Enter the backend directory and sync dependencies
+cd backend
+uv sync
+
+# 2. Configure your API key
+cp .env.example .env
+# Open .env to set your EMBEDDING_PROVIDER and OPENAI_API_KEY
+
+# 3. Enter the backend directory and sync dependencies
+cd backend
+uv sync
+
+# 4. Run the data ingestion pipeline (use --db local for local dev)
+uv run scripts/ingest/investor_gov_scraper.py --db local
+
+# 5. Test the Retrieval system
+uv run scripts/test_retrieval.py "What is an Index Fund?" USA
+```
+
+## ⚙️ Configuration
+The system is vendor-agnostic. You can switch providers in your `.env`:
+- `EMBEDDING_PROVIDER`: Choose `openai`, `azure_openai`, or `huggingface`.
+- `CHROMA_API_KEY`: Leave empty for **Local Mode**, or provide a key for **Chroma Cloud**.
+- **CLI Overrides**: Every script supports a `--db local|cloud` flag to override `.env` settings.
 
 ## 🎨 Interactive Prototype
 To visualize the project vision and all 5 navigation screens:
 1.  Navigate to the `prototype/` directory.
 2.  Open `index.html` in your browser.
-    - *Tip: Drag the file into Chrome or Firefox.*
 
 ## 🛠️ Technology Stack
-- **Backend**: Python (FastAPI), LangGraph, LangChain, OpenAI (GPT-4o).
-- **Agents**: RAG (ChromaDB), Real-time APIs (Alpha Vantage, NewsAPI).
+- **Backend Environment**: `uv` (Package Manager), Python (FastAPI).
+- **AI Core**: LangGraph, LangChain, OpenAI (GPT-4o).
+- **Data/RAG**: ChromaDB, BeautifulSoup, Alpha Vantage, NewsAPI.
 - **Frontend**: React (Vite), TypeScript, Framer Motion.
 - **Styling**: "Glass-Finance" (Vanilla CSS / Custom Tokens).
 
 ## 📂 Core Documentation
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md): Mission, Features, and Roadmap.
-- [DESIGN.md](./DESIGN.md): Technical Architecture and Graph Logic.
-- [UI_DESIGN.md](./UI_DESIGN.md): Visual framework and "Glass-Finance" aesthetics.
-- [STANDARDS.md](./STANDARDS.md): Engineering guidelines and folder structure.
+- [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md): Mission, Features, and Roadmap.
+- [DESIGN.md](./docs/DESIGN.md): Technical Architecture and Graph Logic.
+- [INGESTION_PIPELINES.md](./docs/INGESTION_PIPELINES.md): Detailed guide on how our RAG data is sourced, chunked, and stored.
+- [STANDARDS.md](./docs/STANDARDS.md): Engineering guidelines and AI policies.
 
 ## 👨‍💻 How to Contribute
-Please adhere to the coding standards defined in [STANDARDS.md](./STANDARDS.md) when contributing to the backend or frontend modules.
+Please adhere to the strict coding rules defined in [STANDARDS.md](./docs/STANDARDS.md)—specifically the rule that AI Assistants **must never auto-commit** code without human review.

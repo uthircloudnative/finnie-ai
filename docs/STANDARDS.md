@@ -84,5 +84,6 @@ All code must adhere to the following organized structure:
 ---
 
 ## 5. Deployment & Git
+- **AI Assistant Policy (CRITICAL)**: The AI Assistant must NEVER run `git commit` or `git push` automatically. Always allow the USER to manually review the `git status` or `git diff` first, and only execute commits or pushes when explicitly commanded to do so.
 - **Commit Messages**: Follow [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat: add goal planning simulation`).
 - **Review Culture**: All code changes should ideally be reviewed against these standards.

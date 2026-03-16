@@ -22,11 +22,11 @@ class FinnieState(TypedDict):
 - **Compliance Guardian**: Post-generation validator scanning for regulatory compliance and risk disclaimers.
 
 ## 2. Technical Stack
-- **Backend Core**: Python 3.11+, FastAPI, LangGraph, Pydantic AI.
+- **Backend Core**: Python 3.12+, FastAPI, LangGraph, Pydantic AI.
 - **Frontend Core**: React 18, Vite, TypeScript, Framer Motion (Animations).
-- **Intelligence**: OpenAI GPT-4o, LangChain Embeddings.
+- **Intelligence**: OpenAI GPT-4o, **Vendor-agnostic Embeddings Factory** (supporting OpenAI, Azure, and Hugging Face).
 - **Persistence & Retrieval**: 
-    - **Vector Store**: ChromaDB (on-disk for RAG).
+    - **Vector Store**: ChromaDB (**Hybrid**: On-disk for local dev, **Chroma Cloud** for production).
     - **Session Cache**: Redis (for graph state persistence).
     - **Primary DB**: PostgreSQL (User profiles and historical portfolio data).
 

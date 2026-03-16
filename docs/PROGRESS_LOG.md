@@ -35,24 +35,20 @@
 
 ## 🚀 Plan of Action (Next Session)
 
-We are starting **Phase 1: Intelligence & Data Grounding (Bottom-Up)**.
+We have successfully completed **Phase 1: Intelligence & Data Grounding**. The RAG infrastructure is hardened and vendor-agnostic.
 
-### 1. RAG Core Pipeline
-- Create `backend/scripts/ingest/` and implement the base Ingestion script.
-- Setup local ChromaDB and create the `educational_kb` collection.
-- Scrape 10-20 core financial terms from Investor.gov to "prime" the system.
+### 1. Phase 2: Foundation (Skeleton)
+- **LangGraph Supervisor**: Initialize the stateful orchestrator and implement basic routing logic.
+- **Frontend Scaffolding**: Setup React/Vite in the `frontend/` directory and implement the "Glass-Finance" shell.
+- **Agent Wiring**: Connect the Financial Q&A worker to the RAG collection logic built in Phase 1.
 
-### 2. Retrieval Verification
-- Build a standalone `test_retrieval.py` to verify the "Search" actually finds relevant snippets.
-- Finalize the `OpenAIEmbeddings` configuration.
-
-### 3. Move to Phase 2 (Foundation)
-- Once RAG is working, we will build the LangGraph shell and UI to host it.
+### 2. Market Insights Tooling
+- Begin building the live Market/News connectors for the next collection.
 
 ---
 
 ## 📂 Key Files to Review Upon Resume
-- [RAG_GUIDE.md](./RAG_GUIDE.md) (The master blueprint for AI intelligence)
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md)
-- [prototype/index.html](../prototype/index.html)
+- [PROJECT_PLAN.md](./PROJECT_PLAN.md) (Roadmap for Phase 2)
+- [INGESTION_PIPELINES.md](./INGESTION_PIPELINES.md) (RAG architecture reference)
+- [DESIGN.md](./DESIGN.md) (Agentic graph state design)
 

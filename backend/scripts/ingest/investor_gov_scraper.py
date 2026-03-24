@@ -17,7 +17,7 @@ from src.utils.vector_store import VectorStoreManager
 # The targeted list of beginner terms we want to definitively ground Finnie on.
 # We map the term to its specific Investor.gov URL stub.
 TARGET_TERMS = {
-    "Exchange-Traded Fund (ETF)": "exchange-traded-fund-etf",
+    "Exchange-Traded Fund (ETF)": "exchange-traded-funds-etfs",
     "Stocks": "stocks",
     "Bonds": "bonds",
     "Mutual Funds": "mutual-funds",

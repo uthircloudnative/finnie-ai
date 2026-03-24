@@ -2,10 +2,10 @@
 
 Finnie AI is a production-grade financial assistant that delivers personalized advice, real-time market insights, and portfolio analysis through a specialized multi-agent system.
 
-## 🚀 Current Status: Phase 1 Complete (RAG & Data Grounding)
-We have successfully implemented the foundational Retrieval-Augmented Generation (RAG) pipeline. The system can now autonomously scrape, vectorize, and retrieve financial definitions from Investor.gov using ChromaDB and OpenAI Embeddings. 
+## 🚀 Current Status: Phase 2 (Foundation) In Progress
+We have successfully implemented the foundational Retrieval-Augmented Generation (RAG) pipeline AND our **LangGraph Orchestrator**. The system can now autonomously scrape definitions, dynamically route user intents via a Supervisor Agent, and trigger specialized worker nodes (Financial Q&A) to generate grounded advice. 
 
-The next phase is Phase 2: Building the LangGraph Supervisor backend and React frontend.
+The next step is building the Market Insights live-news logic and scaffolding the React UI.
 
 ## ⚡ Quickstart (Backend Development)
 Finnie AI uses the modern **[uv](https://docs.astral.sh/uv/)** package manager for blazing-fast, deterministic Python environments.
@@ -31,6 +31,9 @@ uv run scripts/ingest/investor_gov_scraper.py --db local
 
 # 5. Test the Retrieval system
 uv run scripts/test_retrieval.py "What is an Index Fund?" USA
+
+# 6. Test the fully integrated LangGraph Agent Orbit
+uv run tests/test_graph.py
 ```
 
 ## ⚙️ Configuration

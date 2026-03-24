@@ -1,17 +1,22 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-03-15
-**Current Status**: 🟢 Phase 1 (RAG) Hardened & Production-Ready
+**Date**: 2026-03-23
+**Current Status**: 🟢 Phase 2 (Foundation) Graph Orchestration Built
 **Learning Mode**: 🎓 **Instructor-Led Hands-On** (User-led coding with Agent guidance)
 
 ---
 
-## ✅ What We Accomplished Today (March 15)
-1.  **Vendor-Agnostic Embeddings**: Implemented an **Embeddings Factory Pattern** to decouple from OpenAI, supporting Azure and local Hugging Face models via config.
-2.  **Hybrid ChromaDB Setup**: Enabled seamless switching between Local on-disk storage and **Chroma Cloud** via `.env` auto-detection or CLI flags.
-3.  **CLI Accessibility**: Added `--db local|cloud` flags to all scripts for dynamic runtime control.
-4.  **Storage Optimization**: Automated physical directory cleanup in local mode to prevent orphaned directory bloat.
-5.  **Documentation Audit**: Fully updated all technical guides (`INGESTION_PIPELINES`, `DESIGN`, `README`) to reflect production infrastructure.
+## ✅ What We Accomplished Today (March 23)
+1.  **LangGraph Foundation**: Initialized the `FinnieState` POJO using modern `add_messages` to handle persistent conversation history.
+2.  **Supervisor Agent**: Built a smart router using GPT-4o and `with_structured_output` to dynamically assign tasks.
+3.  **LLM Factory Pattern**: Adopted LangChain's `init_chat_model` for robust vendor/model agility.
+4.  **RAG Integration**: Wired the `financial_qa_node` directly to the `VectorStoreManager`, successfully injecting ChromaDB metrics into the system prompt.
+5.  **Ingestion Debugging**: Resolved a URL 403 issue for ETFs during ingestion to ensure comprehensive vocabulary.
+6.  **End-to-End Testing**: Validated the full loop (`test_graph.py`) from User -> Supervisor -> RAG Node -> Final LLM Generation.
+
+---
+
+## ✅ Previous Accomplishments (March 15)
 
 ---
 

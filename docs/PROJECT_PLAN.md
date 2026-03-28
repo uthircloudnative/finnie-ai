@@ -31,9 +31,12 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **Vector Storage**: Established a hybrid ChromaDB setup (Local/Cloud) with pre-emptive storage optimization and CLI mode overrides.
 - **Data Sourcing**: Successfully scraped and indexed fundamental financial definitions from Investor.gov with dynamic `ingested_date` metadata.
 
-### Phase 2: Foundation (Skeleton)
-- **Backend Infrastructure**: Setup LangGraph, define Global State, and implement Supervisor routing logic.
-- **Frontend Scaffolding**: Initialize React/Vite, implement the "Glass-Finance" theme and tab-based navigation shell.
+### Phase 2: Foundation (Skeleton) [COMPLETED]
+- **Backend Infrastructure**: Initialized LangGraph `FinnieState`, implemented Supervisor routing (`RoutingDecision` with GPT-4o structured output).
+- **FastAPI REST Layer**: Exposed `POST /chat` and `GET /health` endpoints; wired directly to the LangGraph `finnie_app`. CORS pre-configured for the React dev server.
+- **API Models**: Created `src/models/chat.py` with `ChatRequest` / `ChatResponse` Pydantic schemas for type-safe API boundaries.
+- **Agent Wiring**: Connected the Financial Q&A worker to the RAG collection (`educational_kb`) from Phase 1.
+- **Frontend Scaffolding**: Initialize React/Vite, implement the "Glass-Finance" theme and tab-based navigation shell. *(in progress)*
 
 ### Phase 3: Agent Integration & Analysis
 - **Worker Workers**: Connect the specialized Agents (Portfolio, Market, Goal) to the RAG tools built in Phase 1.

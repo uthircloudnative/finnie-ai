@@ -1,64 +1,168 @@
 # Finnie AI: A Multi-Agent Finance Guide
 
-Finnie AI is a production-grade financial assistant that delivers personalized advice, real-time market insights, and portfolio analysis through a specialized multi-agent system.
+Finnie AI is a production-grade financial assistant that delivers personalized advice, real-time market insights, and portfolio analysis through a specialized multi-agent system built with LangGraph.
 
-## 🚀 Current Status: Phase 2 (Foundation) In Progress
-We have successfully implemented the foundational Retrieval-Augmented Generation (RAG) pipeline AND our **LangGraph Orchestrator**. The system can now autonomously scrape definitions, dynamically route user intents via a Supervisor Agent, and trigger specialized worker nodes (Financial Q&A) to generate grounded advice. 
+## 🚀 Current Status: Phase 2 (Foundation) — REST API Live
 
-The next step is building the Market Insights live-news logic and scaffolding the React UI.
+| Phase | Status |
+|---|---|
+| Phase 1 — RAG Pipeline & Data Grounding | ✅ Complete |
+| Phase 2 — LangGraph Orchestrator + FastAPI REST Layer | ✅ Complete |
+| Phase 3 — Market Insights, Portfolio & Goal Agents | 🔲 Next |
+| Phase 4 — Hardening & Compliance | 🔲 Planned |
+| Phase 5 — Deployment & Scale | 🔲 Planned |
+
+The system can now: scrape and index financial definitions from Investor.gov, route user queries via a GPT-4o Supervisor Agent, retrieve grounded answers from ChromaDB (RAG), and serve responses over a live HTTP REST API (`POST /chat`).
+
+---
 
 ## ⚡ Quickstart (Backend Development)
-Finnie AI uses the modern **[uv](https://docs.astral.sh/uv/)** package manager for blazing-fast, deterministic Python environments.
 
+Finnie AI uses **[uv](https://docs.astral.sh/uv/)** — a fast, modern Python package manager. No manual `venv` activation needed; `uv run` handles everything.
+
+### Step 1 — Install uv (one-time)
 ```bash
-# 1. Install uv (macOS)
 brew install uv
-
-# 2. Enter the backend directory and sync dependencies
-cd backend
-uv sync
-
-# 2. Configure your API key
-cp .env.example .env
-# Open .env to set your EMBEDDING_PROVIDER and OPENAI_API_KEY
-
-# 3. Enter the backend directory and sync dependencies
-cd backend
-uv sync
-
-# 4. Run the data ingestion pipeline (use --db local for local dev)
-uv run scripts/ingest/investor_gov_scraper.py --db local
-
-# 5. Test the Retrieval system
-uv run scripts/test_retrieval.py "What is an Index Fund?" USA
-
-# 6. Test the fully integrated LangGraph Agent Orbit
-uv run tests/test_graph.py
 ```
 
-## ⚙️ Configuration
-The system is vendor-agnostic. You can switch providers in your `.env`:
-- `EMBEDDING_PROVIDER`: Choose `openai`, `azure_openai`, or `huggingface`.
-- `CHROMA_API_KEY`: Leave empty for **Local Mode**, or provide a key for **Chroma Cloud**.
-- **CLI Overrides**: Every script supports a `--db local|cloud` flag to override `.env` settings.
+### Step 2 — Enter the backend and sync dependencies
+```bash
+cd backend
+uv sync
+```
+
+### Step 3 — Configure your environment
+```bash
+cp .env.example .env
+# Open .env and fill in:
+#   OPENAI_API_KEY=sk-...
+#   LLM_PROVIDER=openai
+#   LLM_MODEL=gpt-4o
+#   EMBEDDING_PROVIDER=openai
+```
+
+---
+
+## 🗄️ Component 1: RAG Ingestion Pipeline
+
+Seeds ChromaDB with curated financial definitions scraped from Investor.gov.
+Run this once before starting the API server.
+
+```bash
+cd backend
+
+# Ingest data into local ChromaDB
+uv run python scripts/ingest/investor_gov_scraper.py --db local
+
+# (Optional) Verify retrieval is working
+uv run python scripts/test_retrieval.py "What is an Index Fund?" USA
+```
+
+> **`--db` flag**: Use `--db local` for on-disk dev storage, `--db cloud` to push to Chroma Cloud (requires `CHROMA_API_KEY` in `.env`).
+
+---
+
+## 🤖 Component 2: Agent Graph (Standalone Test)
+
+Tests the full LangGraph pipeline — Supervisor routing → Financial Q&A worker → answer — without the HTTP layer.
+
+```bash
+cd backend
+uv run python tests/test_graph.py
+```
+
+Expected output: the Supervisor routes to `FINANCIAL_QA` for definitions, `MARKET_INSIGHTS` for news (stub), and `FINISH` for greetings.
+
+---
+
+## 🌐 Component 3: FastAPI REST API Server
+
+Exposes the agent graph over HTTP so any frontend or client can call it.
+
+```bash
+cd backend
+uv run uvicorn main:app --reload --port 8000
+```
+
+### Available Endpoints
+
+| Method | URL | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness check — no LLM call |
+| `POST` | `/chat` | Send a message, get Finnie's response |
+| `GET` | `/docs` | Interactive Swagger UI (auto-generated) |
+
+### Test with curl
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Ask a financial question (routes to RAG-grounded Financial Q&A)
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is an ETF?"}'
+
+# Ask about market news (routes to Market Insights — stub, returns 500 until implemented)
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is happening with Apple stock today?"}'
+```
+
+---
+
+## ⚙️ Configuration Reference
+
+The system is fully vendor-agnostic. All behaviour is controlled via `.env`:
+
+| Variable | Options | Default |
+|---|---|---|
+| `EMBEDDING_PROVIDER` | `openai`, `azure_openai`, `huggingface`, `fake` | `openai` |
+| `LLM_PROVIDER` | `openai`, `azure_openai` | `openai` |
+| `LLM_MODEL` | `gpt-4o`, `gpt-4o-mini`, etc. | `gpt-4o` |
+| `CHROMA_API_KEY` | Your Chroma Cloud key | *(blank = local mode)* |
+
+> **CLI Override**: Every script supports `--db local|cloud` to override `.env` without editing the file.
+
+---
 
 ## 🎨 Interactive Prototype
-To visualize the project vision and all 5 navigation screens:
-1.  Navigate to the `prototype/` directory.
-2.  Open `index.html` in your browser.
+
+To visualise the Glass-Finance UI vision:
+1. Navigate to the `prototype/` directory.
+2. Open `index.html` directly in your browser (no server needed).
+
+---
 
 ## 🛠️ Technology Stack
-- **Backend Environment**: `uv` (Package Manager), Python (FastAPI).
-- **AI Core**: LangGraph, LangChain, OpenAI (GPT-4o).
-- **Data/RAG**: ChromaDB, BeautifulSoup, Alpha Vantage, NewsAPI.
-- **Frontend**: React (Vite), TypeScript, Framer Motion.
-- **Styling**: "Glass-Finance" (Vanilla CSS / Custom Tokens).
+
+| Layer | Technology |
+|---|---|
+| Backend Runtime | Python 3.13+, `uv` (package manager) |
+| API Layer | FastAPI, Uvicorn |
+| AI Orchestration | LangGraph, LangChain |
+| LLM | OpenAI GPT-4o (vendor-swappable) |
+| Vector Store | ChromaDB (local on-disk / Chroma Cloud) |
+| Data Ingestion | BeautifulSoup, Requests |
+| Frontend *(planned)* | React 18, Vite, TypeScript, Framer Motion |
+
+---
 
 ## 📂 Core Documentation
-- [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md): Mission, Features, and Roadmap.
-- [DESIGN.md](./docs/DESIGN.md): Technical Architecture and Graph Logic.
-- [INGESTION_PIPELINES.md](./docs/INGESTION_PIPELINES.md): Detailed guide on how our RAG data is sourced, chunked, and stored.
-- [STANDARDS.md](./docs/STANDARDS.md): Engineering guidelines and AI policies.
 
-## 👨‍💻 How to Contribute
-Please adhere to the strict coding rules defined in [STANDARDS.md](./docs/STANDARDS.md)—specifically the rule that AI Assistants **must never auto-commit** code without human review.
+| Doc | Purpose |
+|---|---|
+| [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md) | Mission, features, and full roadmap |
+| [DESIGN.md](./docs/DESIGN.md) | Technical architecture and agent graph design |
+| [INGESTION_PIPELINES.md](./docs/INGESTION_PIPELINES.md) | How RAG data is sourced, chunked, and stored |
+| [RAG_GUIDE.md](./docs/RAG_GUIDE.md) | Deep-dive into the retrieval strategy |
+| [UI_DESIGN.md](./docs/UI_DESIGN.md) | Glass-Finance UX/UI specification |
+| [STANDARDS.md](./docs/STANDARDS.md) | Engineering guidelines and AI policies |
+| [PROGRESS_LOG.md](./docs/PROGRESS_LOG.md) | Session-by-session progress log |
+
+---
+
+## 👨‍💻 Contributing
+
+Please adhere to the coding rules in [STANDARDS.md](./docs/STANDARDS.md) — specifically: **AI Assistants must never auto-commit or auto-push** code without explicit human review and approval.
+
+

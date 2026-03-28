@@ -1,0 +1,11 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 6rem);
+}
+
+.chat-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}

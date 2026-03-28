@@ -1,0 +1,48 @@
+/**
+ * tokens.css — Glass-Finance Design System
+ * Single source of truth for ALL visual design tokens.
+ * Derived from the approved prototype in prototype/index.html.
+ */
+:root {
+  /* ── Backgrounds ─────────────────────────────── */
+  --bg-deep: #05060a;
+  --bg-surface: #0f111a;
+
+  /* ── Glassmorphism Surfaces ──────────────────── */
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-bg-hover: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --glass-blur: blur(24px);
+  --sidebar-blur: blur(40px);
+
+  /* ── Accent Colors ───────────────────────────── */
+  --accent-cyan: #00f5ff;
+  --accent-cyan-glow: rgba(0, 245, 255, 0.15);
+  --accent-cyan-glow-strong: rgba(0, 245, 255, 0.4);
+  --accent-emerald: #10b981;
+  --accent-emerald-glow: rgba(16, 185, 129, 0.15);
+  --accent-orange: #f97316;
+  --accent-orange-glow: rgba(249, 115, 22, 0.15);
+
+  /* ── Text ────────────────────────────────────── */
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --text-muted: #475569;
+
+  /* ── Layout ──────────────────────────────────── */
+  --sidebar-width: 260px;
+  --header-height: 0px; /* no top header in current design */
+  --content-padding: 3rem;
+  --card-radius: 24px;
+  --btn-radius: 16px;
+  --input-radius: 20px;
+
+  /* ── Animation ───────────────────────────────── */
+  --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.2s ease;
+
+  /* ── Typography ──────────────────────────────── */
+  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+}

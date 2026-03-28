@@ -1,0 +1,94 @@
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2.2rem;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  margin-top: 0.35rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Portfolio card spans 8 columns */
+.portfolio-card {
+  grid-column: span 8;
+}
+
+.portfolio-value {
+  font-family: var(--font-heading);
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin: 1rem 0;
+}
+
+.gain {
+  font-size: 1.4rem;
+  color: var(--accent-emerald);
+  margin-left: 1rem;
+}
+
+.chart-bars {
+  height: 160px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.bar {
+  flex: 1;
+  background: var(--accent-cyan);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.35;
+  transition: opacity 0.3s;
+}
+
+.bar:hover {
+  opacity: 1;
+}
+
+/* Intel card spans 4 columns */
+.intel-card {
+  grid-column: span 4;
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.04), transparent) !important;
+}
+
+.intel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.intel-card h3 {
+  margin-top: 1.5rem;
+}
+
+.intel-body {
+  margin-top: 1rem;
+  line-height: 1.7;
+  color: var(--text-main);
+}
+
+.confidence-row {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.confidence-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}

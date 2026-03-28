@@ -1,0 +1,80 @@
+.goal-gauge {
+  width: 160px;
+  height: 80px;
+  border: 12px solid var(--glass-border);
+  border-bottom: none;
+  border-radius: 80px 80px 0 0;
+  position: relative;
+  margin: 0 auto 0.5rem;
+}
+
+.gauge-fill {
+  position: absolute;
+  inset: -12px;
+  bottom: 0;
+  border: 12px solid var(--accent-cyan);
+  border-bottom: none;
+  border-radius: 80px 80px 0 0;
+  mask-image: linear-gradient(to right, white 82%, transparent 82%);
+  -webkit-mask-image: linear-gradient(to right, white 82%, transparent 82%);
+  filter: drop-shadow(0 0 8px var(--accent-cyan));
+}
+
+.gauge-value {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin: 0.5rem 0;
+}
+
+.fan-chart-placeholder {
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  margin-top: 1.5rem;
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.sliders-row {
+  display: flex;
+  gap: 3rem;
+}
+
+.slider-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slider-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+}
+
+.slider-value {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.coming-soon-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}

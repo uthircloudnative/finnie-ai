@@ -1,0 +1,33 @@
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.asset-card {
+  padding: 1.5rem !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+}
+
+.asset-symbol {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.asset-change {
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.asset-btn {
+  padding: 0.6rem 1.1rem !important;
+  font-size: 0.75rem !important;
+  width: 100%;
+}

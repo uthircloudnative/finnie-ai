@@ -1,12 +1,36 @@
-node_modules/
-.DS_Store
+# ── Python / Backend ───────────────────────────────
 __pycache__/
-*.pyc
-.env
-dist/
-build/
+*.py[cod]
+*.pyo
 .venv/
 env/
-prototype/dashboard_mockup.png
 backend/venv/
 backend/src/chroma_db/
+.uv/
+
+# Test & coverage artefacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Node / Frontend ─────────────────────────────────
+node_modules/
+dist/
+build/
+.vite/
+
+# ── Environment & Secrets ───────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── OS & Editor Junk ────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ── Specific large/generated files ──────────────────
+prototype/dashboard_mockup.png

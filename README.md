@@ -2,17 +2,17 @@
 
 Finnie AI is a production-grade financial assistant that delivers personalized advice, real-time market insights, and portfolio analysis through a specialized multi-agent system built with LangGraph.
 
-## 🚀 Current Status: Phase 2 (Foundation) — REST API Live
+## 🚀 Current Status: Phase 2 (Foundation) — FULLY COMPLETE
 
 | Phase | Status |
 |---|---|
 | Phase 1 — RAG Pipeline & Data Grounding | ✅ Complete |
-| Phase 2 — LangGraph Orchestrator + FastAPI REST Layer | ✅ Complete |
+| Phase 2 — LangGraph Orchestrator + FastAPI REST Layer + React UI | ✅ Complete |
 | Phase 3 — Market Insights, Portfolio & Goal Agents | 🔲 Next |
 | Phase 4 — Hardening & Compliance | 🔲 Planned |
 | Phase 5 — Deployment & Scale | 🔲 Planned |
 
-The system can now: scrape and index financial definitions from Investor.gov, route user queries via a GPT-4o Supervisor Agent, retrieve grounded answers from ChromaDB (RAG), and serve responses over a live HTTP REST API (`POST /chat`).
+The system is fully runnable end-to-end: ingest financial definitions → ChromaDB vector store → GPT-4o Supervisor Agent → RAG-grounded answers → REST API → **live React/Vite Glass-Finance UI**.
 
 ---
 
@@ -110,6 +110,32 @@ curl -X POST http://localhost:8000/chat \
 
 ---
 
+## 🖥️ Component 4: React/Vite Frontend UI
+
+Serves the Glass-Finance web interface that connects to the FastAPI backend.
+
+> **Prerequisite**: Node.js 18+ must be installed. Run `node -v` to verify.
+
+```bash
+cd frontend
+npm install   # first time only
+npm run dev
+```
+
+Open **`http://localhost:5173`** in your browser.
+
+| Tab | Status | What it does |
+|---|---|---|
+| 💬 Deep Q&A | ✅ Live | Calls `POST /chat` — real RAG-grounded answers |
+| 🏠 Dashboard | 🔲 Static shell | Wired to Portfolio Agent in Phase 3 |
+| 📈 Portfolio Analyst | 🔲 Static shell | Wired to Portfolio Agent in Phase 3 |
+| 🌐 Market Insights | 🔲 Static shell | Wired to Market Insights Agent in Phase 3 |
+| 🎯 Goal Planner | 🔲 Static shell | Wired to Goal Strategist Agent in Phase 3 |
+
+> **Tip**: The Deep Q&A tab is the only live tab. The other 4 tabs display static shells with placeholder data until Phase 3 agents are built.
+
+---
+
 ## ⚙️ Configuration Reference
 
 The system is fully vendor-agnostic. All behaviour is controlled via `.env`:
@@ -143,7 +169,7 @@ To visualise the Glass-Finance UI vision:
 | LLM | OpenAI GPT-4o (vendor-swappable) |
 | Vector Store | ChromaDB (local on-disk / Chroma Cloud) |
 | Data Ingestion | BeautifulSoup, Requests |
-| Frontend *(planned)* | React 18, Vite, TypeScript, Framer Motion |
+| Frontend | React 19, Vite 6, TypeScript, Vanilla CSS |
 
 ---
 

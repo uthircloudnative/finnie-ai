@@ -36,7 +36,11 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **FastAPI REST Layer**: Exposed `POST /chat` and `GET /health` endpoints; wired directly to the LangGraph `finnie_app`. CORS pre-configured for the React dev server.
 - **API Models**: Created `src/models/chat.py` with `ChatRequest` / `ChatResponse` Pydantic schemas for type-safe API boundaries.
 - **Agent Wiring**: Connected the Financial Q&A worker to the RAG collection (`educational_kb`) from Phase 1.
-- **Frontend Scaffolding**: Initialize React/Vite, implement the "Glass-Finance" theme and tab-based navigation shell. *(in progress)*
+- **Frontend Scaffolding**: Initialized React/Vite + TypeScript in `frontend/`. Implemented the full "Glass-Finance" UI shell:
+  - `tokens.css` + `global.css` — design system with all CSS custom properties
+  - `Sidebar` with 5-tab navigation
+  - **Live Chat tab** — `useChat` hook calls `POST /chat`; `ChatWindow`, `ChatInput`, `ThinkingIndicator` components; `$NFA` disclaimer footer
+  - Static shells for Dashboard, Portfolio Analyst, Market Insights, and Goal Planner tabs (ready for Phase 3 agent wiring)
 
 ### Phase 3: Agent Integration & Analysis
 - **Worker Workers**: Connect the specialized Agents (Portfolio, Market, Goal) to the RAG tools built in Phase 1.

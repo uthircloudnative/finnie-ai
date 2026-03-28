@@ -1,17 +1,33 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-03-15
-**Current Status**: 🟢 Phase 1 (RAG) Hardened & Production-Ready
+**Date**: 2026-03-28
+**Current Status**: 🟢 Phase 2 (Foundation) FastAPI REST Layer Live
 **Learning Mode**: 🎓 **Instructor-Led Hands-On** (User-led coding with Agent guidance)
 
 ---
 
-## ✅ What We Accomplished Today (March 15)
-1.  **Vendor-Agnostic Embeddings**: Implemented an **Embeddings Factory Pattern** to decouple from OpenAI, supporting Azure and local Hugging Face models via config.
-2.  **Hybrid ChromaDB Setup**: Enabled seamless switching between Local on-disk storage and **Chroma Cloud** via `.env` auto-detection or CLI flags.
-3.  **CLI Accessibility**: Added `--db local|cloud` flags to all scripts for dynamic runtime control.
-4.  **Storage Optimization**: Automated physical directory cleanup in local mode to prevent orphaned directory bloat.
-5.  **Documentation Audit**: Fully updated all technical guides (`INGESTION_PIPELINES`, `DESIGN`, `README`) to reflect production infrastructure.
+## ✅ What We Accomplished Today (March 28)
+1. **FastAPI REST Layer**: Replaced the `main.py` placeholder with a full FastAPI app.
+2. **`POST /chat` Endpoint**: Wires the LangGraph `finnie_app` to HTTP — accepts `{"message": "..."}`, returns `{"reply": "..."}`.
+3. **`GET /health` Endpoint**: Zero-cost liveness probe; never touches the LLM.
+4. **CORS Pre-configured**: Ready for the React dev server (`localhost:5173`) out of the box.
+5. **Pydantic API Models**: Created `src/models/chat.py` with `ChatRequest` / `ChatResponse` for type-safe API boundaries.
+6. **End-to-End Verified**: `curl POST /chat "What is an Index Fund?"` returned a real RAG-grounded answer from ChromaDB.
+7. **Defensive Error Handling**: Unimplemented agent stubs return a clear 500 (e.g., `FINISH` route) instead of silently returning an empty reply.
+
+---
+
+## ✅ What We Accomplished Today (March 23)
+1.  **LangGraph Foundation**: Initialized the `FinnieState` POJO using modern `add_messages` to handle persistent conversation history.
+2.  **Supervisor Agent**: Built a smart router using GPT-4o and `with_structured_output` to dynamically assign tasks.
+3.  **LLM Factory Pattern**: Adopted LangChain's `init_chat_model` for robust vendor/model agility.
+4.  **RAG Integration**: Wired the `financial_qa_node` directly to the `VectorStoreManager`, successfully injecting ChromaDB metrics into the system prompt.
+5.  **Ingestion Debugging**: Resolved a URL 403 issue for ETFs during ingestion to ensure comprehensive vocabulary.
+6.  **End-to-End Testing**: Validated the full loop (`test_graph.py`) from User -> Supervisor -> RAG Node -> Final LLM Generation.
+
+---
+
+## ✅ Previous Accomplishments (March 15)
 
 ---
 

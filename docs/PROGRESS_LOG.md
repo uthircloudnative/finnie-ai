@@ -1,8 +1,19 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-03-23
-**Current Status**: 🟢 Phase 2 (Foundation) Graph Orchestration Built
+**Date**: 2026-03-28
+**Current Status**: 🟢 Phase 2 (Foundation) FastAPI REST Layer Live
 **Learning Mode**: 🎓 **Instructor-Led Hands-On** (User-led coding with Agent guidance)
+
+---
+
+## ✅ What We Accomplished Today (March 28)
+1. **FastAPI REST Layer**: Replaced the `main.py` placeholder with a full FastAPI app.
+2. **`POST /chat` Endpoint**: Wires the LangGraph `finnie_app` to HTTP — accepts `{"message": "..."}`, returns `{"reply": "..."}`.
+3. **`GET /health` Endpoint**: Zero-cost liveness probe; never touches the LLM.
+4. **CORS Pre-configured**: Ready for the React dev server (`localhost:5173`) out of the box.
+5. **Pydantic API Models**: Created `src/models/chat.py` with `ChatRequest` / `ChatResponse` for type-safe API boundaries.
+6. **End-to-End Verified**: `curl POST /chat "What is an Index Fund?"` returned a real RAG-grounded answer from ChromaDB.
+7. **Defensive Error Handling**: Unimplemented agent stubs return a clear 500 (e.g., `FINISH` route) instead of silently returning an empty reply.
 
 ---
 

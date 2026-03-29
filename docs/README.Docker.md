@@ -20,54 +20,72 @@ Navigate to `http://localhost:3000` to verify the frontend can successfully comm
 
 Assuming you have the **Azure CLI** installed and are authenticated (`az login`):
 
-### 2a. Containerize & Upload to ACR
-Create a secure Azure Container Registry to house your explicit image builds.
+### Phase 1: Create the Cloud Registry & Build the Backend
+
+You must first create the underlying Resource Group and upload the Python Backend to the cloud.
 
 ```bash
 # Set your preferred Resource Group & Registry Name
 export RG="finnie-rg"
 export ACR="finnieacr"
 
-# Create Registry
+# 1. Create the foundational Resource Group
+az group create --name $RG --location eastus
+
+# 2. Create the Docker Container Vault (ACR)
 az acr create --resource-group $RG --name $ACR --sku Basic
 
-# Build and Push Backend Image natively using Azure's Cloud builder
+# 3. Build and Push Backend Image natively using Azure's Cloud builder
 az acr build --registry $ACR --image finnie-backend:latest ./backend/
-
-# Build and Push Frontend Image
-# Note: You MUST pass the --build-arg so Vite bakes the correct backend API URL into static HTML!
-az acr build --registry $ACR \
-    --image finnie-frontend:latest \
-    --build-arg VITE_API_URL="https://YOUR-FINAL-BACKEND-AZURE-URL.azurewebsites.net" \
-    ./frontend/
 ```
 
-### 2b. Provision Persistent Web Apps
+### Phase 2: Deploy the Backend Server
 
-Now, spin the containers up utilizing Azure App Service (Web Apps for Containers), strictly ensuring `WEBSITES_ENABLE_APP_SERVICE_STORAGE` is flagged to `True` so your SQLite file survives!
+> [!WARNING]
+> **Quota = 0 Error on Basic VMs?**
+> If you are on an Azure Free Trial or Student account, your limit for "Basic A Family vCPUs" might be hard-locked to 0. If Step 1 fails, go to the **Azure Portal -> Quotas**, request an increase to `1` for the Basic tier, wait 30 minutes for the servers to sync, and try again!
 
 ```bash
-# Create the App Service Plan (The underlying server hardware tier)
+# 1. Create the App Service Plan (The underlying Linux hardware)
 az appservice plan create --name finnie-plan --resource-group $RG --sku B1 --is-linux
 
-# Deploy the Backend Container
-az webapp create --resource-group $RG --plan finnie-plan --name finnie-api \
+# 2. Deploy the Backend Container
+# IMPORTANT: Pick a GLOBALLY UNIQUE NAME (like finnie-api-YOURNAME2026).
+export BACKEND_NAME="finnie-api-unique123"
+
+az webapp create --resource-group $RG --plan finnie-plan --name $BACKEND_NAME \
     --deployment-container-image-name $ACR.azurecr.io/finnie-backend:latest
 
-# Define the DB_PATH to explicitly use Azure's perpetual home mounted pathway
-az webapp config appsettings set --resource-group $RG --name finnie-api \
+# 3. Define the DB_PATH to explicitly use Azure's perpetual home mounted pathway
+az webapp config appsettings set --resource-group $RG --name $BACKEND_NAME \
     --settings \
         DB_PATH="/home/finnie.db" \
         WEBSITES_ENABLE_APP_SERVICE_STORAGE="true"
+```
 
-# Next, Deploy the Frontend NGINX Container
-az webapp create --resource-group $RG --plan finnie-plan --name finnie-web \
+### Phase 3: Build & Deploy the React Frontend
+
+Because the React app is a *compiled static builder*, you cannot build it until you know exactly what your API URL is from Phase 2! Now that we know your backend URL is `https://$BACKEND_NAME.azurewebsites.net`, we can officially build the frontend container!
+
+```bash
+export FRONTEND_NAME="finnie-web-unique123"
+
+# 1. Build and Push Frontend Image, baking the Backend URL permanently into the JavaScript
+az acr build --registry $ACR \
+    --image finnie-frontend:latest \
+    --build-arg VITE_API_URL="https://$BACKEND_NAME.azurewebsites.net" \
+    ./frontend/
+
+# 2. Deploy the Frontend NGINX Container
+az webapp create --resource-group $RG --plan finnie-plan --name $FRONTEND_NAME \
     --deployment-container-image-name $ACR.azurecr.io/finnie-frontend:latest
 ```
+
+---
 
 ## Maintenance & Updates
 Whenever you modify local Python code, execute:
 ```bash
 az acr build --registry $ACR --image finnie-backend:latest ./backend/
-az webapp restart --name finnie-api --resource-group $RG
+az webapp restart --name $BACKEND_NAME --resource-group $RG
 ```

@@ -192,7 +192,84 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Scrollbar ─────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan-glow); }
+::-webkit-scrollbar { 
+  width: 8px; 
+}
+
+::-webkit-scrollbar-track { 
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb { 
+  background: rgba(255, 255, 255, 0.1); 
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover { 
+  background: var(--accent-cyan-glow); 
+  background-clip: content-box;
+}
+
+/* ── Shared Workspace Sidebar ───────────────────── */
+.workspace-sidebar {
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 11, 16, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.4);
+  animation: slideInSidebar 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes slideInSidebar {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.workspace-sidebar-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.workspace-sidebar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.workspace-sidebar-icon {
+  font-size: 1.2rem;
+}
+
+.workspace-sidebar-header h3 {
+  font-size: 1rem;
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+}
+
+.workspace-sidebar-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-emerald);
+  letter-spacing: 0.1em;
+}
+
+.workspace-sidebar-chat-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 0;
+}

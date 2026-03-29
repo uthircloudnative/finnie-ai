@@ -20,7 +20,7 @@
 
 .holdings-table-head {
   display: grid;
-  grid-template-columns: 1fr 1fr 48px;
+  grid-template-columns: 120px 2fr 100px 48px;
   gap: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--glass-border);
@@ -39,7 +39,7 @@
 
 .holdings-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 48px;
+  grid-template-columns: 120px 2fr 100px 48px;
   gap: 1rem;
   align-items: center;
 }
@@ -232,9 +232,19 @@
   color: var(--accent-blue, #60a5fa);
 }
 
-.holdings-saved-shares {
+.holdings-saved-market {
+  flex: 1;
+  margin-left: 1rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
-  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.holdings-saved-shares {
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 /* ── Loading state ─────────────────────────────────── */

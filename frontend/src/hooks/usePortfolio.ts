@@ -10,16 +10,28 @@ const USER_ID = 'user_1' // Hardcoded for Phase 3 — replace with auth in futur
 export interface Holding {
   ticker: string
   shares: number
+  country: string
+  exchange: string
   added_date: string
+}
+
+export interface Exchange {
+  country_name: string
+  country_code: string
+  exchange_name: string
+  exchange_code: string
 }
 
 export interface HoldingInput {
   ticker: string
   shares: number
+  country: string
+  exchange: string
 }
 
 interface UsePortfolioReturn {
   holdings: Holding[]
+  exchanges: Exchange[]
   isLoading: boolean
   isSaving: boolean
   error: string | null
@@ -29,6 +41,7 @@ interface UsePortfolioReturn {
 
 export function usePortfolio(): UsePortfolioReturn {
   const [holdings, setHoldings] = useState<Holding[]>([])
+  const [exchanges, setExchanges] = useState<Exchange[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,12 +50,23 @@ export function usePortfolio(): UsePortfolioReturn {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API_BASE}/portfolio/${USER_ID}`)
-      if (!res.ok) throw new Error(`Server error ${res.status}`)
-      const data = await res.json()
-      setHoldings(data.holdings ?? [])
+      // Parallel fetch for speed
+      const [portRes, metaRes] = await Promise.all([
+        fetch(`${API_BASE}/portfolio/${USER_ID}`),
+        fetch(`${API_BASE}/metadata/exchanges`)
+      ])
+
+      if (!portRes.ok || !metaRes.ok) throw new Error('Failed to fetch portfolio data')
+
+      const [portData, metaData] = await Promise.all([
+        portRes.json(),
+        metaRes.json()
+      ])
+
+      setHoldings(portData.holdings ?? [])
+      setExchanges(metaData ?? [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load holdings')
+      setError(err instanceof Error ? err.message : 'Failed to load portfolio')
     } finally {
       setIsLoading(false)
     }
@@ -75,5 +99,5 @@ export function usePortfolio(): UsePortfolioReturn {
     }
   }, [])
 
-  return { holdings, isLoading, isSaving, error, savePortfolio, refetch: fetchHoldings }
+  return { holdings, exchanges, isLoading, isSaving, error, savePortfolio, refetch: fetchHoldings }
 }

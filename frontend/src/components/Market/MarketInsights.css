@@ -1,33 +1,200 @@
-.insights-header {
+.insights-workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 1.5rem;
+  height: calc(100vh - 6rem); 
+  overflow: hidden;
+  padding: 1rem 1.5rem;
+}
+
+.insights-workspace.sidebar-open {
+  grid-template-columns: 1fr 400px;
+}
+
+/* Ensure grid children don't overflow their parents */
+.insights-main-content, 
+.insights-sidebar {
+  min-height: 0; 
+}
+
+.insights-main-content {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+  padding-right: 0.5rem; /* Space for scrollbar */
+}
+
+.insights-header-section {
   margin-bottom: 1.5rem;
 }
 
-.asset-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
 }
 
-.asset-card {
-  padding: 1.5rem !important;
-  background: rgba(255, 255, 255, 0.01) !important;
-}
-
-.asset-symbol {
-  font-size: 1.4rem;
+.insights-header-section h1 {
+  font-size: 2.2rem;
   margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--text-main), var(--accent-blue));
+  -webkit-background-clip: text;
+  background-clip: text; 
+  -webkit-text-fill-color: transparent;
 }
 
-.asset-change {
+.insights-subtitle {
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.ask-finnie-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 99px;
+  color: var(--accent-cyan);
+  font-weight: 700;
   font-size: 0.85rem;
-  margin-bottom: 1.25rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.asset-btn {
-  padding: 0.6rem 1.1rem !important;
-  font-size: 0.75rem !important;
+.ask-finnie-toggle:hover {
+  background: rgba(0, 245, 255, 0.12);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.ask-finnie-toggle.active {
+  background: var(--accent-cyan);
+  color: var(--bg-deep);
+  border-color: var(--accent-cyan);
+}
+
+.toggle-icon {
+  font-size: 1.1rem;
+}
+
+/* ── Pulse Card ────────────────────────────────────── */
+.pulse-card {
+  padding: 2rem;
+  height: auto;
+  min-height: 300px;
+  flex-shrink: 0;
+  overflow: visible; /* Override .glass-card hidden overflow */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.pulse-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.pulse-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pulse-icon {
+  font-size: 1.5rem;
+}
+
+.pulse-card-header h3 {
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.refresh-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-color: var(--accent-blue);
+}
+
+/* ── Content States ────────────────────────────────── */
+.pulse-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  color: var(--text-dim);
+}
+
+.shimmer-line {
   width: 100%;
+  height: 1rem;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.shimmer-line.short {
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.pulse-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.pulse-content {
+  line-height: 1.8;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.markdown-body p {
+  margin-bottom: 1.5rem;
+}
+
+.markdown-body strong {
+  color: var(--accent-emerald, #34d399);
+}
+
+
+.insights-footer-note {
+  margin-top: auto;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--glass-border);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.4;
 }

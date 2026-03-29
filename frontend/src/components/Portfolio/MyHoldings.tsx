@@ -6,15 +6,16 @@ interface RowState {
   id: string // UUID for React key stability
   ticker: string
   shares: string // Keep as string for controlled input
+  exchange: string // e.g. "NASDAQ" or "NSE"
   isNew?: boolean // Flag for auto-focusing new rows
 }
 
 function emptyRow(isNew = false): RowState {
-  return { id: crypto.randomUUID(), ticker: '', shares: '', isNew }
+  return { id: crypto.randomUUID(), ticker: '', shares: '', exchange: 'NYSE', isNew }
 }
 
 export default function MyHoldings() {
-  const { holdings, isLoading, isSaving, error, savePortfolio } = usePortfolio()
+  const { holdings, exchanges, isLoading, isSaving, error, savePortfolio } = usePortfolio()
 
   const [rows, setRows] = useState<RowState[]>([emptyRow()])
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -27,7 +28,8 @@ export default function MyHoldings() {
       setRows(holdings.map(h => ({ 
         id: crypto.randomUUID(), 
         ticker: h.ticker, 
-        shares: String(h.shares) 
+        shares: String(h.shares),
+        exchange: h.exchange || 'NYSE'
       })))
       setHydrated(true)
     }
@@ -47,7 +49,7 @@ export default function MyHoldings() {
     })
   }
 
-  const updateRow = useCallback((id: string, field: 'ticker' | 'shares', value: string) => {
+  const updateRow = useCallback((id: string, field: 'ticker' | 'shares' | 'exchange', value: string) => {
     setSaveSuccess(false)
     setIsDirty(true)
     setRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r))
@@ -59,10 +61,16 @@ export default function MyHoldings() {
     // Filter out invalid rows (missing ticker or non-positive shares)
     const inputs: HoldingInput[] = rows
       .filter(r => r.ticker.trim() && r.shares.trim())
-      .map(r => ({ 
-        ticker: r.ticker.trim().toUpperCase(), 
-        shares: parseFloat(r.shares) 
-      }))
+      .map(r => {
+        // Find the country code from the selected exchange
+        const ex = exchanges.find(e => e.exchange_code === r.exchange)
+        return { 
+          ticker: r.ticker.trim().toUpperCase(), 
+          shares: parseFloat(r.shares),
+          exchange: r.exchange,
+          country: ex?.country_code || 'US'
+        }
+      })
       .filter(r => r.shares > 0)
 
     if (inputs.length === 0) return
@@ -76,7 +84,8 @@ export default function MyHoldings() {
       setRows(inputs.map(i => ({ 
         id: crypto.randomUUID(), 
         ticker: i.ticker, 
-        shares: String(i.shares) 
+        shares: String(i.shares),
+        exchange: i.exchange
       })))
     }
   }
@@ -96,6 +105,7 @@ export default function MyHoldings() {
       <div className="glass-card holdings-form-card">
         <div className="holdings-table-head">
           <span>Ticker</span>
+          <span>Market / Exchange</span>
           <span>Shares</span>
           <span>Action</span>
         </div>
@@ -109,10 +119,25 @@ export default function MyHoldings() {
                 type="text"
                 placeholder="e.g. AAPL"
                 value={row.ticker}
-                maxLength={6}
+                maxLength={10}
                 autoFocus={row.isNew}
                 onChange={e => updateRow(row.id, 'ticker', e.target.value.toUpperCase())}
               />
+              <select
+                className="holdings-input holdings-exchange"
+                value={row.exchange}
+                onChange={e => updateRow(row.id, 'exchange', e.target.value)}
+              >
+                {exchanges.map(ex => (
+                  <option key={`${ex.country_code}-${ex.exchange_code}`} value={ex.exchange_code}>
+                    {ex.country_code === 'US' ? '🇺🇸' : 
+                     ex.country_code === 'IN' ? '🇮🇳' : 
+                     ex.country_code === 'GB' ? '🇬🇧' : 
+                     ex.country_code === 'CA' ? '🇨🇦' : 
+                     ex.country_code === 'DE' ? '🇩🇪' : '🌍'} {ex.exchange_name}
+                  </option>
+                ))}
+              </select>
               <input
                 id={`shares-${row.id}`}
                 className="holdings-input holdings-shares"
@@ -181,8 +206,9 @@ export default function MyHoldings() {
           </p>
           <div className="holdings-saved-list">
             {holdings.map(h => (
-              <div key={h.ticker} className="holdings-saved-row">
+              <div key={`${h.ticker}-${h.exchange}`} className="holdings-saved-row">
                 <span className="holdings-saved-ticker">{h.ticker}</span>
+                <span className="holdings-saved-market">{h.exchange} ({h.country})</span>
                 <span className="holdings-saved-shares">{h.shares} shares</span>
               </div>
             ))}

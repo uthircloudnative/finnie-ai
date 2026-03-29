@@ -1,12 +1,29 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-03-28
-**Current Status**: 🟢 Phase 2 (Foundation) FULLY COMPLETE — Frontend Live
+**Date**: 2026-03-29
+**Current Status**: 🟢 Phase 3 (Agent Integration) IN PROGRESS — Portfolio Analyst LIVE
 **Learning Mode**: 🎓 **Instructor-Led Hands-On** (User-led coding with Agent guidance)
 
 ---
 
-## ✅ What We Accomplished Today (March 28)
+## ✅ What We Accomplished Today (March 29)
+
+### 📊 Portfolio Analyst (End-to-End)
+1. **Math Engine Integration**: Wired `yfinance` to the `portfolio_analyst_node` to calculate live **Market Beta** and **Annualized Volatility**.
+2. **Analysis Context Sharing**: Updated `ChatRequest` and `/chat` to support `analysis_context`, allowing the AI to "know" dashboard metrics for instant follow-up answers.
+3. **Robust Data Handling**: Implemented multi-index and fallback logic for `yfinance` to prevent "Adj Close" errors during market volatility or symbol mismatches.
+4. **Interactive Analyst Workspace**: Refactored the Portfolio Analyst tab into a two-column "Workshop" featuring a metrics dashboard and a dedicated, context-aware Finnie chat sidebar.
+5. **Persistent Holdings**: Leveraged the SQLite `holdings` table to ensure user portfolios are used as ground-truth for all AI analysis.
+6. **Regulatory Compliance**: Integrated the `Compliance Guardian` to automatically append `$NFA` disclaimers to all portfolio-related responses.
+
+### 🔧 Stability & Infrastructure
+7. **Graph Routing Recovery**: Resolved a critical `ValueError` in the LangGraph orchestration by switching to explicit string-based routing for node transitions.
+8. **CORS Optimization**: Expanded `CORSMiddleware` to support dynamic dev ports (5173/5174), unblocking the React-FastAPI connection.
+9. **Documentation Alignment**: Fully updated `ANALYTICAL_AGENT.md` and project guides to match the production implementation.
+
+---
+
+## ✅ What We Accomplished (March 28)
 
 ### Backend — FastAPI REST Layer
 1. **`POST /chat` Endpoint**: Wired the LangGraph `finnie_app` to HTTP — accepts `{"message": "..."}`, returns `{"reply": "..."}`.
@@ -62,10 +79,10 @@
 Phase 2 is fully complete. The app is runnable end-to-end: ingest → vector store → agent graph → REST API → React UI.
 
 ### Phase 3: Agent Integration & Analysis
-- **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
-- **Portfolio Analyst Agent**: Implement Sharpe ratio, diversification score, and portfolio math — replace static UI data.
-- **Goal Strategist Agent**: Monte Carlo simulation engine powering the what-if sliders in the UI.
-- **Compliance Guardian**: Post-processor node to inject `$NFA` disclaimers on every agent response.
+- [x] **Portfolio Analyst Agent**: Implement Sharpe ratio, diversification score, and portfolio math — replace static UI data.
+- [/] **Compliance Guardian**: Post-processor node to inject `$NFA` disclaimers on every agent response.
+- [ ] **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
+- [ ] **Goal Strategist Agent**: Monte Carlo simulation engine powering the what-if sliders in the UI.
 
 ---
 

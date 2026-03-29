@@ -134,3 +134,37 @@ uv run scripts/test_retrieval.py "How does an Index Fund work?" USA
 uv run scripts/test_retrieval.py "What is an ETF?" USA --db cloud
 ```
 *Expected Output:* The terminal will print out the top 3 chunks retrieved from the database. Read the text to verify they accurately explain the term.
+
+---
+
+## Pipeline 2: Analytical Knowledge Base (`analytical_kb`)
+**Target:** Local Investopedia HTML snippets (Phase 3)
+**Usage:** Provides theoretical grounding (Sharpe Ratio, Beta, Volatility benchmarks) for the Portfolio Analyst Agent.
+
+### 🏗️ Component Breakdown
+
+#### 1. Extraction: Local HTML Loader (`load_html_analytical_kb.py`)
+**Goal:** Ingest complex financial theory that requires manual curation or specific versions of definitions (e.g., MPT, Efficient Frontier).
+
+*   **Mechanism**: Instead of live scraping, this pipeline reads pre-downloaded HTML files from `backend/scripts/ingest/content/analtical_kb/`.
+*   **Parsing**: Uses BeautifulSoup with the `.article-body-content p` selector discovered during the Investopedia audit.
+*   **Metadata**: Automatically tags every chunk with:
+    *   `topic`: Derived from the filename (e.g., "Sharpe Ratio").
+    *   `category`: `metric_benchmark` or `theory`.
+    *   `country`: `GLOBAL` (unless in a subfolder like `/US/`).
+
+#### 2. Load: ChromaDB Integration
+*   **Collection**: `analytical_kb`.
+*   **Update Strategy**: Supports `--reset` flag to clear the collection before loading fresh theory.
+
+### 🚀 Running the Pipeline
+
+```bash
+cd backend
+
+# Load local HTML files into ChromaDB
+uv run scripts/ingest/load_html_analytical_kb.py --reset
+
+# Verify retrieval of theory
+uv run scripts/test_retrieval.py "What is a good Sharpe Ratio?" analytical_kb
+```

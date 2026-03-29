@@ -10,6 +10,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
   { id: 'chat',      icon: '💬', label: 'Deep Q&A' },
+  { id: 'holdings',  icon: '💼', label: 'My Holdings' },
   { id: 'portfolio', icon: '📈', label: 'Portfolio Analyst' },
   { id: 'market',    icon: '🌐', label: 'Market Insights' },
   { id: 'goals',     icon: '🎯', label: 'Goal Planner' },

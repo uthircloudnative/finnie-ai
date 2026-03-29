@@ -1,6 +1,6 @@
 # Portfolio Analyst Agent — End-to-End Guide
 
-> **Status:** RAG pipeline implemented & verified ✅ | Agent wiring: Phase 3
+> **Status:** ✅ Fully Implemented (Backend + Frontend) | Production Ready
 
 ---
 
@@ -220,12 +220,48 @@ returns relative to volatility...
 
 ---
 
-## Phase 3 — Wiring the Agent
+---
 
-The RAG pipeline is ready. What remains for Phase 3:
+## 🔄 Analysis Trigger Flows
 
-- [ ] Implement `portfolio_analyst_node` in LangGraph
-- [ ] Add `yfinance` integration to fetch live prices & compute metrics
-- [ ] Connect agent to `analytical_kb` retrieval
-- [ ] Wire the Portfolio Analyst tab in the frontend
-- [ ] Add `$NFA` disclaimer via Compliance Guardian post-processor
+The Portfolio Analyst Agent can be invoked in three distinct ways to ensure both a structured reports and natural conversation.
+
+### 1. Tab-Triggered (Structured Report)
+When the user clicks the **Portfolio Analyst** tab in the UI:
+- **Frontend**: Calls `GET /portfolio/analysis/{user_id}`.
+- **Backend (`main.py`)**: 
+    1. Fetches all holdings from SQLite.
+    2. Packages these holdings into the `portfolio_data` field.
+    3. Invokes the `portfolio_analyst` node directly.
+- **Result**: A comprehensive dashboard featuring **Beta (vs S&P 500)**, **Annualized Volatility**, and a **Diversification Score**.
+
+### 2. Tab-Specific Chat (Contextual Workshop)
+Users can ask follow-up questions directly within the Analyst tab:
+- **Context Hinting**: The frontend passes `preferred_worker="PORTFOLIO_ANALYST"` and `analysis_context` (the pre-calculated Beta/Vol).
+- **Instant Response**: Finnie answers immediately about the specific metrics displayed on the dashboard without re-calculating data.
+
+### 3. General Chat (Natural Language)
+When the user types a question like *"Is my portfolio too tech-heavy?"* in the main Chat:
+- **Supervisor**: Recognizes the intent and routes to `PORTFOLIO_ANALYST`.
+- **Worker**: Analyzes the holdings stored in the database and responds within the conversation thread.
+
+---
+
+## 🛡️ Compliance & Safety
+
+All outputs from the Portfolio Analyst Agent **must** pass through the **Compliance Guardian** post-processor node.
+
+- **Requirement**: Every AI response related to portfolio analysis must be appended with the `$NFA` disclaimer.
+- **Implementation**: A final node in the LangGraph enforces the disclaimer before the data reaches the client.
+
+---
+
+## 🏁 Phase 3 Completion Checklist
+
+The Portfolio Analyst is now fully wired and functional.
+
+- [x] **Step 1: State Update** — Added `analysis_results` and `portfolio_data` to `FinnieState`.
+- [x] **Step 2: Analyst Worker** — Created `portfolio_analyst.py` with `yfinance` & robust MultiIndex handling.
+- [x] **Step 3: API Integration** — Updated `main.py` with `/portfolio/analysis` and contextual `/chat` params.
+- [x] **Step 4: Graph Wiring** — Registered all nodes and fixed conditional routing logic in `src/graph.py`.
+- [x] **Step 5: UI Connection** — Built the split-view dashboard and interactive sidebar in `PortfolioAnalyst.tsx`.

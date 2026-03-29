@@ -17,7 +17,7 @@ interface UseChatReturn {
   messages: Message[]
   isLoading: boolean
   error: string | null
-  sendMessage: (text: string) => Promise<void>
+  sendMessage: (text: string, preferredWorker?: string, analysisContext?: any) => Promise<void>
 }
 
 export function useChat(): UseChatReturn {
@@ -32,7 +32,7 @@ export function useChat(): UseChatReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(async (text: string, preferredWorker?: string, analysisContext?: any) => {
     if (!text.trim() || isLoading) return
 
     // 1. Append the user's message immediately for instant feedback
@@ -51,7 +51,11 @@ export function useChat(): UseChatReturn {
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text.trim() }),
+        body: JSON.stringify({ 
+          message: text.trim(),
+          preferred_worker: preferredWorker,
+          analysis_context: analysisContext
+        }),
       })
 
       if (!response.ok) {

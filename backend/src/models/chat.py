@@ -4,6 +4,7 @@ Chat API Models
 Pydantic request/response schemas for the /chat endpoint.
 Keeps the API contract explicit and type-safe at the boundary layer.
 """
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -16,6 +17,14 @@ class ChatRequest(BaseModel):
         min_length=1,
         examples=["What is an Index Fund?"],
     )
+    preferred_worker: Optional[str] = Field(
+        default=None,
+        description="Optional hint to route the message to a specific agent (e.g. 'PORTFOLIO_ANALYST')."
+    )
+    analysis_context: Optional[dict] = Field(
+        default=None,
+        description="Optional pre-calculated results (e.g. Beta, Volatility) to provide context."
+    )
 
 
 class ChatResponse(BaseModel):
@@ -24,4 +33,8 @@ class ChatResponse(BaseModel):
     reply: str = Field(
         ...,
         description="Finnie's generated response to the user's message.",
+    )
+    analysis_results: Optional[dict] = Field(
+        default=None,
+        description="Optional structured results from specialized workers (e.g. Portfolio Analyst)."
     )

@@ -32,6 +32,7 @@ from src.models.portfolio import Holding              # noqa: E402
 from src.models.market_metadata import MarketExchange # noqa: E402
 from src.models.goal import FinancialGoal           # noqa: E402
 from src.utils.telemetry import TraceContextMiddleware, setup_telemetry_logging, trace_id_var # noqa: E402
+from src.utils.dashboard_engine import build_dashboard_payload # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Telemetry Bootstrap
@@ -145,6 +146,18 @@ def get_exchanges(db: Session = Depends(get_db)) -> List[ExchangeResponse]:
         )
         for ex in exchanges
     ]
+
+
+# ---------------------------------------------------------------------------
+# Dashboard (Global Wealth View)
+# ---------------------------------------------------------------------------
+@app.get("/dashboard/{user_id}", tags=["Dashboard"])
+def get_dashboard(user_id: str, db: Session = Depends(get_db)):
+    """
+    Lightning-fast, deterministic dashboard payload.
+    Bypasses LLM entirely to strictly crunch SQLite and live yfinance data.
+    """
+    return build_dashboard_payload(user_id, db)
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,54 @@
 # Finnie AI: A Multi-Agent Finance Guide
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB.svg?style=flat&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/LangGraph-1C3C3C?style=flat&logo=langchain&logoColor=white" alt="LangGraph" />
+  <img src="https://img.shields.io/badge/OpenAI-412991?style=flat&logo=openai&logoColor=white" alt="OpenAI" />
+  <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E" alt="Vite" />
+  <img src="https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/ChromaDB-FF6B6B?style=flat" alt="ChromaDB" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Docker_Compose-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker Compose" />
+  <img src="https://img.shields.io/badge/Azure-0089D6?style=flat&logo=microsoft-azure&logoColor=white" alt="Azure" />
+</p>
+
+## 🧠 What is Finnie AI?
+
 Finnie AI is a premium, production-grade financial assistant that delivers personalized advice, real-time market insights, and multi-currency portfolio analysis using a highly specialized multi-agent system built with LangGraph.
+
+Instead of relying on a single underlying chat model, Finnie uses a **Supervisor Routing Architecture**. When a user submits a query, the Supervisor analyzes the intent and explicitly routes the task to specialized sub-agents:
+- **Financial Q&A Agent**: Retrieves complex tax and investing theory directly from ChromaDB.
+- **Portfolio Analyst Agent**: Securely reads the user's local SQLite holdings and executes live algorithmic calculations against Yahoo Finance market data.
+- **Goal Strategist Agent**: Calculates multi-decade Monte Carlo simulations to plot safe retirement horizons.
+
+### High-Level Architecture
+```mermaid
+graph TD
+    User([User Device]) -->|HTTP / Glassmorphism UI| Frontend[React + Vite Frontend]
+    Frontend -->|FastAPI REST| Backend[Python/uv Backend]
+    
+    subgraph Containerized Engine [Dockerized Azure Environment]
+        Backend -->|Routing| LangGraph[LangGraph Supervisor]
+        LangGraph -->|Node Exec| QA[Knowledge Engine]
+        LangGraph -->|Node Exec| Analyst[Portfolio Analyst]
+        LangGraph -->|Node Exec| Goals[Goal Strategist]
+    end
+    
+    subgraph Data Persistence
+        QA -.->|Retrieval| Chroma[(ChromaDB Vector Store)]
+        Analyst -.->|Query| SQLite[(Persistent SQLite DB)]
+        Goals -.->|Query| Chroma
+    end
+
+    subgraph External Integrations
+        LangGraph -.->|Reasoning| OpenAI{OpenAI GPT-4o}
+        Analyst -.->|Pricing Data| YFinance[Yahoo Finance]
+        Backend -.->|Telemetry| LangSmith[LangSmith Diagnostics]
+    end
+```
 
 ---
 

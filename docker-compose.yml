@@ -1,0 +1,33 @@
+# Local Sandbox for Azure Deployment Testing
+# Run this file using: `docker compose up --build`
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      # Map localhost:8000 on your Mac to port 80 inside the container (Azure's standard)
+      - "8000:80"
+    volumes:
+      # Map the local databases to survive container restarts locally
+      - ./backend/finnie.db:/app/finnie.db
+      - ./backend/chroma_data_local:/app/chroma_data_local
+    env_file:
+      - ./backend/.env
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Dynamically inject the backend's local Docker port during the React Build Step
+        - VITE_API_URL=http://localhost:8000
+    ports:
+      # Map localhost:3000 on your Mac to the NGINX port 80
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always

@@ -25,3 +25,10 @@ class FinnieState(TypedDict):
     # Structured results from analysis (Beta, Volatility, etc.)
     # Format: {"beta": 1.2, "volatility": 15.4, "diversification_score": 7}
     analysis_results: Optional[dict]
+
+    # Persistent goal configuration for the Goal Strategist
+    # Format: {"target_amount": 1000000, "target_year": 2035, "monthly_savings": 500, "country": "USA"}
+    goal_configuration: Optional[dict]
+
+    # The unique request ID tied to LangSmith traces and system logs
+    trace_id: Optional[str]

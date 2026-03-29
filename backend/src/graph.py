@@ -4,7 +4,8 @@ from src.agents.supervisor import supervisor_node
 from src.agents.qa_agent import financial_qa_node
 from src.agents.portfolio_analyst import portfolio_analyst_node
 from src.agents.compliance import compliance_guardian_node
-from src.agents.stubs import market_insights_node, goal_strategist_node
+from src.agents.market_insights import market_insights_node
+from src.agents.goal_strategist import goal_strategist_node
 
 
 # 1. Initialize the Graph Builder

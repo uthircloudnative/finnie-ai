@@ -1,20 +1,37 @@
 # Finnie AI: Progress Log & Next Steps
 
 **Date**: 2026-03-29
-**Current Status**: 🟢 Phase 3 (Agent Integration) IN PROGRESS — Portfolio Analyst LIVE
+**Current Status**: 🟢 Phase 4 (Goal Strategist) — COMPLETE 
 **Learning Mode**: 🎓 **Instructor-Led Hands-On** (User-led coding with Agent guidance)
 
 ---
 
 ## ✅ What We Accomplished Today (March 29)
 
-### 📊 Portfolio Analyst (End-to-End)
+### 📈 Portfolio Analyst (End-to-End)
 1. **Math Engine Integration**: Wired `yfinance` to the `portfolio_analyst_node` to calculate live **Market Beta** and **Annualized Volatility**.
-2. **Analysis Context Sharing**: Updated `ChatRequest` and `/chat` to support `analysis_context`, allowing the AI to "know" dashboard metrics for instant follow-up answers.
-3. **Robust Data Handling**: Implemented multi-index and fallback logic for `yfinance` to prevent "Adj Close" errors during market volatility or symbol mismatches.
-4. **Interactive Analyst Workspace**: Refactored the Portfolio Analyst tab into a two-column "Workshop" featuring a metrics dashboard and a dedicated, context-aware Finnie chat sidebar.
-5. **Persistent Holdings**: Leveraged the SQLite `holdings` table to ensure user portfolios are used as ground-truth for all AI analysis.
-6. **Regulatory Compliance**: Integrated the `Compliance Guardian` to automatically append `$NFA` disclaimers to all portfolio-related responses.
+2. **Global Ticker Fix**: Implemented automatic exchange-based suffix mapping (e.g., RELIANCE -> `.NS`).
+3. **Robust Data Handling**: Fixed `^GSPC` benchmark access and delisted ticker crashes.
+4. **Analysis Context Sharing**: Updated `ChatRequest` and `/chat` to support context-aware follow-ups.
+
+### 🌐 Market Insights (Live Intelligence)
+5. **Alpha Vantage Integration**: Connected live news & sentiment for global tickers.
+6. **30-Minute Persistence Cache**: Built a SQLite-based cache to optimize API credits and performance.
+7. **Sentiment Labeling**: Translates raw market data into clear Bearish/Bullish/Neutral signals.
+
+### 🎨 Workspace UI 2.0 (UX Revolution)
+8. **Toggleable Assistant**: Moved the "Ask Finnie" expert sidebar to an on-demand toggle in the header.
+9. **Immersive Reports**: Full-width dashboard layout for maximum readability.
+10. **High-Visibility Scrollbars**: Upgraded 8px scrollbars with unified styling across all pages.
+11. **Smooth Transitions**: Implemented CSS grid expansion/contraction for seamless sidebar usage.
+
+### 🧭 Goal Strategist (The Financial GPS)
+12. **Monte Carlo Engine**: Vectorized `numpy` engine running 10,000 projections based on real portfolio risk (Beta/Vol).
+13. **Country-Aware RAG**: Uses the user's residence (USA, India, etc.) to query a new `goal_rules` ChromaDB collection holding actual **2026 tax rules** (401k/80C/LTCG).
+14. **Strategic Configurator**: A premium, form-driven UI replacing the chat-first model for high-fidelity goal planning.
+15. **Live Visualization**: Interactive Confidence Gauge and Probability Fan Chart (Recharts) visualizing success paths from 5th to 95th percentiles.
+16. **Dynamic LLM Synthesis**: Integrated `GPT-4o` to ingest the Monte Carlo outputs and 2026 RAG rules, dynamically generating personalized, legally-accurate roadmap reports.
+
 
 ### 🔧 Stability & Infrastructure
 7. **Graph Routing Recovery**: Resolved a critical `ValueError` in the LangGraph orchestration by switching to explicit string-based routing for node transitions.
@@ -80,9 +97,13 @@ Phase 2 is fully complete. The app is runnable end-to-end: ingest → vector sto
 
 ### Phase 3: Agent Integration & Analysis
 - [x] **Portfolio Analyst Agent**: Implement Sharpe ratio, diversification score, and portfolio math — replace static UI data.
-- [/] **Compliance Guardian**: Post-processor node to inject `$NFA` disclaimers on every agent response.
-- [ ] **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
-- [ ] **Goal Strategist Agent**: Monte Carlo simulation engine powering the what-if sliders in the UI.
+- [x] **Compliance Guardian**: Post-processor node to inject `$NFA` disclaimers on every agent response.
+- [x] **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
+
+### Phase 4: The Financial GPS
+- [x] **Goal Strategist Agent**: Monte Carlo simulation engine powering the what-if sliders in the UI.
+- [x] **Statute-Based RAG**: IRS and regional tax logic grounding for goal projections.
+- [x] **Interactive Dashboard**: Configurator form + Confidence Gauge + Fan Chart UI.
 
 ---
 

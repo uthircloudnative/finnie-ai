@@ -2,6 +2,7 @@ import os
 import chromadb
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
+from langsmith import traceable
 from src.utils.embeddings_factory import get_embeddings
 
 # Load environment variables from .env file if present
@@ -95,6 +96,7 @@ class VectorStoreManager:
         self.db.add_documents(documents)
         print("Data added successfully.")
 
+    @traceable(name="ChromaDB RAG Search", run_type="retriever")
     def search(self, query: str, k: int = 3, target_country: str = None):
         """Searches the vector store for the top k most similar chunks, with optional country filtering."""
         filter_dict = None

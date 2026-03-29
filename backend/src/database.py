@@ -52,5 +52,8 @@ def get_db():
 
 def init_db() -> None:
     """Create all tables defined via Base.metadata on first startup."""
-    from src.models.portfolio import Holding  # noqa: F401 — registers the model
+    from src.models.portfolio import Holding       # noqa: F401
+    from src.models.market_metadata import MarketExchange # noqa: F401
+    from src.models.market_cache import MarketCache       # noqa: F401
+    from src.models.goal import FinancialGoal           # noqa: F401
     Base.metadata.create_all(bind=engine)

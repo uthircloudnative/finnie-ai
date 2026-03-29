@@ -14,7 +14,11 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 # Resolve path relative to backend root so the DB file is always predictable
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(BACKEND_DIR, "finnie.db")
+_LOCAL_DB_PATH = os.path.join(BACKEND_DIR, "finnie.db")
+
+# In Azure, we pass DB_PATH='/home/finnie.db' to use persistent App Service storage.
+# Locally, it safely defaults to the standard backend directory.
+DB_PATH = os.environ.get("DB_PATH", _LOCAL_DB_PATH)
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(

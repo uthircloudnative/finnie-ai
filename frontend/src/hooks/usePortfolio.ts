@@ -4,7 +4,7 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USER_ID = 'user_1' // Hardcoded for Phase 3 — replace with auth in future
 
 export interface Holding {

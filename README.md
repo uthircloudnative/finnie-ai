@@ -38,21 +38,23 @@ We have built a flexible routing system allowing you to test locally for free, o
 If you want to save the databases strictly to a hidden folder on your hard drive (`chroma_data_local`):
 ```bash
 # Ingest definitions & introductory data
-uv run python scripts/ingest/investor_gov_scraper.py --db local
+uv run python scripts/ingest/investor_gov_scraper.py --db local --reset
 
 # Ingest deep theoretical and analytical benchmarks
-uv run python scripts/ingest/load_html_analytical_kb.py --db local
+uv run python scripts/ingest/load_html_analytical_kb.py --db local --reset
 
 # Ingest 2026 US IRS & India Tax Rules for Goal Planning
-uv run python scripts/ingest/ingest_regulatory_kb.py --db local
+uv run python scripts/ingest/ingest_regulatory_kb.py --db local --reset
 ```
+
+> **Note**: The `--reset` flag ensures that if you run the script multiple times, it deletes the old collection before re-uploading, preventing duplicate chunks!
 
 #### Option B: Ingesting to ChromaDB Cloud (Production)
 If you want to view and manage these collections on your web dashboard, you must provide your `CHROMA_API_KEY` in `.env` and use the `--db cloud` flag:
 ```bash
-uv run python scripts/ingest/investor_gov_scraper.py --db cloud
-uv run python scripts/ingest/load_html_analytical_kb.py --db cloud
-uv run python scripts/ingest/ingest_regulatory_kb.py --db cloud
+uv run python scripts/ingest/investor_gov_scraper.py --db cloud --reset
+uv run python scripts/ingest/load_html_analytical_kb.py --db cloud --reset
+uv run python scripts/ingest/ingest_regulatory_kb.py --db cloud --reset
 ```
 
 ---

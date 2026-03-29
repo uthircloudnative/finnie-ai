@@ -50,6 +50,8 @@ graph TD
     end
 ```
 
+> 👁️ **Curious what it looks like?** Check out the [UI Preview Gallery](./docs/UI_PREVIEW.md) to see high-fidelity mockups of the finished Dashboard and Market Insights interfaces before you start the installation!
+
 ---
 
 ## 🚀 Complete Setup Guide

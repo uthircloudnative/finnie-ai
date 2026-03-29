@@ -1,194 +1,138 @@
 # Finnie AI: A Multi-Agent Finance Guide
 
-Finnie AI is a production-grade financial assistant that delivers personalized advice, real-time market insights, and portfolio analysis through a specialized multi-agent system built with LangGraph.
-
-## 🚀 Current Status: Phase 2 (Foundation) — FULLY COMPLETE
-
-| Phase | Status |
-|---|---|
-| Phase 1 — RAG Pipeline & Data Grounding | ✅ Complete |
-| Phase 2 — LangGraph Orchestrator + FastAPI REST Layer + React UI | ✅ Complete |
-| Phase 3 — Market Insights & Portfolio Analyst | ✅ Complete |
-| Phase 4 — Goal Strategist & Monte Carlo | 🔲 Next |
-| Phase 5 — Hardening & Scale | 🔲 Planned |
-
-The system is fully runnable end-to-end: ingest financial definitions → ChromaDB vector store → GPT-4o Supervisor Agent → RAG-grounded answers → REST API → **live React/Vite Glass-Finance UI**.
+Finnie AI is a premium, production-grade financial assistant that delivers personalized advice, real-time market insights, and multi-currency portfolio analysis using a highly specialized multi-agent system built with LangGraph.
 
 ---
 
-## ⚡ Quickstart (Backend Development)
+## 🚀 Complete Setup Guide
 
-Finnie AI uses **[uv](https://docs.astral.sh/uv/)** — a fast, modern Python package manager. No manual `venv` activation needed; `uv run` handles everything.
+Follow these steps in exact order to configure, ingest data, and launch both the backend and frontend of Finnie AI on your local machine.
 
-### Step 1 — Install uv (one-time)
+### Step 1: Core Backend Setup
+Finnie AI uses **[uv](https://docs.astral.sh/uv/)**—a lightning-fast Python package manager.
+
+1. **Install uv** (one-time setup if you don't have it):
+   ```bash
+   brew install uv
+   ```
+2. **Sync Dependencies**:
+   ```bash
+   cd backend
+   uv sync
+   ```
+3. **Set your Environment**:
+   Duplicate `.env.example` to `.env` and fill in your keys (OpenAI, LangSmith, AlphaVantage, etc.):
+   ```bash
+   cp .env.example .env
+   ```
+
+---
+
+### Step 2: Data Ingestion (ChromaDB Vector Store)
+
+Finnie relies on three distinct "Knowledge Bases" stored in ChromaDB to provide theoretically grounded RAG answers. You must ingest this data before the agents can function properly.
+
+We have built a flexible routing system allowing you to test locally for free, or push to the Cloud.
+
+#### Option A: Ingesting to Local Disk (Default)
+If you want to save the databases strictly to a hidden folder on your hard drive (`chroma_data_local`):
 ```bash
-brew install uv
+# Ingest definitions & introductory data
+uv run python scripts/ingest/investor_gov_scraper.py --db local --reset
+
+# Ingest deep theoretical and analytical benchmarks
+uv run python scripts/ingest/load_html_analytical_kb.py --db local --reset
+
+# Ingest 2026 US IRS & India Tax Rules for Goal Planning
+uv run python scripts/ingest/ingest_regulatory_kb.py --db local --reset
 ```
 
-### Step 2 — Enter the backend and sync dependencies
-```bash
-cd backend
-uv sync
-```
+> **Note**: The `--reset` flag ensures that if you run the script multiple times, it deletes the old collection before re-uploading, preventing duplicate chunks!
 
-### Step 3 — Configure your environment
+#### Option B: Ingesting to ChromaDB Cloud (Production)
+If you want to view and manage these collections on your web dashboard, you must provide your `CHROMA_API_KEY` in `.env` and use the `--db cloud` flag:
 ```bash
-cp .env.example .env
-# Open .env and fill in:
-#   OPENAI_API_KEY=sk-...
-#   LLM_PROVIDER=openai
-#   LLM_MODEL=gpt-4o
-#   EMBEDDING_PROVIDER=openai
+uv run python scripts/ingest/investor_gov_scraper.py --db cloud --reset
+uv run python scripts/ingest/load_html_analytical_kb.py --db cloud --reset
+uv run python scripts/ingest/ingest_regulatory_kb.py --db cloud --reset
 ```
 
 ---
 
-## 🗄️ Component 1: RAG Ingestion Pipeline
+### Step 3: Starting the Backend Application
 
-Seeds ChromaDB with curated financial definitions scraped from Investor.gov.
-Run this once before starting the API server.
-
-```bash
-cd backend
-
-# Ingest data into local ChromaDB
-uv run python scripts/ingest/investor_gov_scraper.py --db local
-
-# (Optional) Verify retrieval is working
-uv run python scripts/test_retrieval.py "What is an Index Fund?" USA
-```
-
-> **`--db` flag**: Use `--db local` for on-disk dev storage, `--db cloud` to push to Chroma Cloud (requires `CHROMA_API_KEY` in `.env`).
-
----
-
-## 🤖 Component 2: Agent Graph (Standalone Test)
-
-Tests the full LangGraph pipeline — Supervisor routing → Financial Q&A worker → answer — without the HTTP layer.
+Once your data is successfully ingested, boot the FastAPI server to expose the Multi-Agent orchestrator.
 
 ```bash
-cd backend
-uv run python tests/test_graph.py
-```
-
-Expected output: the Supervisor routes to `FINANCIAL_QA` for definitions, `MARKET_INSIGHTS` for news (stub), and `FINISH` for greetings.
-
----
-
-## 🌐 Component 3: FastAPI REST API Server
-
-Exposes the agent graph over HTTP so any frontend or client can call it.
-
-```bash
-cd backend
+# Ensure you are still in the backend folder
 uv run uvicorn main:app --reload --port 8000
 ```
-
-### Available Endpoints
-
-| Method | URL | Description |
-|---|---|---|
-| `GET` | `/health` | Liveness check — no LLM call |
-| `POST` | `/chat` | Send a message, get Finnie's response |
-| `GET` | `/docs` | Interactive Swagger UI (auto-generated) |
-
-### Test with curl
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Ask a financial question (routes to RAG-grounded Financial Q&A)
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What is an ETF?"}'
-
-# Ask about market news (routes to Market Insights — stub, returns 500 until implemented)
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What is happening with Apple stock today?"}'
-```
+*The backend is now actively listening on `http://localhost:8000`.*
 
 ---
 
-## 🖥️ Component 4: React/Vite Frontend UI
+### Step 4: Testing Agents as Standalone (CLI)
 
-Serves the Glass-Finance web interface that connects to the FastAPI backend.
-
-> **Prerequisite**: Node.js 18+ must be installed. Run `node -v` to verify.
+You can test the core LangGraph reasoning engines directly via the terminal without needing the frontend. Open a **new terminal tab** and run:
 
 ```bash
+cd backend
+
+# Test the core Supervisor routing and RAG Q&A
+uv run python tests/test_graph.py
+
+# Alternatively, test specific endpoints via cURL
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Explain the Sharpe Ratio to me."}'
+```
+*You should see detailed Trace IDs and agent hand-offs print directly in your server logs!*
+
+---
+
+### Step 5: Starting the Frontend App
+
+The frontend is a gorgeous, responsive React + Vite application styled with Vanilla CSS `glass-morphism` tokens.
+
+Open a **new terminal tab**:
+```bash
 cd frontend
-npm install   # first time only
+
+# Install Node dependencies (first time only)
+npm install
+
+# Start the Vite development server
 npm run dev
 ```
 
-Open **`http://localhost:5173`** in your browser.
+---
 
-| Tab | Status | What it does |
-|---|---|---|
-| 💬 Deep Q&A | ✅ Live | Calls `POST /chat` — real RAG-grounded answers |
-| 🏠 Dashboard | ✅ Live | Summarizes current risk (Beta, Vol) + Portfolio Health |
-| 📈 Portfolio Analyst | ✅ Live | End-to-end analysis of multi-country holdings (yfinance) |
-| 🌐 Market Insights | ✅ Live | Real-time sentiment & Alpha Vantage news integration (30m Cache) |
-| 🎯 Goal Planner | 🔲 Static shell | Wired to Goal Strategist Agent in Phase 4 |
+### Step 6: Testing End-to-End via Browser
 
-> **Experience Note**: All Workspace tabs (Analyst, Insights, Dashboard) now feature the **Workspace UI 2.0** — immersive full-width reports with a toggleable "Ask Finnie" expert assistant.
+Your full-stack application is now online!
+
+Open your web browser and navigate to:
+👉 **`http://localhost:5173`**
+
+You can now test all features natively:
+1. **Executive Edge (Dashboard)**: Automatically fetches live `yfinance` S&P 500 equivalent data for dynamic wealth tracking.
+2. **My Holdings**: Add sample stocks (`AAPL`, `RELIANCE.NS`) into your SQLite database.
+3. **Portfolio Analyst**: Triggers the AI to compute live Beta & Volatility algorithms against your holdings.
+4. **Market Insights**: Fetches real-time sentiment analysis from Alpha Vantage.
+5. **Goal Planner**: Runs 10,000-scenario Monte Carlo simulations cross-referenced against your RAG-ingested tax rules!
 
 ---
 
-## ⚙️ Configuration Reference
+## 📂 Core Architecture Documentation
 
-The system is fully vendor-agnostic. All behaviour is controlled via `.env`:
+If you want to dive deeper into how specific features were engineered, check the `docs/` folder:
 
-| Variable | Options | Default |
-|---|---|---|
-| `EMBEDDING_PROVIDER` | `openai`, `azure_openai`, `huggingface`, `fake` | `openai` |
-| `LLM_PROVIDER` | `openai`, `azure_openai` | `openai` |
-| `LLM_MODEL` | `gpt-4o`, `gpt-4o-mini`, etc. | `gpt-4o` |
-| `CHROMA_API_KEY` | Your Chroma Cloud key | *(blank = local mode)* |
-
-> **CLI Override**: Every script supports `--db local|cloud` to override `.env` without editing the file.
-
----
-
-## 🎨 Interactive Prototype
-
-To visualise the Glass-Finance UI vision:
-1. Navigate to the `prototype/` directory.
-2. Open `index.html` directly in your browser (no server needed).
-
----
-
-## 🛠️ Technology Stack
-
-| Layer | Technology |
-|---|---|
-| Backend Runtime | Python 3.13+, `uv` (package manager) |
-| API Layer | FastAPI, Uvicorn |
-| AI Orchestration | LangGraph, LangChain |
-| LLM | OpenAI GPT-4o (vendor-swappable) |
-| Vector Store | ChromaDB (local on-disk / Chroma Cloud) |
-| Data Ingestion | BeautifulSoup, Requests |
-| Frontend | React 19, Vite 6, TypeScript, Vanilla CSS |
-
----
-
-## 📂 Core Documentation
-
-| Doc | Purpose |
+| Document | Purpose |
 |---|---|
 | [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md) | Mission, features, and full roadmap |
-| [DESIGN.md](./docs/DESIGN.md) | Technical architecture and agent graph design |
-| [INGESTION_PIPELINES.md](./docs/INGESTION_PIPELINES.md) | How RAG data is sourced, chunked, and stored |
-| [RAG_GUIDE.md](./docs/RAG_GUIDE.md) | Deep-dive into the retrieval strategy |
+| [DESIGN.md](./docs/DESIGN.md) | Multi-Agent LangGraph architecture map |
+| [OBSERVABILITY_GUIDE.md](./docs/OBSERVABILITY_GUIDE.md) | LangSmith Tracing & FastAPI Middleware docs |
+| [DASHBOARD.md](./docs/DASHBOARD.md) | The deterministic dynamic Global Wealth system |
+| [RAG_GUIDE.md](./docs/RAG_GUIDE.md) | Semantic chunking and retrieval strategy |
 | [UI_DESIGN.md](./docs/UI_DESIGN.md) | Glass-Finance UX/UI specification |
 | [STANDARDS.md](./docs/STANDARDS.md) | Engineering guidelines and AI policies |
-| [PROGRESS_LOG.md](./docs/PROGRESS_LOG.md) | Session-by-session progress log |
-
----
-
-## 👨‍💻 Contributing
-
-Please adhere to the coding rules in [STANDARDS.md](./docs/STANDARDS.md) — specifically: **AI Assistants must never auto-commit or auto-push** code without explicit human review and approval.
-
-

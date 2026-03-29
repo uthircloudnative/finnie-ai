@@ -84,7 +84,7 @@ def scrape_term(term, slug):
         }
     }
 
-def process_and_store(use_cloud: bool = None):
+def process_and_store(use_cloud: bool = None, reset: bool = False):
     documents_to_store = []
     
     print("--- Starting Investor.gov Ingestion Pipeline (Phase 1) ---")
@@ -137,7 +137,11 @@ def process_and_store(use_cloud: bool = None):
     vector_store = VectorStoreManager(collection_name="educational_kb", use_cloud=use_cloud)
     
     # Crucial: Drop and Replace strategy to prevent document duplication
-    vector_store.reset_collection()
+    if reset:
+        vector_store.reset_collection()
+        print("Collection reset successfully.")
+    else:
+        print("Note: Appending to existing collection without resetting. Use --reset to prevent duplicates.")
     
     vector_store.add_documents(chunked_documents)
     print("--- Pipeline Complete ---")
@@ -151,6 +155,11 @@ if __name__ == "__main__":
         default=None,
         help="Force database mode: 'local' (on-disk) or 'cloud' (Chroma Cloud). Defaults to auto-detect from CHROMA_API_KEY in .env"
     )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Drop and recreate the collection before loading (prevents duplicates)."
+    )
     args = parser.parse_args()
 
     use_cloud = None
@@ -159,4 +168,4 @@ if __name__ == "__main__":
     elif args.db == "local":
         use_cloud = False
 
-    process_and_store(use_cloud=use_cloud)
+    process_and_store(use_cloud=use_cloud, reset=args.reset)

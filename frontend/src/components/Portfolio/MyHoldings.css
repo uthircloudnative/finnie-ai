@@ -1,0 +1,246 @@
+.holdings-header {
+  margin-bottom: 2rem;
+}
+
+.holdings-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.holdings-subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ── Form card ─────────────────────────────────────── */
+.holdings-form-card {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+.holdings-table-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr 48px;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.holdings-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.holdings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 48px;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* ── Inputs ────────────────────────────────────────── */
+.holdings-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.6rem 0.9rem;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.holdings-input:focus {
+  outline: none;
+  border-color: var(--accent-blue, #60a5fa);
+}
+
+.holdings-ticker {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* ── Remove button ─────────────────────────────────── */
+.holdings-remove-btn {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.5rem;
+  transition: background 0.2s, color 0.2s;
+}
+.holdings-remove-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+.holdings-remove-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Form footer ───────────────────────────────────── */
+.holdings-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.holdings-add-btn {
+  background: transparent;
+  border: 1px dashed var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+.holdings-add-btn:hover {
+  border-color: var(--accent-emerald, #34d399);
+  color: var(--accent-emerald, #34d399);
+}
+
+.holdings-count {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* ── Save button ───────────────────────────────────── */
+.holdings-save-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent-blue, #3b82f6), var(--accent-emerald, #10b981));
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.9rem;
+  margin-bottom: 1.5rem;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.holdings-save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.holdings-save-btn:disabled,
+.holdings-save-btn.saving {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Banners ───────────────────────────────────────── */
+.holdings-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.holdings-success {
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 8px;
+  color: var(--accent-emerald, #34d399);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+/* ── Saved summary card ────────────────────────────── */
+.holdings-saved-card {
+  margin-top: 0.5rem;
+  transition: opacity 0.3s, filter 0.3s;
+}
+
+.holdings-saved-card.dirty {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+
+.holdings-saved-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.holdings-saved-card h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.dirty-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 4px;
+}
+
+.holdings-saved-note {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.holdings-saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.holdings-saved-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+.holdings-saved-row:last-child {
+  border-bottom: none;
+}
+
+.holdings-saved-ticker {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent-blue, #60a5fa);
+}
+
+.holdings-saved-shares {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* ── Loading state ─────────────────────────────────── */
+.holdings-loading {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  text-align: center;
+}

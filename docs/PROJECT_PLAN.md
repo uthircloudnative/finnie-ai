@@ -42,12 +42,13 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
   - **Live Chat tab** — `useChat` hook calls `POST /chat`; `ChatWindow`, `ChatInput`, `ThinkingIndicator` components; `$NFA` disclaimer footer
   - Static shells for Dashboard, Portfolio Analyst, Market Insights, and Goal Planner tabs (ready for Phase 3 agent wiring)
 
-### Phase 3: Agent Integration & Analysis
-- **Worker Workers**: Connect the specialized Agents (Portfolio, Market, Goal) to the RAG tools built in Phase 1.
+### Phase 3: Agent Integration & Analysis [IN PROGRESS]
+- **Portfolio Analyst Agent** [COMPLETED]: Mathematical engine calculating live Beta, Volatility, and Diversification. Integrated with `yfinance` and `analysis_context` for interactive chat.
+- **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
 - **Goal Engine**: Developing Monte Carlo simulation tools for the Goal Strategist.
 
-### Phase 4: Hardening & Compliance
-- **Compliance**: Implement the Guardian node to scan all messages for risk disclaimers.
+### Phase 4: Hardening & Compliance [STARTED]
+- **Compliance Guardian** [PARTIAL]: Implemented the post-processor node in LangGraph to enforce `$NFA` disclaimers on portfolio analysis responses.
 - **Testing**: Reach 80%+ coverage with Pytest and Playwright.
 
 ### Phase 5: Deployment & Scale

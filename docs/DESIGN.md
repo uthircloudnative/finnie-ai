@@ -7,7 +7,8 @@ Finnie utilizes a **Stateful Supervisor** pattern to manage complex financial wo
 ```python
 class FinnieState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
-    user_portfolio: Optional[dict]
+    portfolio_data: list[dict] # Current holdings from SQLite
+    analysis_results: Optional[dict] # Structured JSON (Beta, Vol, etc.)
     market_context: Optional[dict]
     goals: list[dict]
     next_step: str
@@ -27,8 +28,7 @@ class FinnieState(TypedDict):
 - **Intelligence**: OpenAI GPT-4o, **Vendor-agnostic Embeddings Factory** (supporting OpenAI, Azure, and Hugging Face).
 - **Persistence & Retrieval**: 
     - **Vector Store**: ChromaDB (**Hybrid**: On-disk for local dev, **Chroma Cloud** for production).
-    - **Session Cache**: Redis (for graph state persistence).
-    - **Primary DB**: PostgreSQL (User profiles and historical portfolio data).
+    - **Primary DB**: SQLite (Local persistent storage for User Holdings via SQLAlchemy).
 
 ## 3. UX/UI: The "Glass-Finance" Philosophy
 - **Aesthetics**: Dark Navy/Carbon background (`#0a0b10`), white translucent cards (Glassmorphism), primary accent `cyan-400`.

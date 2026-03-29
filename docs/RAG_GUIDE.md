@@ -114,12 +114,14 @@ Keep RAG in the **same codebase** but separated:
 2.  **`backend/src/tools/rag_tool.py`**: For "on-line" retrieval used by Agents.
 
 ### Summary: One Codebase, One Database, Many Collections
-**Yes, your understanding is 100% correct.** We store the 5 different data sources into 5 separate **Collections** (like folders) in ChromaDB:
-- `educational_kb`: Definitions for the Q&A agent.
-- `tax_policy_kb`: IRS and tax rules for the Strategist agent.
-- `regulatory_kb`: Compliance rules for the Guardian agent.
-- `analytical_kb`: Theoretical papers for the Analyst agent.
-- `transient_news`: Live news for the Insights agent.
+**Status: ✅ Core Infrastructure Implemented**
+
+We store the 5 different data sources into 5 separate **Collections** in ChromaDB:
+- `educational_kb` [LIVE]: Definitions for the Q&A agent from Investor.gov.
+- `analytical_kb` [LIVE]: Theoretical papers for the Analyst agent from Investopedia.
+- `tax_policy_kb` [PLAN]: IRS and tax rules for the Strategist agent.
+- `regulatory_kb` [PLAN]: Compliance rules for the Guardian agent.
+- `transient_news` [PLAN]: Live news for the Insights agent.
 
 ### Why separate them into 5 collections?
 1.  **Specialization**: You don't want the Q&A agent accidentally giving an "IRS Tax Rule" when the user just asked for a simple "Investor.gov definition." 
@@ -253,8 +255,8 @@ In Finnie AI, RAG is a **Tool**.
 ---
 
 ## Summary Checklist for Development:
-- [ ] Install `chromadb` and `langchain`.
-- [ ] Choose an Embedding Model (OpenAI).
-- [ ] Setup the `VectorStore` class in `backend/src/utils/vector_store.py`.
-- [ ] Create an ingestion script to "prime the pump" with data.
-- [ ] Write the retrieval logic for the specialist worker agents.
+- [x] Install `chromadb` and `langchain`.
+- [x] Choose an Embedding Model (OpenAI).
+- [x] Setup the `VectorStore` class in `backend/src/utils/vector_store.py`.
+- [x] Create an ingestion script to "prime the pump" with data.
+- [x] Write the retrieval logic for the specialist worker agents.

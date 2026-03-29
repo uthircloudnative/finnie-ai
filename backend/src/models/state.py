@@ -17,3 +17,11 @@ class FinnieState(TypedDict):
 
     # Determines the next routing behavior (e.g., 'FINANCIAL_QA' or 'FINISH')
     next_step: Optional[str]
+
+    # The user's active holdings (injected from SQLite)
+    # Format: [{"ticker": "AAPL", "shares": 10}, ...]
+    portfolio_data: Optional[list[dict]]
+
+    # Structured results from analysis (Beta, Volatility, etc.)
+    # Format: {"beta": 1.2, "volatility": 15.4, "diversification_score": 7}
+    analysis_results: Optional[dict]

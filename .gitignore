@@ -6,6 +6,8 @@ __pycache__/
 env/
 backend/venv/
 backend/src/chroma_db/
+backend/chroma_db/
+backend/finnie.db
 .uv/
 
 # Test & coverage artefacts

@@ -29,6 +29,8 @@ from src.graph import finnie_app                      # noqa: E402
 from src.models.chat import ChatRequest, ChatResponse  # noqa: E402
 from src.database import get_db, init_db              # noqa: E402
 from src.models.portfolio import Holding              # noqa: E402
+from src.models.market_metadata import MarketExchange # noqa: E402
+from src.models.goal import FinancialGoal           # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -37,6 +39,8 @@ from src.models.portfolio import Holding              # noqa: E402
 class HoldingInput(BaseModel):
     ticker: str = Field(..., description="Stock ticker symbol, e.g. 'AAPL'")
     shares: float = Field(..., gt=0, description="Number of shares held (must be > 0)")
+    country: str = Field(default="US", description="ISO country code, e.g. 'US' or 'IN'")
+    exchange: str = Field(default="NYSE", description="Exchange name, e.g. 'NASDAQ' or 'NSE'")
 
 
 class SavePortfolioRequest(BaseModel):
@@ -47,6 +51,8 @@ class SavePortfolioRequest(BaseModel):
 class HoldingResponse(BaseModel):
     ticker: str
     shares: float
+    country: str
+    exchange: str
     added_date: str  # ISO date string
 
 
@@ -54,6 +60,22 @@ class PortfolioResponse(BaseModel):
     user_id: str
     holdings: List[HoldingResponse]
     total_holdings: int
+
+
+class ExchangeResponse(BaseModel):
+    country_name: str
+    country_code: str
+    exchange_name: str
+    exchange_code: str
+
+
+class GoalRequest(BaseModel):
+    user_id: str = Field(default="user_1")
+    goal_name: str = Field(default="Retirement")
+    target_amount: float
+    target_year: int
+    monthly_savings: float
+    country: str = Field(default="US")
 
 
 # ---------------------------------------------------------------------------
@@ -98,6 +120,24 @@ async def health_check() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/metadata/exchanges", response_model=List[ExchangeResponse], tags=["Metadata"])
+def get_exchanges(db: Session = Depends(get_db)) -> List[ExchangeResponse]:
+    """
+    Fetch the master list of supported global exchanges.
+    Used for searchable dropdowns in the UI.
+    """
+    exchanges = db.query(MarketExchange).all()
+    return [
+        ExchangeResponse(
+            country_name=ex.country_name,
+            country_code=ex.country_code,
+            exchange_name=ex.exchange_name,
+            exchange_code=ex.exchange_code
+        )
+        for ex in exchanges
+    ]
+
+
 # ---------------------------------------------------------------------------
 # Chat
 # ---------------------------------------------------------------------------
@@ -119,7 +159,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)) -> ChatRespo
     }
 
     try:
-        final_state = finnie_app.invoke(initial_state)
+        final_state = await finnie_app.ainvoke(initial_state)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Agent graph failed: {exc}") from exc
 
@@ -170,13 +210,44 @@ async def get_portfolio_analysis(user_id: str, db: Session = Depends(get_db)) ->
         # Actually, in LangGraph, START always goes to the first edge.
         # To bypass supervisor, we can invoke JUST the node, or use conditional START.
         # For now, we'll let it go through Supervisor, but provide a very clear prompt.
-        final_state = finnie_app.invoke(initial_state)
+        final_state = await finnie_app.ainvoke(initial_state)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {exc}") from exc
 
     messages = final_state.get("messages", [])
     return ChatResponse(
         reply=str(messages[-1].content) if messages else "Analysis failed.",
+        analysis_results=final_state.get("analysis_results")
+    )
+
+
+@app.get("/market/news/{user_id}", response_model=ChatResponse, tags=["Market"])
+async def get_market_news(user_id: str, db: Session = Depends(get_db)) -> ChatResponse:
+    """
+    Fetch the latest market news and sentiment pulse for the user's portfolio.
+    Routes directly to the 'market_insights' agent.
+    """
+    rows = db.query(Holding).filter(Holding.user_id == user_id).all()
+    # Even if no holdings, the agent can provide a general pulse
+    holdings = [
+        {"ticker": r.ticker, "shares": r.shares, "country": r.country, "exchange": r.exchange} 
+        for r in rows
+    ]
+
+    initial_state = {
+        "messages": [HumanMessage(content="What is the latest market pulse for my holdings?")],
+        "portfolio_data": holdings,
+        "next_step": "MARKET_INSIGHTS"
+    }
+
+    try:
+        final_state = await finnie_app.ainvoke(initial_state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Market news failed: {exc}") from exc
+
+    messages = final_state.get("messages", [])
+    return ChatResponse(
+        reply=str(messages[-1].content) if messages else "No news found.",
         analysis_results=final_state.get("analysis_results")
     )
 
@@ -194,6 +265,8 @@ def get_portfolio(user_id: str, db: Session = Depends(get_db)) -> PortfolioRespo
             HoldingResponse(
                 ticker=r.ticker.upper(),
                 shares=r.shares,
+                country=r.country,
+                exchange=r.exchange,
                 added_date=str(r.added_date),
             )
             for r in rows
@@ -222,6 +295,8 @@ def save_portfolio(req: SavePortfolioRequest, db: Session = Depends(get_db)) -> 
             user_id=req.user_id,
             ticker=h.ticker.upper(),
             shares=h.shares,
+            country=h.country.upper() if h.country else "US",
+            exchange=h.exchange.upper() if h.exchange else "NYSE",
             added_date=date.today(),
         )
         db.add(row)
@@ -237,9 +312,85 @@ def save_portfolio(req: SavePortfolioRequest, db: Session = Depends(get_db)) -> 
             HoldingResponse(
                 ticker=r.ticker,
                 shares=r.shares,
+                country=r.country,
+                exchange=r.exchange,
                 added_date=str(r.added_date),
             )
             for r in new_rows
         ],
         total_holdings=len(new_rows),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Goals — The Financial GPS
+# ---------------------------------------------------------------------------
+@app.get("/goals/{user_id}", tags=["Goals"])
+def get_user_goal(user_id: str, db: Session = Depends(get_db)):
+    """Fetch the current financial goal for a user."""
+    goal = db.query(FinancialGoal).filter(FinancialGoal.user_id == user_id).first()
+    if not goal:
+        return {"status": "no_goal"}
+    return {
+        "goal_name": goal.goal_name,
+        "target_amount": goal.target_amount,
+        "target_year": goal.target_year,
+        "monthly_savings": goal.monthly_contribution,
+        "country": goal.country
+    }
+
+
+@app.post("/goals/calculate", response_model=ChatResponse, tags=["Goals"])
+async def calculate_goal_roadmap(req: GoalRequest, db: Session = Depends(get_db)) -> ChatResponse:
+    """
+    Save the user's goal and trigger a full Monte Carlo / RAG roadmap generation.
+    """
+    # 1. Persist/Update the goal in SQLite
+    existing = db.query(FinancialGoal).filter(FinancialGoal.user_id == req.user_id).first()
+    if existing:
+        existing.goal_name = req.goal_name
+        existing.target_amount = req.target_amount
+        existing.target_year = req.target_year
+        existing.monthly_contribution = req.monthly_savings
+        existing.country = req.country
+    else:
+        new_goal = FinancialGoal(
+            user_id=req.user_id,
+            goal_name=req.goal_name,
+            target_amount=req.target_amount,
+            target_year=req.target_year,
+            monthly_contribution=req.monthly_savings,
+            country=req.country
+        )
+        db.add(new_goal)
+    
+    db.commit()
+
+    # 2. Fetch latest holdings and last analysis results for the graph
+    rows = db.query(Holding).filter(Holding.user_id == req.user_id).all()
+    holdings = [{"ticker": r.ticker, "shares": r.shares} for r in rows]
+
+    # Pre-configure the graph state with the new goal data
+    initial_state = {
+        "messages": [HumanMessage(content=f"Analyze my {req.goal_name} roadmap.")],
+        "portfolio_data": holdings,
+        "goal_configuration": {
+            "target_amount": req.target_amount,
+            "target_year": req.target_year,
+            "monthly_savings": req.monthly_savings,
+            "country": req.country,
+            "goal_name": req.goal_name
+        },
+        "next_step": "GOAL_STRATEGIST"
+    }
+
+    try:
+        final_state = await finnie_app.ainvoke(initial_state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Goal Roadmap failed: {exc}") from exc
+
+    messages = final_state.get("messages", [])
+    return ChatResponse(
+        reply=str(messages[-1].content) if messages else "Roadmap generation failed.",
+        analysis_results=final_state.get("analysis_results")
     )

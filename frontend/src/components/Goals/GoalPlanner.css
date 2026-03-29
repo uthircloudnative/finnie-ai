@@ -1,80 +1,147 @@
-.goal-gauge {
-  width: 160px;
-  height: 80px;
-  border: 12px solid var(--glass-border);
-  border-bottom: none;
-  border-radius: 80px 80px 0 0;
-  position: relative;
-  margin: 0 auto 0.5rem;
+.goal-workspace {
+  display: flex;
+  gap: 2rem;
+  height: 100%;
 }
 
-.gauge-fill {
-  position: absolute;
-  inset: -12px;
-  bottom: 0;
-  border: 12px solid var(--accent-cyan);
-  border-bottom: none;
-  border-radius: 80px 80px 0 0;
-  mask-image: linear-gradient(to right, white 82%, transparent 82%);
-  -webkit-mask-image: linear-gradient(to right, white 82%, transparent 82%);
-  filter: drop-shadow(0 0 8px var(--accent-cyan));
+.goal-config-column {
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.gauge-value {
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
+.goal-analytics-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Configurator Form Styles */
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-block label {
+  font-size: 0.70rem;
   font-weight: 700;
-  color: var(--accent-cyan);
-  margin: 0.5rem 0;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-transform: uppercase;
 }
 
-.fan-chart-placeholder {
-  height: 220px;
+.goal-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: var(--text-bright);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.goal-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+}
+
+.calculate-btn {
+  background: var(--accent-cyan);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.calculate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 20px rgba(0, 243, 255, 0.4);
+}
+
+.calculate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--text-muted);
+}
+
+/* Gauge Styles */
+.gauge-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
-  margin-top: 1.5rem;
+  min-height: 180px;
+  position: relative;
+}
+
+.gauge-label {
+  font-size: 0.85rem;
   color: var(--text-dim);
-  font-size: 1rem;
+  margin-top: -20px;
 }
 
-.sliders-row {
-  display: flex;
-  gap: 3rem;
+/* Fan Chart Styles */
+.chart-container {
+  height: 300px;
+  width: 100%;
+  padding-top: 1rem;
 }
 
-.slider-group {
-  flex: 1;
+/* Roadmap Report Styles */
+.roadmap-report {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-bright);
+}
+
+.roadmap-report h3 {
+  color: var(--accent-cyan);
+  margin-bottom: 1rem;
+  font-family: var(--font-heading);
+}
+
+.roadmap-report ul {
+  padding-left: 1.25rem;
+}
+
+.roadmap-report li {
+  margin-bottom: 0.75rem;
+}
+
+.roadmap-empty {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--text-dim);
+  text-align: center;
+  gap: 1rem;
 }
 
-.slider-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.slider {
-  width: 100%;
-  accent-color: var(--accent-cyan);
-  cursor: pointer;
-}
-
-.slider-value {
-  font-size: 0.85rem;
-  color: var(--accent-cyan);
-  font-weight: 600;
-}
-
-.coming-soon-note {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-top: 0.5rem;
+.roadmap-empty-icon {
+  font-size: 3rem;
+  filter: grayscale(1);
+  opacity: 0.5;
 }

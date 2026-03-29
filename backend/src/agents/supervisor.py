@@ -21,11 +21,8 @@ def supervisor_node(state: FinnieState) -> dict:
     The orchestrator that reads the chat history and decides who should act next.
     """
 
-    print("--- ENTERING SUPERVISOR NODE ---")
-
     user_message = state["messages"][-1].content
-
-    print(f"User Message: {user_message}")
+    print(f"\n[FINNIE-AI] 🔍 Supervisor reading user query: '{user_message}'")
 
     # Read vendor config from .env
     provider = os.getenv("LLM_PROVIDER", "openai").lower()
@@ -40,9 +37,9 @@ def supervisor_node(state: FinnieState) -> dict:
         "You are Finnie, the Supervisor Agent for a financial advisory system.\n"
         "Your job is to route the user's query to the correct specialized worker.\n\n"
         "Workers available:\n"
-        "- FINANCIAL_QA: For general financial definitions, educational questions (e.g., 'What is an ETF?').\n"
-        "- MARKET_INSIGHTS: For live stock news and market trends.\n"
-        "- PORTFOLIO_ANALYST: For portfolio risk and diversification analysis.\n"
+        "- FINANCIAL_QA: For general financial definitions, investment theory (e.g., 'What is an ETF?').\n"
+        "- MARKET_INSIGHTS: For live news, stock sentiment, and current market trends (e.g., 'What's happening with $NVDA?' or 'How is the market today?').\n"
+        "- PORTFOLIO_ANALYST: For personal portfolio risk, diversification, and Beta analysis.\n"
         "- GOAL_STRATEGIST: For retirement or specific financial goal planning.\n"
         "- FINISH: Use this for casual greetings or if you can answer directly without a worker.\n"
     )
@@ -64,7 +61,7 @@ def supervisor_node(state: FinnieState) -> dict:
     # `result` is a fully populated `RoutingDecision` Python object (our blueprint).
     result = structured_llm.invoke(messages)
 
-    print(f"--- SUPERVISOR DECISION: Route to {result.next_step} ---")
+    print(f"[FINNIE-AI] 🎯 Decision: Routing to {result.next_step}")
 
     # EXPLANATION: How `return` works:
     # The LangGraph rule is: Nodes must return a dictionary containing the pieces 

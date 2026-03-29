@@ -17,7 +17,9 @@ class Holding(Base):
     user_id  = Column(String, nullable=False, index=True)  # e.g. "user_1"
     ticker   = Column(String, nullable=False)               # e.g. "AAPL"
     shares   = Column(Float, nullable=False)                # e.g. 10.5
+    country  = Column(String, default="US")                 # e.g. "US", "IN", "UK"
+    exchange = Column(String, default="NYSE")               # e.g. "NSE", "BSE", "NASDAQ"
     added_date = Column(Date, default=date.today)
 
     def __repr__(self) -> str:
-        return f"<Holding user={self.user_id} ticker={self.ticker} shares={self.shares}>"
+        return f"<Holding user={self.user_id} ticker={self.ticker} shares={self.shares} country={self.country}>"

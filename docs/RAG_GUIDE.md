@@ -116,10 +116,10 @@ Keep RAG in the **same codebase** but separated:
 ### Summary: One Codebase, One Database, Many Collections
 **Status: ✅ Core Infrastructure Implemented**
 
-We store the 5 different data sources into 5 separate **Collections** in ChromaDB:
+We store the different data sources into separate **Collections** in ChromaDB:
 - `educational_kb` [LIVE]: Definitions for the Q&A agent from Investor.gov.
 - `analytical_kb` [LIVE]: Theoretical papers for the Analyst agent from Investopedia.
-- `tax_policy_kb` [PLAN]: IRS and tax rules for the Strategist agent.
+- `goal_rules` [LIVE]: 2026 IRS and global tax rules for the Goal Strategist agent.
 - `regulatory_kb` [PLAN]: Compliance rules for the Guardian agent.
 - `transient_news` [PLAN]: Live news for the Insights agent.
 
@@ -198,7 +198,7 @@ graph TD
 
     subgraph "ChromaDB (The Brain)"
         C1[("educational_kb")]
-        C2[("tax_policy_kb")]
+        C2[("goal_rules")]
         C3[("regulatory_kb")]
         C4[("analytical_kb")]
         C5[("transient_news (RAM)")]
@@ -232,7 +232,7 @@ This table serves as your "Shopping List" for data. Explore these links to under
 | Collection Name | Data Type | Primary Source (Link) | Content Description | Refresh Frequency |
 | :--- | :--- | :--- | :--- | :--- |
 | **`educational_kb`** | Static | [Investor.gov](https://www.investor.gov/introduction-investing/investing-basics/glossary) | Glossary of terms, basics of ETFs, Stocks, and Bond logic. | Every 3-6 Months |
-| **`tax_policy_kb`** | Semi-Static | [IRS Tax Brackets/Limits](https://www.irs.gov/newsroom/tax-year-2024-annual-inflation-adjustments) | Current year 401k/IRA limits, standard deductions, and tax brackets. | Annually (Jan) |
+| **`goal_rules`** | Semi-Static | [IRS & IN Govt Rules](https://www.irs.gov/) | Current year 401k/IRA/80C limits and tax brackets. | Annually (Jan) |
 | **`regulatory_kb`** | Static | [SEC Fast Answers](https://www.sec.gov/fast-answers) | Rules on investment advice, fraud protection, and mandatory disclosures. | Every 6-12 Months |
 | **`analytical_kb`** | Static | [Vanguard Research](https://corporate.vanguard.com/content/corporatesite/us/en/corp/articles/investment-stewardship-principles-and-policies.html) | Whitepapers on "Modern Portfolio Theory" and historical asset class returns. | Every 6-12 Months |
 | **`transient_news`** | Real-Time | [Alpha Vantage NEWS](https://www.alphavantage.co/documentation/#news-sentiment) | Live stock news, earnings call summaries, and market sentiment scores. | Every Session (Live) |

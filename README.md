@@ -8,9 +8,9 @@ Finnie AI is a production-grade financial assistant that delivers personalized a
 |---|---|
 | Phase 1 — RAG Pipeline & Data Grounding | ✅ Complete |
 | Phase 2 — LangGraph Orchestrator + FastAPI REST Layer + React UI | ✅ Complete |
-| Phase 3 — Market Insights, Portfolio & Goal Agents | 🔲 Next |
-| Phase 4 — Hardening & Compliance | 🔲 Planned |
-| Phase 5 — Deployment & Scale | 🔲 Planned |
+| Phase 3 — Market Insights & Portfolio Analyst | ✅ Complete |
+| Phase 4 — Goal Strategist & Monte Carlo | 🔲 Next |
+| Phase 5 — Hardening & Scale | 🔲 Planned |
 
 The system is fully runnable end-to-end: ingest financial definitions → ChromaDB vector store → GPT-4o Supervisor Agent → RAG-grounded answers → REST API → **live React/Vite Glass-Finance UI**.
 
@@ -127,12 +127,12 @@ Open **`http://localhost:5173`** in your browser.
 | Tab | Status | What it does |
 |---|---|---|
 | 💬 Deep Q&A | ✅ Live | Calls `POST /chat` — real RAG-grounded answers |
-| 🏠 Dashboard | 🔲 Static shell | Wired to Portfolio Agent in Phase 3 |
-| 📈 Portfolio Analyst | 🔲 Static shell | Wired to Portfolio Agent in Phase 3 |
-| 🌐 Market Insights | 🔲 Static shell | Wired to Market Insights Agent in Phase 3 |
-| 🎯 Goal Planner | 🔲 Static shell | Wired to Goal Strategist Agent in Phase 3 |
+| 🏠 Dashboard | ✅ Live | Summarizes current risk (Beta, Vol) + Portfolio Health |
+| 📈 Portfolio Analyst | ✅ Live | End-to-end analysis of multi-country holdings (yfinance) |
+| 🌐 Market Insights | ✅ Live | Real-time sentiment & Alpha Vantage news integration (30m Cache) |
+| 🎯 Goal Planner | 🔲 Static shell | Wired to Goal Strategist Agent in Phase 4 |
 
-> **Tip**: The Deep Q&A tab is the only live tab. The other 4 tabs display static shells with placeholder data until Phase 3 agents are built.
+> **Experience Note**: All Workspace tabs (Analyst, Insights, Dashboard) now feature the **Workspace UI 2.0** — immersive full-width reports with a toggleable "Ask Finnie" expert assistant.
 
 ---
 

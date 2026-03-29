@@ -2,6 +2,7 @@ import os
 import httpx
 import logging
 from typing import List, Dict, Any
+from langsmith import traceable
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class AlphaVantageClient:
         if not self.api_key:
             logger.warning("ALPHA_VANTAGE_API_KEY not found in environment!")
 
+    @traceable(name="Alpha Vantage API", run_type="tool")
     async def fetch_news_sentiment(self, tickers: List[str]) -> Dict[str, Any]:
         """
         Fetches news articles and sentiment scores for a list of tickers.

@@ -5,8 +5,9 @@ Uses numpy for high-performance projection of 10,000+ market scenarios.
 """
 import numpy as np
 from typing import Dict, List, Any
+from langsmith import traceable
 
-
+@traceable(name="Monte Carlo Engine", run_type="tool")
 def run_monte_carlo(
     initial_balance: float,
     target_amount: float,

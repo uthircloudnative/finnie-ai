@@ -3,13 +3,19 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage, SystemMessage
+from langsmith import traceable
 
 from src.database import SessionLocal
 from src.models.state import FinnieState
 from src.models.market_metadata import MarketExchange
 from src.utils.vector_store import VectorStoreManager
+from langchain.chat_models import init_chat_model
+
+@traceable(name="yFinance Data Fetch & Math", run_type="tool")
+def fetch_yfinance_data(symbols: list) -> pd.DataFrame:
+    """Wrapper to cleanly trace the external Yahoo Finance API call."""
+    return yf.download(symbols, period="1y", progress=False)
 
 def portfolio_analyst_node(state: FinnieState) -> dict:
     """
@@ -56,7 +62,7 @@ def portfolio_analyst_node(state: FinnieState) -> dict:
     try:
         # Fetch 1y history for symbols + S&P 500 benchmark
         query_symbols = search_symbols + ["^GSPC"]
-        raw_data = yf.download(query_symbols, period="1y", progress=False)
+        raw_data = fetch_yfinance_data(query_symbols)
         
         # Robust column access
         if isinstance(raw_data.columns, pd.MultiIndex):

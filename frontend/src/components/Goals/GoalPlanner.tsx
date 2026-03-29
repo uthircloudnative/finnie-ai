@@ -10,6 +10,8 @@ export default function GoalPlanner() {
   const { goal, roadmap, simulationResults, isLoading, calculate } = useGoalStrategist()
 
   // --- Local Form State ---
+  const [isEditing, setIsEditing] = useState(true)
+  const [hasAutoCalculated, setHasAutoCalculated] = useState(false)
   const [formData, setFormData] = useState<GoalConfig>({
     goal_name: 'Retirement',
     target_amount: 1000000,
@@ -18,10 +20,15 @@ export default function GoalPlanner() {
     country: 'USA'
   })
 
-  // Sync initial goal from DB into form
+  // Sync initial goal from DB and trigger auto-calculate exactly once
   useEffect(() => {
-    if (goal) setFormData(goal)
-  }, [goal])
+    if (goal && !hasAutoCalculated) {
+      setFormData(goal)
+      setIsEditing(false)
+      calculate(goal)
+      setHasAutoCalculated(true)
+    }
+  }, [goal, hasAutoCalculated, calculate])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -33,9 +40,10 @@ export default function GoalPlanner() {
     }))
   }
 
-  const handleCalculate = (e: React.FormEvent) => {
+  const handleCalculate = async (e: React.FormEvent) => {
     e.preventDefault()
-    calculate(formData)
+    await calculate(formData)
+    setIsEditing(false)
   }
 
   // --- Data Preparation for Recharts ---
@@ -71,77 +79,117 @@ export default function GoalPlanner() {
       <div className="goal-workspace">
         {/* ── Left Column: The Strategic Configurator ────────────────── */}
         <div className="goal-config-column">
-          <div className="glass-card">
-            <h3>Goal Configuration</h3>
-            <form className="config-form" onSubmit={handleCalculate}>
-              <div className="input-block">
-                <label>Goal Name</label>
-                <input 
-                  className="goal-input" 
-                  name="goal_name"
-                  value={formData.goal_name} 
-                  onChange={handleInputChange}
-                  placeholder="e.g. Dream House" 
-                />
+          {(!isEditing && goal) ? (
+            <div className="glass-card config-summary">
+              <h3 style={{ marginBottom: '1.2rem', color: 'var(--text-bright)' }}>Current Configuration</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-dim)' }}>Name</span>
+                  <strong style={{ color: 'var(--accent-cyan)' }}>{formData.goal_name}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-dim)' }}>Target Amount</span>
+                  <strong>${formData.target_amount.toLocaleString()}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-dim)' }}>Target Year</span>
+                  <strong>{formData.target_year}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-dim)' }}>Monthly Savings</span>
+                  <strong>${formData.monthly_savings.toLocaleString()}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-dim)' }}>Regulatory Ruleset</span>
+                  <strong>{formData.country} Tax Law</strong>
+                </div>
               </div>
-
-              <div className="input-block">
-                <label>Target Amount ($)</label>
-                <input 
-                  className="goal-input"
-                  name="target_amount"
-                  type="number" 
-                  step="10000"
-                  value={formData.target_amount} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-
-              <div className="input-block">
-                <label>Target Year</label>
-                <input 
-                  className="goal-input"
-                  name="target_year"
-                  type="number" 
-                  min="2025" 
-                  max="2070"
-                  value={formData.target_year} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-
-              <div className="input-block">
-                <label>Monthly Savings ($)</label>
-                <input 
-                  className="goal-input"
-                  name="monthly_savings"
-                  type="number" 
-                  step="100"
-                  value={formData.monthly_savings} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-
-              <div className="input-block">
-                <label>Country of Residence</label>
-                <select 
-                  className="goal-input" 
-                  name="country"
-                  value={formData.country} 
-                  onChange={handleInputChange}
-                >
-                  <option value="USA">United States (IRS Rules)</option>
-                  <option value="IN">India (80C / NPS Rules)</option>
-                  <option value="UK">United Kingdom (ISA Rules)</option>
-                  <option value="SG">Singapore (CPF Rules)</option>
-                </select>
-              </div>
-
-              <button className="calculate-btn" type="submit" disabled={isLoading}>
-                {isLoading ? '🧠 Calculating 10,000 Scenarios...' : '⚡ Generate Roadmap'}
+              <button 
+                className="calculate-btn" 
+                style={{ 
+                  marginTop: '1.5rem', 
+                  background: 'rgba(255,255,255,0.05)', 
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-bright)'
+                }} 
+                onClick={() => setIsEditing(true)}
+              >
+                ✏️ Edit Configuration
               </button>
-            </form>
-          </div>
+            </div>
+          ) : (
+            <div className="glass-card">
+              <h3>Goal Configuration</h3>
+              <form className="config-form" onSubmit={handleCalculate}>
+                <div className="input-block">
+                  <label>Goal Name</label>
+                  <input 
+                    className="goal-input" 
+                    name="goal_name"
+                    value={formData.goal_name} 
+                    onChange={handleInputChange}
+                    placeholder="e.g. Dream House" 
+                  />
+                </div>
+
+                <div className="input-block">
+                  <label>Target Amount ($)</label>
+                  <input 
+                    className="goal-input"
+                    name="target_amount"
+                    type="number" 
+                    step="10000"
+                    value={formData.target_amount} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+
+                <div className="input-block">
+                  <label>Target Year</label>
+                  <input 
+                    className="goal-input"
+                    name="target_year"
+                    type="number" 
+                    min="2025" 
+                    max="2070"
+                    value={formData.target_year} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+
+                <div className="input-block">
+                  <label>Monthly Savings ($)</label>
+                  <input 
+                    className="goal-input"
+                    name="monthly_savings"
+                    type="number" 
+                    step="100"
+                    value={formData.monthly_savings} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+
+                <div className="input-block">
+                  <label>Country of Residence</label>
+                  <select 
+                    className="goal-input" 
+                    name="country"
+                    value={formData.country} 
+                    onChange={handleInputChange}
+                  >
+                    <option value="USA">United States (IRS Rules)</option>
+                    <option value="IN">India (80C / NPS Rules)</option>
+                    <option value="UK">United Kingdom (ISA Rules)</option>
+                    <option value="SG">Singapore (CPF Rules)</option>
+                  </select>
+                </div>
+
+                <button className="calculate-btn" type="submit" disabled={isLoading}>
+                  {isLoading ? '🧠 Calculating 10,000 Scenarios...' : '⚡ Generate Roadmap'}
+                </button>
+              </form>
+            </div>
+          )}
 
           <div className="glass-card" style={{ padding: '1.25rem' }}>
             <h4 style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>TIP</h4>
@@ -154,7 +202,13 @@ export default function GoalPlanner() {
 
         {/* ── Right Column: Strategic Workspace ──────────────────────── */}
         <div className="goal-analytics-column">
-          {simulationResults ? (
+          {isLoading && !simulationResults ? (
+            <div className="glass-card roadmap-empty">
+              <div className="roadmap-empty-icon" style={{ animation: "pulse 1.5s infinite" }}>🧠</div>
+              <h2>Generating your strategic roadmap...</h2>
+              <p>Simulating 10,000 Monte Carlo paths and validating against {formData.country} tax rules.</p>
+            </div>
+          ) : simulationResults ? (
             <>
               <div className="grid-12" style={{ gap: '1.5rem', width: '100%' }}>
                 {/* Confidence Gauge */}

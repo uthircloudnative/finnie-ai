@@ -31,6 +31,12 @@ from src.database import get_db, init_db              # noqa: E402
 from src.models.portfolio import Holding              # noqa: E402
 from src.models.market_metadata import MarketExchange # noqa: E402
 from src.models.goal import FinancialGoal           # noqa: E402
+from src.utils.telemetry import TraceContextMiddleware, setup_telemetry_logging, trace_id_var # noqa: E402
+
+# ---------------------------------------------------------------------------
+# Telemetry Bootstrap
+# ---------------------------------------------------------------------------
+setup_telemetry_logging()
 
 
 # ---------------------------------------------------------------------------
@@ -95,6 +101,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Insert the Tracing middleware
+app.add_middleware(TraceContextMiddleware)
+
 # Allow the React dev server to call this API without CORS errors.
 app.add_middleware(
     CORSMiddleware,
@@ -155,11 +164,14 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)) -> ChatRespo
         "messages": [HumanMessage(content=request.message)],
         "portfolio_data": holdings,
         "next_step": request.preferred_worker,
-        "analysis_results": request.analysis_context
+        "analysis_results": request.analysis_context,
+        "trace_id": trace_id_var.get()
     }
 
     try:
-        final_state = await finnie_app.ainvoke(initial_state)
+        t_id = trace_id_var.get()
+        config = {"metadata": {"app_trace_id": t_id}} if t_id else {}
+        final_state = await finnie_app.ainvoke(initial_state, config=config)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Agent graph failed: {exc}") from exc
 
@@ -201,7 +213,8 @@ async def get_portfolio_analysis(user_id: str, db: Session = Depends(get_db)) ->
     initial_state = {
         "messages": [HumanMessage(content="Please provide a full risk and diversification analysis of my current holdings.")],
         "portfolio_data": holdings,
-        "next_step": "PORTFOLIO_ANALYST" # Hint for the direct entry
+        "next_step": "PORTFOLIO_ANALYST", # Hint for the direct entry
+        "trace_id": trace_id_var.get()
     }
 
     try:
@@ -210,7 +223,9 @@ async def get_portfolio_analysis(user_id: str, db: Session = Depends(get_db)) ->
         # Actually, in LangGraph, START always goes to the first edge.
         # To bypass supervisor, we can invoke JUST the node, or use conditional START.
         # For now, we'll let it go through Supervisor, but provide a very clear prompt.
-        final_state = await finnie_app.ainvoke(initial_state)
+        t_id = trace_id_var.get()
+        config = {"metadata": {"app_trace_id": t_id}} if t_id else {}
+        final_state = await finnie_app.ainvoke(initial_state, config=config)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {exc}") from exc
 
@@ -237,11 +252,14 @@ async def get_market_news(user_id: str, db: Session = Depends(get_db)) -> ChatRe
     initial_state = {
         "messages": [HumanMessage(content="What is the latest market pulse for my holdings?")],
         "portfolio_data": holdings,
-        "next_step": "MARKET_INSIGHTS"
+        "next_step": "MARKET_INSIGHTS",
+        "trace_id": trace_id_var.get()
     }
 
     try:
-        final_state = await finnie_app.ainvoke(initial_state)
+        t_id = trace_id_var.get()
+        config = {"metadata": {"app_trace_id": t_id}} if t_id else {}
+        final_state = await finnie_app.ainvoke(initial_state, config=config)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Market news failed: {exc}") from exc
 
@@ -381,11 +399,14 @@ async def calculate_goal_roadmap(req: GoalRequest, db: Session = Depends(get_db)
             "country": req.country,
             "goal_name": req.goal_name
         },
-        "next_step": "GOAL_STRATEGIST"
+        "next_step": "GOAL_STRATEGIST",
+        "trace_id": trace_id_var.get()
     }
 
     try:
-        final_state = await finnie_app.ainvoke(initial_state)
+        t_id = trace_id_var.get()
+        config = {"metadata": {"app_trace_id": t_id}} if t_id else {}
+        final_state = await finnie_app.ainvoke(initial_state, config=config)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Goal Roadmap failed: {exc}") from exc
 

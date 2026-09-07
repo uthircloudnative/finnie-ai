@@ -10,7 +10,7 @@ load_dotenv()
 
 # Local fallback: absolute path for persistent storage when running without Chroma Cloud
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOCAL_DB_DIR = os.path.join(BASE_DIR, "chroma_db")
+LOCAL_DB_DIR = os.environ.get("CHROMA_DB_DIR", os.path.join(BASE_DIR, "chroma_db"))
 
 
 class VectorStoreManager:
@@ -51,7 +51,7 @@ class VectorStoreManager:
             print("Connected to Chroma Cloud successfully.")
         else:
             # Development: Use local on-disk ChromaDB
-            print("No CHROMA_API_KEY found. Using local ChromaDB instance.")
+            print(f"No CHROMA_API_KEY found. Using local ChromaDB instance at {LOCAL_DB_DIR}.")
             self.db = Chroma(
                 collection_name=self.collection_name,
                 embedding_function=self.embeddings,
@@ -98,11 +98,18 @@ class VectorStoreManager:
 
     @traceable(name="ChromaDB RAG Search", run_type="retriever")
     def search(self, query: str, k: int = 3, target_country: str = None):
-        """Searches the vector store for the top k most similar chunks, with optional country filtering."""
-        filter_dict = None
+        """Searches the vector store for the top k most similar chunks, with optional country filtering and fallback."""
         if target_country:
             filter_dict = {"country": target_country}
-
-        if filter_dict:
-            return self.db.similarity_search(query, k=k, filter=filter_dict)
-        return self.db.similarity_search(query, k=k)
+            try:
+                results = self.db.similarity_search(query, k=k, filter=filter_dict)
+                if results:
+                    return results
+            except Exception as e:
+                print(f"[FINNIE-AI] Warning: search with filter {filter_dict} failed: {e}")
+        # Fallback to unfiltered search if filtered search has 0 results or errors
+        try:
+            return self.db.similarity_search(query, k=k)
+        except Exception as e:
+            print(f"[FINNIE-AI] Warning: similarity_search failed: {e}")
+            return []

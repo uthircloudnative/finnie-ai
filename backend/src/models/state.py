@@ -30,5 +30,13 @@ class FinnieState(TypedDict):
     # Format: {"target_amount": 1000000, "target_year": 2035, "monthly_savings": 500, "country": "USA"}
     goal_configuration: Optional[dict]
 
+
     # The unique request ID tied to LangSmith traces and system logs
     trace_id: Optional[str]
+
+    # Country scope for Portfolio Analyst ("US", "IN", "ALL", etc.)
+    # When set, the analyst filters holdings and benchmark to this country only.
+    analysis_country: Optional[str]
+
+    # Authenticated user tenant ID
+    user_id: Optional[str]

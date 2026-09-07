@@ -1,0 +1,42 @@
+# ── Python build artefacts ──────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+
+# ── Virtual environment ─────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Local database & vector store ──────────────────────────────────────
+finnie.db
+chroma_db/
+chroma_data_local/
+*.db-shm
+*.db-wal
+
+# ── Secrets & environment ───────────────────────────────────────────────
+.env
+.env.*
+
+# ── Test & coverage artefacts ───────────────────────────────────────────
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+test_*.py
+debug_*.py
+
+# ── Dev / editor junk ──────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Docs and scripts (not needed in the image) ─────────────────────────
+scripts/
+README.md
+*.md

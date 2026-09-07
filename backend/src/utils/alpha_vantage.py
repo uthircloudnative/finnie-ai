@@ -19,9 +19,10 @@ class AlphaVantageClient:
             logger.warning("ALPHA_VANTAGE_API_KEY not found in environment!")
 
     @traceable(name="Alpha Vantage API", run_type="tool")
-    async def fetch_news_sentiment(self, tickers: List[str]) -> Dict[str, Any]:
+    def fetch_news_sentiment(self, tickers: List[str]) -> Dict[str, Any]:
         """
         Fetches news articles and sentiment scores for a list of tickers.
+        Synchronous implementation so it can be called from sync LangGraph nodes.
         """
         if not self.api_key:
             return {"error": "API Key missing", "feed": []}
@@ -37,10 +38,10 @@ class AlphaVantageClient:
             "limit": 50
         }
 
-        async with httpx.AsyncClient() as client:
+        with httpx.Client() as client:
             try:
                 print(f"[FINNIE-AI] 🌐 GET {self.BASE_URL}?tickers={ticker_str}")
-                response = await client.get(self.BASE_URL, params=params, timeout=12.0)
+                response = client.get(self.BASE_URL, params=params, timeout=12.0)
                 print(f"[FINNIE-AI] 📡 Response Status: {response.status_code}")
                 response.raise_for_status()
                 data = response.json()

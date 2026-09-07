@@ -56,11 +56,13 @@ export BACKEND_NAME="finnie-api-unique123"
 az webapp create --resource-group $RG --plan finnie-plan --name $BACKEND_NAME \
     --deployment-container-image-name $ACR.azurecr.io/finnie-backend:latest
 
-# 3. Define the DB_PATH to explicitly use Azure's perpetual home mounted pathway
+# 3. Define deployment settings for database persistence, CORS, and Gunicorn workers
 az webapp config appsettings set --resource-group $RG --name $BACKEND_NAME \
     --settings \
         DB_PATH="/home/finnie.db" \
-        WEBSITES_ENABLE_APP_SERVICE_STORAGE="true"
+        WEBSITES_ENABLE_APP_SERVICE_STORAGE="true" \
+        ALLOWED_ORIGINS="https://$FRONTEND_NAME.azurestaticapps.net,https://$FRONTEND_NAME.azurewebsites.net" \
+        WORKERS="2"
 ```
 
 ### Phase 3: Build & Deploy the React Frontend

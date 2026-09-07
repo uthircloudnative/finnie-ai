@@ -13,10 +13,10 @@ Endpoints:
 import os
 from contextlib import asynccontextmanager
 from datetime import date
-from typing import List
+from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
@@ -33,6 +33,10 @@ from src.models.market_metadata import MarketExchange # noqa: E402
 from src.models.goal import FinancialGoal           # noqa: E402
 from src.utils.telemetry import TraceContextMiddleware, setup_telemetry_logging, trace_id_var # noqa: E402
 from src.utils.dashboard_engine import build_dashboard_payload # noqa: E402
+from src.agents.portfolio_analyst import compute_hhi_diversification # noqa: E402
+from src.models.user import User # noqa: E402
+from src.models.auth_schemas import UserRegisterRequest, UserLoginRequest, UserResponse, TokenResponse # noqa: E402
+from src.auth.jwt import hash_password, verify_password, create_access_token, get_current_user # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Telemetry Bootstrap
@@ -105,16 +109,18 @@ app = FastAPI(
 # Insert the Tracing middleware
 app.add_middleware(TraceContextMiddleware)
 
-# Allow the React dev server to call this API without CORS errors.
+# CORS origins — driven by env var so deployed frontends are not blocked.
+# Local default: Vite dev server. Azure: set ALLOWED_ORIGINS to your Static Web App URL.
+# Example: ALLOWED_ORIGINS="https://finnie-ai.azurestaticapps.net,https://www.finnie.app"
+_raw_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://localhost:3000"
+)
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:3000",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -128,6 +134,46 @@ app.add_middleware(
 async def health_check() -> dict:
     """Quick liveness probe — never touches the LLM."""
     return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# Authentication Endpoints
+# ---------------------------------------------------------------------------
+@app.post("/auth/register", response_model=TokenResponse, tags=["Auth"])
+def register_user(req: UserRegisterRequest, db: Session = Depends(get_db)):
+    """Register a new user account and return a JWT access token."""
+    existing_user = db.query(User).filter(User.email == req.email.lower()).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this email already exists.")
+
+    new_user = User(
+        email=req.email.lower(),
+        hashed_password=hash_password(req.password),
+        full_name=req.full_name,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    token = create_access_token({"sub": new_user.id, "email": new_user.email})
+    return TokenResponse(access_token=token, token_type="bearer", user=UserResponse.model_validate(new_user))
+
+
+@app.post("/auth/login", response_model=TokenResponse, tags=["Auth"])
+def login_user(req: UserLoginRequest, db: Session = Depends(get_db)):
+    """Authenticate user credentials and return a JWT access token."""
+    user = db.query(User).filter(User.email == req.email.lower()).first()
+    if not user or not verify_password(req.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    token = create_access_token({"sub": user.id, "email": user.email})
+    return TokenResponse(access_token=token, token_type="bearer", user=UserResponse.model_validate(user))
+
+
+@app.get("/auth/me", response_model=UserResponse, tags=["Auth"])
+def get_user_profile(current_user: User = Depends(get_current_user)):
+    """Fetch profile details for the active authenticated user."""
+    return UserResponse.model_validate(current_user)
 
 
 @app.get("/metadata/exchanges", response_model=List[ExchangeResponse], tags=["Metadata"])
@@ -152,25 +198,28 @@ def get_exchanges(db: Session = Depends(get_db)) -> List[ExchangeResponse]:
 # Dashboard (Global Wealth View)
 # ---------------------------------------------------------------------------
 @app.get("/dashboard/{user_id}", tags=["Dashboard"])
-def get_dashboard(user_id: str, db: Session = Depends(get_db)):
+@app.get("/dashboard", tags=["Dashboard"])
+def get_dashboard(user_id: Optional[str] = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Lightning-fast, deterministic dashboard payload.
     Bypasses LLM entirely to strictly crunch SQLite and live yfinance data.
     """
-    return build_dashboard_payload(user_id, db)
+    effective_id = current_user.id
+    return build_dashboard_payload(effective_id, db)
 
 
 # ---------------------------------------------------------------------------
 # Chat
 # ---------------------------------------------------------------------------
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
-async def chat(request: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
+async def chat(request: ChatRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> ChatResponse:
     """
     Send a message to Finnie and receive her response.
     Injects the user's current holdings from SQLite into the graph state.
     """
+    effective_id = current_user.id
     # 1. Fetch latest holdings to provide as context to any agent
-    rows = db.query(Holding).filter(Holding.user_id == "user_1").all()
+    rows = db.query(Holding).filter(Holding.user_id == effective_id).all()
     holdings = [{"ticker": r.ticker, "shares": r.shares} for r in rows]
 
     initial_state = {
@@ -178,6 +227,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)) -> ChatRespo
         "portfolio_data": holdings,
         "next_step": request.preferred_worker,
         "analysis_results": request.analysis_context,
+        "user_id": effective_id,
         "trace_id": trace_id_var.get()
     }
 
@@ -209,33 +259,49 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)) -> ChatRespo
 # ---------------------------------------------------------------------------
 # Portfolio — My Holdings
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Portfolio — My Holdings
+# ---------------------------------------------------------------------------
 @app.get("/portfolio/analysis/{user_id}", response_model=ChatResponse, tags=["Portfolio"])
-async def get_portfolio_analysis(user_id: str, db: Session = Depends(get_db)) -> ChatResponse:
+@app.get("/portfolio/analysis", response_model=ChatResponse, tags=["Portfolio"])
+async def get_portfolio_analysis(
+    user_id: Optional[str] = None,
+    country: Optional[str] = Query(default=None, description="Filter analysis to a specific country code (e.g. 'US', 'IN'). Omit for all-markets view."),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> ChatResponse:
     """
     Trigger a full portfolio analysis report for the user.
+    Optionally scoped to a single country for country-specific benchmark and RAG context.
     Forces the graph to start at the 'portfolio_analyst' node.
     """
-    rows = db.query(Holding).filter(Holding.user_id == user_id).all()
+    effective_id = current_user.id
+    query = db.query(Holding).filter(Holding.user_id == effective_id)
+    if country and country.upper() != "ALL":
+        query = query.filter(Holding.country == country.upper())
+    rows = query.all()
+
     if not rows:
-        return ChatResponse(reply="You don't have any holdings yet. Add some stocks in the 'My Holdings' tab first!")
+        scope = f"in {country.upper()}" if country and country.upper() != "ALL" else ""
+        return ChatResponse(reply=f"You don't have any holdings {scope}. Add some stocks in the 'My Holdings' tab first!".strip())
 
-    holdings = [{"ticker": r.ticker, "shares": r.shares} for r in rows]
+    # Pass exchange + country per holding so the analyst can route the correct benchmark
+    holdings = [
+        {"ticker": r.ticker, "shares": r.shares, "exchange": r.exchange, "country": r.country}
+        for r in rows
+    ]
 
-    # Force the graph to start at the analyst worker, bypassing the supervisor
-    # We do this by setting 'next_step' and providing a system-level prompt
+    scope_label = country.upper() if country and country.upper() != "ALL" else "all markets"
     initial_state = {
-        "messages": [HumanMessage(content="Please provide a full risk and diversification analysis of my current holdings.")],
+        "messages": [HumanMessage(content=f"Please provide a full risk and diversification analysis of my {scope_label} holdings.")],
         "portfolio_data": holdings,
-        "next_step": "PORTFOLIO_ANALYST", # Hint for the direct entry
+        "next_step": "PORTFOLIO_ANALYST",
+        "analysis_country": country.upper() if country and country.upper() != "ALL" else "ALL",
+        "user_id": effective_id,
         "trace_id": trace_id_var.get()
     }
 
     try:
-        # Note: We invoke the app, but since we set next_step, 
-        # we need to make sure the supervisor isn't the first node if we want direct entry.
-        # Actually, in LangGraph, START always goes to the first edge.
-        # To bypass supervisor, we can invoke JUST the node, or use conditional START.
-        # For now, we'll let it go through Supervisor, but provide a very clear prompt.
         t_id = trace_id_var.get()
         config = {"metadata": {"app_trace_id": t_id}} if t_id else {}
         final_state = await finnie_app.ainvoke(initial_state, config=config)
@@ -249,13 +315,64 @@ async def get_portfolio_analysis(user_id: str, db: Session = Depends(get_db)) ->
     )
 
 
+@app.get("/portfolio/diversification/{user_id}", tags=["Portfolio"])
+@app.get("/portfolio/diversification", tags=["Portfolio"])
+async def get_portfolio_diversification(
+    user_id: Optional[str] = None,
+    country: Optional[str] = Query(default=None, description="Filter analysis to a specific country code (e.g. 'US', 'IN'). Omit for all-markets view."),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    On-demand real-time calculation of diversification score for a user's holdings.
+    Retries up to 3 times to fetch yfinance sector metadata.
+    """
+    effective_id = current_user.id
+    query = db.query(Holding).filter(Holding.user_id == effective_id)
+    if country and country.upper() != "ALL":
+        query = query.filter(Holding.country == country.upper())
+    rows = query.all()
+
+    if not rows:
+        return {"diversification_score": 0.0, "sectors": {}, "error": None}
+
+    # Map symbols to exchange suffixes for yfinance lookup
+    exchange_map = {row.exchange_code: row.yf_suffix for row in db.query(MarketExchange).all()}
+    symbols = []
+    for r in rows:
+        suffix = exchange_map.get(r.exchange, "")
+        symbol = f"{r.ticker}{suffix}" if suffix and not r.ticker.endswith(suffix) else r.ticker
+        symbols.append(symbol)
+
+    score, sectors = compute_hhi_diversification(symbols, max_retries=3)
+
+    if score is None:
+        return {
+            "diversification_score": None,
+            "sectors": {},
+            "error": "Experiencing technical issue, try again later"
+        }
+
+    return {
+        "diversification_score": score,
+        "sectors": sectors,
+        "error": None
+    }
+
+
 @app.get("/market/news/{user_id}", response_model=ChatResponse, tags=["Market"])
-async def get_market_news(user_id: str, db: Session = Depends(get_db)) -> ChatResponse:
+@app.get("/market/news", response_model=ChatResponse, tags=["Market"])
+async def get_market_news(
+    user_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> ChatResponse:
     """
     Fetch the latest market news and sentiment pulse for the user's portfolio.
     Routes directly to the 'market_insights' agent.
     """
-    rows = db.query(Holding).filter(Holding.user_id == user_id).all()
+    effective_id = current_user.id
+    rows = db.query(Holding).filter(Holding.user_id == effective_id).all()
     # Even if no holdings, the agent can provide a general pulse
     holdings = [
         {"ticker": r.ticker, "shares": r.shares, "country": r.country, "exchange": r.exchange} 
@@ -266,6 +383,7 @@ async def get_market_news(user_id: str, db: Session = Depends(get_db)) -> ChatRe
         "messages": [HumanMessage(content="What is the latest market pulse for my holdings?")],
         "portfolio_data": holdings,
         "next_step": "MARKET_INSIGHTS",
+        "user_id": effective_id,
         "trace_id": trace_id_var.get()
     }
 
@@ -284,14 +402,20 @@ async def get_market_news(user_id: str, db: Session = Depends(get_db)) -> ChatRe
 
 
 @app.get("/portfolio/{user_id}", response_model=PortfolioResponse, tags=["Portfolio"])
-def get_portfolio(user_id: str, db: Session = Depends(get_db)) -> PortfolioResponse:
+@app.get("/portfolio", response_model=PortfolioResponse, tags=["Portfolio"])
+def get_portfolio(
+    user_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> PortfolioResponse:
     """
     Fetch all saved holdings for a user.
     Returns an empty holdings list if the user has no saved portfolio yet.
     """
-    rows = db.query(Holding).filter(Holding.user_id == user_id).all()
+    effective_id = current_user.id
+    rows = db.query(Holding).filter(Holding.user_id == effective_id).all()
     return PortfolioResponse(
-        user_id=user_id,
+        user_id=effective_id,
         holdings=[
             HoldingResponse(
                 ticker=r.ticker.upper(),
@@ -307,7 +431,11 @@ def get_portfolio(user_id: str, db: Session = Depends(get_db)) -> PortfolioRespo
 
 
 @app.post("/portfolio/save", response_model=PortfolioResponse, tags=["Portfolio"])
-def save_portfolio(req: SavePortfolioRequest, db: Session = Depends(get_db)) -> PortfolioResponse:
+def save_portfolio(
+    req: SavePortfolioRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> PortfolioResponse:
     """
     Save (replace) the full portfolio for a user.
 
@@ -316,14 +444,15 @@ def save_portfolio(req: SavePortfolioRequest, db: Session = Depends(get_db)) -> 
       - Insert the new set of holdings
     This ensures the saved state always perfectly mirrors what the user submitted.
     """
+    effective_id = current_user.id
     # 1. Delete existing holdings for this user
-    db.query(Holding).filter(Holding.user_id == req.user_id).delete()
+    db.query(Holding).filter(Holding.user_id == effective_id).delete()
 
     # 2. Insert the new holdings
     new_rows = []
     for h in req.holdings:
         row = Holding(
-            user_id=req.user_id,
+            user_id=effective_id,
             ticker=h.ticker.upper(),
             shares=h.shares,
             country=h.country.upper() if h.country else "US",
@@ -338,7 +467,7 @@ def save_portfolio(req: SavePortfolioRequest, db: Session = Depends(get_db)) -> 
         db.refresh(row)
 
     return PortfolioResponse(
-        user_id=req.user_id,
+        user_id=effective_id,
         holdings=[
             HoldingResponse(
                 ticker=r.ticker,
@@ -357,9 +486,15 @@ def save_portfolio(req: SavePortfolioRequest, db: Session = Depends(get_db)) -> 
 # Goals — The Financial GPS
 # ---------------------------------------------------------------------------
 @app.get("/goals/{user_id}", tags=["Goals"])
-def get_user_goal(user_id: str, db: Session = Depends(get_db)):
+@app.get("/goals", tags=["Goals"])
+def get_user_goal(
+    user_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Fetch the current financial goal for a user."""
-    goal = db.query(FinancialGoal).filter(FinancialGoal.user_id == user_id).first()
+    effective_id = current_user.id
+    goal = db.query(FinancialGoal).filter(FinancialGoal.user_id == effective_id).first()
     if not goal:
         return {"status": "no_goal"}
     return {
@@ -372,12 +507,17 @@ def get_user_goal(user_id: str, db: Session = Depends(get_db)):
 
 
 @app.post("/goals/calculate", response_model=ChatResponse, tags=["Goals"])
-async def calculate_goal_roadmap(req: GoalRequest, db: Session = Depends(get_db)) -> ChatResponse:
+async def calculate_goal_roadmap(
+    req: GoalRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> ChatResponse:
     """
     Save the user's goal and trigger a full Monte Carlo / RAG roadmap generation.
     """
+    effective_id = current_user.id
     # 1. Persist/Update the goal in SQLite
-    existing = db.query(FinancialGoal).filter(FinancialGoal.user_id == req.user_id).first()
+    existing = db.query(FinancialGoal).filter(FinancialGoal.user_id == effective_id).first()
     if existing:
         existing.goal_name = req.goal_name
         existing.target_amount = req.target_amount
@@ -386,7 +526,7 @@ async def calculate_goal_roadmap(req: GoalRequest, db: Session = Depends(get_db)
         existing.country = req.country
     else:
         new_goal = FinancialGoal(
-            user_id=req.user_id,
+            user_id=effective_id,
             goal_name=req.goal_name,
             target_amount=req.target_amount,
             target_year=req.target_year,
@@ -394,11 +534,11 @@ async def calculate_goal_roadmap(req: GoalRequest, db: Session = Depends(get_db)
             country=req.country
         )
         db.add(new_goal)
-    
+
     db.commit()
 
     # 2. Fetch latest holdings and last analysis results for the graph
-    rows = db.query(Holding).filter(Holding.user_id == req.user_id).all()
+    rows = db.query(Holding).filter(Holding.user_id == effective_id).all()
     holdings = [{"ticker": r.ticker, "shares": r.shares} for r in rows]
 
     # Pre-configure the graph state with the new goal data
@@ -410,9 +550,11 @@ async def calculate_goal_roadmap(req: GoalRequest, db: Session = Depends(get_db)
             "target_year": req.target_year,
             "monthly_savings": req.monthly_savings,
             "country": req.country,
-            "goal_name": req.goal_name
+            "goal_name": req.goal_name,
+            "user_id": effective_id
         },
         "next_step": "GOAL_STRATEGIST",
+        "user_id": effective_id,
         "trace_id": trace_id_var.get()
     }
 

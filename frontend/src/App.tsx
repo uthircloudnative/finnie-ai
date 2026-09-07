@@ -6,12 +6,16 @@ import PortfolioAnalyst from './components/Portfolio/PortfolioAnalyst'
 import MyHoldings from './components/Portfolio/MyHoldings'
 import MarketInsights from './components/Market/MarketInsights'
 import GoalPlanner from './components/Goals/GoalPlanner'
+import { AuthModal } from './components/Auth/AuthModal'
+import { useAuth } from './context/AuthContext'
 import './App.css'
 
 export type TabId = 'dashboard' | 'chat' | 'holdings' | 'portfolio' | 'market' | 'goals'
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('chat')
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   const renderTab = () => {
     switch (activeTab) {
@@ -26,10 +30,19 @@ function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+      />
       <main className="app-content">
         {renderTab()}
       </main>
+
+      <AuthModal
+        isOpen={isAuthModalOpen || !isAuthenticated}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </div>
   )
 }

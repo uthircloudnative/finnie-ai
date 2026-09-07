@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'user_1'
 
 export interface AssetRow {
   ticker: string
@@ -36,6 +36,7 @@ interface UseDashboardReturn {
 }
 
 export function useDashboard(): UseDashboardReturn {
+  const { getAuthHeaders } = useAuth()
   const [dashboardData, setDashboardData] = useState<DashboardPayload | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +45,7 @@ export function useDashboard(): UseDashboardReturn {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API_BASE}/dashboard/${USER_ID}`)
+      const res = await fetch(`${API_BASE}/dashboard`, { headers: getAuthHeaders() })
       if (!res.ok) throw new Error('Failed to fetch dashboard data')
       const data: DashboardPayload = await res.json()
       setDashboardData(data)
@@ -53,7 +54,7 @@ export function useDashboard(): UseDashboardReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [getAuthHeaders])
 
   useEffect(() => {
     fetchDashboard()

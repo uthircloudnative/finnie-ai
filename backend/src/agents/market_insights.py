@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any
 
 from langchain.chat_models import init_chat_model
@@ -15,7 +15,7 @@ from src.utils.alpha_vantage import AlphaVantageClient
 CACHE_TTL_MINUTES = 30
 MAX_NEWS_ITEMS = 5 # Limit items per ticker for LLM context
 
-async def market_insights_node(state: FinnieState) -> dict:
+def market_insights_node(state: FinnieState) -> dict:
     """
     Market Insights Agent - Analyzes REAL news and sentiment for the user's holdings.
     Uses a 30-minute SQLite cache to minimize Alpha Vantage API consumption.
@@ -45,13 +45,13 @@ async def market_insights_node(state: FinnieState) -> dict:
             raw_data = cached_entry.data
         else:
             print(f"[FINNIE-AI] 🌐 CACHE MISS: Fetching live data for {tickers} from Alpha Vantage...")
-            raw_data = await client.fetch_news_sentiment(tickers)
+            raw_data = client.fetch_news_sentiment(tickers)
             
             # Update cache if we got a valid response (not an error)
             if "feed" in raw_data and not raw_data.get("error"):
                 if cached_entry:
                     cached_entry.data = raw_data
-                    cached_entry.timestamp = datetime.utcnow()
+                    cached_entry.timestamp = datetime.now(timezone.utc)
                 else:
                     new_cache = MarketCache(key=cache_key)
                     new_cache.data = raw_data

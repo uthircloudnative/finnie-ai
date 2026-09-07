@@ -226,24 +226,42 @@ returns relative to volatility...
 
 The Portfolio Analyst Agent can be invoked in three distinct ways to ensure both a structured reports and natural conversation.
 
-### 1. Tab-Triggered (Structured Report)
-When the user clicks the **Portfolio Analyst** tab in the UI:
-- **Frontend**: Calls `GET /portfolio/analysis/{user_id}`.
+### 1. Tab-Triggered (Structured Report & Country Filtering)
+When the user clicks the **Portfolio Analyst** tab or switches country tabs (`🌍 All Markets`, `🇺🇸 US`, `🇮🇳 India`, etc.):
+- **Frontend (`useCountryPortfolio`)**: Checks in-memory session cache first.
+  - **Cache Hit**: Instantly displays cached metrics & analysis report without network/LLM overhead.
+  - **Cache Miss**: Calls `GET /portfolio/analysis/{user_id}?country={country_code}`.
 - **Backend (`main.py`)**: 
-    1. Fetches all holdings from SQLite.
-    2. Packages these holdings into the `portfolio_data` field.
+    1. Fetches holdings filtered by `country` (or all holdings if `ALL`).
+    2. Packages holdings into `portfolio_data` and sets `analysis_country` in state.
     3. Invokes the `portfolio_analyst` node directly.
-- **Result**: A comprehensive dashboard featuring **Beta (vs S&P 500)**, **Annualized Volatility**, and a **Diversification Score**.
+- **Result**: A comprehensive dashboard featuring country-specific metrics (Beta vs country benchmark, Volatility, Sharpe Ratio, HHI Diversification) and formatted Finnie Insight cards:
+  - 📈 **Risk Profile Card**
+  - 🎯 **Diversification & Balance Card**
+  - 💡 **Action Plan & Strategic Advice Card**
 
-### 2. Tab-Specific Chat (Contextual Workshop)
+### 2. Manual Refresh ("🔄 Refresh Analysis")
+Users can explicitly trigger a fresh LLM & math re-evaluation by clicking **"Refresh Analysis"**:
+- Flushes the session cache for the active country scope.
+- Forces a real backend call to `GET /portfolio/analysis?country={country_code}` (passing `Authorization: Bearer <token>`).
+- Updates the cache with newly calculated metrics and LLM synthesis.
+
+### 3. Diversification Score On-Demand Retry ("📊 Get Diversification Score")
+When yfinance sector metadata fails or is incomplete during initial calculations:
+- `portfolio_analyst.py` executes a 3-attempt retry loop with exponential backoff (`max_retries=3`).
+- If retries still fail, `GET /portfolio/diversification` returns `diversification_score = null`.
+- The UI renders an interactive **"📊 Get Diversification Score"** tile button instead of displaying a fake fallback score.
+- Clicking the tile button invokes `fetchDiversification(countryCode)`. If network/API issues persist, a user-friendly error banner (`Experiencing technical issue, try again later`) is shown.
+
+### 4. Tab-Specific Chat (Contextual Workshop)
 Users can ask follow-up questions directly within the Analyst tab:
 - **Context Hinting**: The frontend passes `preferred_worker="PORTFOLIO_ANALYST"` and `analysis_context` (the pre-calculated Beta/Vol).
 - **Instant Response**: Finnie answers immediately about the specific metrics displayed on the dashboard without re-calculating data.
 
-### 3. General Chat (Natural Language)
+### 5. General Chat (Natural Language)
 When the user types a question like *"Is my portfolio too tech-heavy?"* in the main Chat:
 - **Supervisor**: Recognizes the intent and routes to `PORTFOLIO_ANALYST`.
-- **Worker**: Analyzes the holdings stored in the database and responds within the conversation thread.
+- **Worker**: Analyzes the holdings stored in the database for the authenticated user and responds within the conversation thread.
 
 ---
 
@@ -256,12 +274,12 @@ All outputs from the Portfolio Analyst Agent **must** pass through the **Complia
 
 ---
 
-## 🏁 Phase 3 Completion Checklist
+## 🏁 Implementation Checklist
 
-The Portfolio Analyst is now fully wired and functional.
+The Portfolio Analyst is fully wired, multi-country ready, and UX optimized.
 
-- [x] **Step 1: State Update** — Added `analysis_results` and `portfolio_data` to `FinnieState`.
-- [x] **Step 2: Analyst Worker** — Created `portfolio_analyst.py` with `yfinance` & robust MultiIndex handling.
-- [x] **Step 3: API Integration** — Updated `main.py` with `/portfolio/analysis` and contextual `/chat` params.
+- [x] **Step 1: State Update** — Added `analysis_results`, `portfolio_data`, and `analysis_country` to `FinnieState`.
+- [x] **Step 2: Analyst Worker** — Created `portfolio_analyst.py` with `yfinance` & benchmark routing (`^GSPC`, `^NSEI`, `^FTSE`, `^GSPTSE`, `^GDAXI`).
+- [x] **Step 3: API Integration** — Updated `main.py` with `/portfolio/analysis` (country-scoped) and contextual `/chat` params.
 - [x] **Step 4: Graph Wiring** — Registered all nodes and fixed conditional routing logic in `src/graph.py`.
-- [x] **Step 5: UI Connection** — Built the split-view dashboard and interactive sidebar in `PortfolioAnalyst.tsx`.
+- [x] **Step 5: Multi-Country UI & Session Caching** — Built country tab bar, session cache, manual refresh button, and formatted 3-card insights in `PortfolioAnalyst.tsx`.

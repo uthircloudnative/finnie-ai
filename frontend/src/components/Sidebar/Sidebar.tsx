@@ -1,4 +1,5 @@
 import type { TabId } from '../../App'
+import { useAuth } from '../../context/AuthContext'
 import './Sidebar.css'
 
 interface NavItem {
@@ -19,9 +20,12 @@ const NAV_ITEMS: NavItem[] = [
 interface SidebarProps {
   activeTab: TabId
   onTabChange: (tab: TabId) => void
+  onOpenAuthModal: () => void
 }
 
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, onOpenAuthModal }: SidebarProps) {
+  const { user, isAuthenticated, logout } = useAuth()
+
   return (
     <aside className="sidebar">
       {/* Logo */}
@@ -44,11 +48,25 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         ))}
       </nav>
 
-      {/* System Status */}
+      {/* User Profile & System Status */}
       <div className="sidebar-footer">
         <div className="glass-card status-card">
-          <p className="status-label">SYSTEM STATUS</p>
-          <p className="status-value">● ALL AGENTS ACTIVE</p>
+          {isAuthenticated && user ? (
+            <div className="user-profile-box">
+              <p className="status-label">LOGGED IN AS</p>
+              <p className="status-value user-name">👤 {user.full_name}</p>
+              <button className="auth-action-btn logout-btn" onClick={logout}>
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="user-profile-box">
+              <p className="status-label">ACCOUNT</p>
+              <button className="auth-action-btn login-btn" onClick={onOpenAuthModal}>
+                🔑 Sign In / Register
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </aside>

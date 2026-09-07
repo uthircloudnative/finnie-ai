@@ -16,14 +16,19 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _LOCAL_DB_PATH = os.path.join(BACKEND_DIR, "finnie.db")
 
-# In Azure, we pass DB_PATH='/home/finnie.db' to use persistent App Service storage.
-# Locally, it safely defaults to the standard backend directory.
-DB_PATH = os.environ.get("DB_PATH", _LOCAL_DB_PATH)
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+# In cloud deployments (Azure/AWS/GCP), provide DATABASE_URL (e.g. PostgreSQL).
+# If DATABASE_URL is not set, defaults to local or persistent SQLite via DB_PATH.
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    DB_PATH = os.environ.get("DB_PATH", _LOCAL_DB_PATH)
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+# SQLite requires check_same_thread=False; PostgreSQL/MySQL do not accept this argument
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},  # Required for SQLite + FastAPI
+    connect_args=connect_args,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -37,15 +42,6 @@ class Base(DeclarativeBase):
 def get_db():
     """
     FastAPI dependency — yields a DB session per request, always closed after.
-
-    Usage in route:
-        from src.database import get_db
-        from sqlalchemy.orm import Session
-        from fastapi import Depends
-
-        @app.get("/something")
-        def route(db: Session = Depends(get_db)):
-            ...
     """
     db = SessionLocal()
     try:
@@ -56,8 +52,10 @@ def get_db():
 
 def init_db() -> None:
     """Create all tables defined via Base.metadata on first startup."""
-    from src.models.portfolio import Holding       # noqa: F401
+    from src.models.user import User                      # noqa: F401
+    from src.models.portfolio import Holding              # noqa: F401
     from src.models.market_metadata import MarketExchange # noqa: F401
     from src.models.market_cache import MarketCache       # noqa: F401
-    from src.models.goal import FinancialGoal           # noqa: F401
+    from src.models.goal import FinancialGoal             # noqa: F401
     Base.metadata.create_all(bind=engine)
+

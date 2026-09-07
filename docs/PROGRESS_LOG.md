@@ -1,12 +1,44 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-03-29
-**Current Status**: 🟢 Phase 4 (Goal Strategist) — COMPLETE 
-**Learning Mode**: 🎓 **Instructor-Led Hands-On** (User-led coding with Agent guidance)
+**Date**: 2026-09-07
+**Current Status**: 🟢 Phase 6 (Multi-Tenancy, User Auth & Resilient Math Engine) — COMPLETE
 
 ---
 
-## ✅ What We Accomplished Today (March 29)
+## ✅ What We Accomplished Today (September 07, 2026)
+
+### 🔑 Phase 6: Multi-Tenancy & JWT User Authentication (Phases 1, 2, 3 Complete)
+1. **User Database Model (`backend/src/models/user.py`)**: Designed `User` table (UUID primary key, email, bcrypt hashed password, full_name, base_currency) via SQLAlchemy ORM.
+2. **Stateless JWT Core (`backend/src/auth/jwt.py`)**: Direct `bcrypt` password hashing engine (Python 3.13 compatible) and `create_access_token` / `get_current_user` FastAPI security dependency with dev fallback.
+3. **Auth API Endpoints (`backend/main.py`)**: Implemented `/auth/register`, `/auth/login`, and `/auth/me`.
+4. **Protected Endpoints & Tenant Isolation**: Protected all data endpoints (`/portfolio`, `/dashboard`, `/chat`, `/portfolio/analysis`, `/market/news`, `/goals`) using `get_current_user`, enforcing 100% data separation across accounts.
+5. **Frontend Auth System (`frontend/src/context/AuthContext.tsx`)**: Created `AuthProvider` & `useAuth` hook providing token persistence in `localStorage` and `getAuthHeaders()`.
+6. **Glass-Finance Auth Modal (`frontend/src/components/Auth/AuthModal.tsx`)**: Modern glassmorphic modal supporting user Sign In and Account Registration.
+7. **Sidebar User Badge & Header (`Sidebar.tsx`)**: Added profile indicator (`👤 Full Name`) and `Sign Out` / `🔑 Sign In` button.
+8. **Authorized Custom Hooks**: Injected `Authorization: Bearer <token>` into `usePortfolio.ts`, `useCountryPortfolio.ts`, `useMarketInsights.ts`, `useGoalStrategist.ts`, and `useChat.ts`.
+
+### 🎯 Diversification Score Retry Engine
+9. **3-Attempt Exponential Backoff Retry**: Updated `compute_hhi_diversification` in `portfolio_analyst.py` to execute a 3-attempt retry loop for yfinance sector metadata lookups.
+10. **Interactive UI Tile Retry**: Updated `GET /portfolio/diversification` and `useCountryPortfolio.ts` to return `diversification_score = null` on retry failure, rendering a `"📊 Get Diversification Score"` interactive button on the tile card.
+
+---
+
+### 🌍 Multi-Market Portfolio Analyst & UX Overhaul
+1. **Country-Aware Benchmark Routing**: Extended `portfolio_analyst_node` with benchmark mapping per country (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, `^GSPTSE` for CA, `^GDAXI` for DE).
+2. **All-Markets Combined View**: Added `analysis_country="ALL"` support in state and backend API (`GET /portfolio/analysis/{user_id}?country=ALL`) to compute combined multi-market portfolio health.
+3. **Session-Level Client Caching**: Implemented session caching in `useCountryPortfolio` so switching country tabs (`🌍 All Markets`, `🇺🇸 US`, `🇮🇳 India`, etc.) is instant without triggering duplicate backend LLM calls.
+4. **Token-Saving Manual Refresh**: Added a prominent **"🔄 Refresh Analysis"** button in the Portfolio Analyst header to give users control over initiating new LLM runs.
+5. **Formatted Finnie Insight Cards**: Upgraded LLM insight parsing to format raw text into three distinct visual section cards: 📈 **Risk Profile**, 🎯 **Diversification & Balance**, and 💡 **Action Plan & Strategic Advice**.
+
+### ☁️ Azure Deployment & Docker Hardening
+6. **Dynamic CORS Configuration**: Refactored `main.py` CORS middleware to read `ALLOWED_ORIGINS` from environment variables, defaulting to local Vite dev ports.
+7. **Gunicorn Multi-Worker Container**: Updated `Dockerfile` to launch Gunicorn with Uvicorn worker class, reading worker count from `WORKERS` env var (defaulting to 2 workers with 120s timeout for long LLM runs).
+8. **Lean Container Packaging**: Created `.dockerignore` to exclude `.venv`, local Chroma directories, and SQLite databases from build contexts, drastically shrinking image size.
+9. **Git Ignore Polish**: Added local Chroma vector directories (`chroma_data_local/` and `chroma_db/`) to root `.gitignore`.
+
+---
+
+## ✅ What We Accomplished (March 29, 2026)
 
 ### 📈 Portfolio Analyst (End-to-End)
 1. **Math Engine Integration**: Wired `yfinance` to the `portfolio_analyst_node` to calculate live **Market Beta** and **Annualized Volatility**.

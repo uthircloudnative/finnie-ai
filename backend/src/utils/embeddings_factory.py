@@ -22,6 +22,7 @@ Usage:
     embeddings = get_embeddings()
 """
 import os
+from functools import lru_cache
 from dotenv import load_dotenv
 from langchain_core.embeddings import Embeddings
 
@@ -29,6 +30,7 @@ from langchain_core.embeddings import Embeddings
 load_dotenv()
 
 
+@lru_cache()
 def get_embeddings() -> Embeddings:
     """
     Returns a LangChain-compatible Embeddings object based on the

@@ -23,5 +23,8 @@ RUN uv sync --frozen
 # Expose port 80. Azure Web Apps automatically routes incoming HTTP traffic to Port 80 by default.
 EXPOSE 80
 
-# Run the Uvicorn server, binding to 0.0.0.0 so external Azure traffic can reach it
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+# Production server: Gunicorn manages worker processes; each worker is a Uvicorn ASGI server.
+# WORKERS env var controls concurrency (default 2). Use 2–4 on Azure B-series plans.
+# --timeout 120 prevents Gunicorn killing workers during long LLM/yfinance calls.
+# Local dev: use `uv run uvicorn main:app --reload --port 8000` instead.
+CMD ["sh", "-c", "uv run gunicorn main:app --workers ${WORKERS:-2} --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80 --timeout 120 --access-logfile -"]

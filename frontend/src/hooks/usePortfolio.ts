@@ -3,9 +3,9 @@
  * Follows the same pattern as useChat.ts (single responsibility, all API logic here).
  */
 import { useState, useCallback, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'user_1' // Hardcoded for Phase 3 — replace with auth in future
 
 export interface Holding {
   ticker: string
@@ -40,6 +40,7 @@ interface UsePortfolioReturn {
 }
 
 export function usePortfolio(): UsePortfolioReturn {
+  const { getAuthHeaders, user } = useAuth()
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [exchanges, setExchanges] = useState<Exchange[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -50,10 +51,11 @@ export function usePortfolio(): UsePortfolioReturn {
     setIsLoading(true)
     setError(null)
     try {
+      const headers = getAuthHeaders()
       // Parallel fetch for speed
       const [portRes, metaRes] = await Promise.all([
-        fetch(`${API_BASE}/portfolio/${USER_ID}`),
-        fetch(`${API_BASE}/metadata/exchanges`)
+        fetch(`${API_BASE}/portfolio`, { headers }),
+        fetch(`${API_BASE}/metadata/exchanges`, { headers })
       ])
 
       if (!portRes.ok || !metaRes.ok) throw new Error('Failed to fetch portfolio data')
@@ -70,7 +72,7 @@ export function usePortfolio(): UsePortfolioReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [getAuthHeaders])
 
   // Auto-fetch on mount
   useEffect(() => { fetchHoldings() }, [fetchHoldings])
@@ -81,8 +83,8 @@ export function usePortfolio(): UsePortfolioReturn {
     try {
       const res = await fetch(`${API_BASE}/portfolio/save`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: USER_ID, holdings: inputs }),
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ user_id: user?.id || 'current', holdings: inputs }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

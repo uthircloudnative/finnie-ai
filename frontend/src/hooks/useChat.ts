@@ -3,6 +3,7 @@
  * Separates all business logic from the UI components (STANDARDS.md §3.1).
  */
 import { useState, useCallback } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -21,6 +22,7 @@ interface UseChatReturn {
 }
 
 export function useChat(): UseChatReturn {
+  const { getAuthHeaders } = useAuth()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -50,7 +52,7 @@ export function useChat(): UseChatReturn {
     try {
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ 
           message: text.trim(),
           preferred_worker: preferredWorker,
@@ -90,7 +92,7 @@ export function useChat(): UseChatReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading])
+  }, [isLoading, getAuthHeaders])
 
   return { messages, isLoading, error, sendMessage }
 }

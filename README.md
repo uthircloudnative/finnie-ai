@@ -24,31 +24,77 @@ Instead of relying on a single underlying chat model, Finnie uses a **Supervisor
 - **Portfolio Analyst Agent**: Securely reads the user's local SQLite holdings and executes live algorithmic calculations against Yahoo Finance market data.
 - **Goal Strategist Agent**: Calculates multi-decade Monte Carlo simulations to plot safe retirement horizons.
 
-### High-Level Architecture
+### High-Level Architecture & Agent-vs-Programmatic Functionality Breakdown
+
 ```mermaid
 graph TD
-    User([User Device]) -->|HTTP / Glassmorphism UI| Frontend[React + Vite Frontend]
-    Frontend -->|FastAPI REST| Backend[Python/uv Backend]
-    
-    subgraph Containerized Engine [Dockerized Azure Environment]
-        Backend -->|Routing| LangGraph[LangGraph Supervisor]
-        LangGraph -->|Node Exec| QA[Knowledge Engine]
-        LangGraph -->|Node Exec| Analyst[Portfolio Analyst]
-        LangGraph -->|Node Exec| Goals[Goal Strategist]
-    end
-    
-    subgraph Data Persistence
-        QA -.->|Retrieval| Chroma[(ChromaDB Vector Store)]
-        Analyst -.->|Query| SQLite[(Persistent SQLite DB)]
-        Goals -.->|Query| Chroma
+    subgraph Client["📱 Frontend (React 18 + Vite + TypeScript)"]
+        UI[Glass-Finance Dashboard & Views]
+        AuthCtx[AuthContext · Token Store & Bearer Injection]
+        AuthMod[AuthModal · Sign In / Register]
+        UI --> AuthCtx
+        AuthMod --> AuthCtx
     end
 
-    subgraph External Integrations
-        LangGraph -.->|Reasoning| OpenAI{OpenAI GPT-4o}
-        Analyst -.->|Pricing Data| YFinance[Yahoo Finance]
-        Backend -.->|Telemetry| LangSmith[LangSmith Diagnostics]
+    AuthCtx -->|HTTPS + Bearer JWT| Backend[FastAPI Backend · Python 3.13]
+
+    subgraph Security["🔐 Security & Data Layer"]
+        Backend -->|Verify Token| JWT[JWT Core & bcrypt · jwt.py]
+        Backend -->|User Context| ORM[(SQLite Database<br/>users · holdings · goals · market_cache)]
+    end
+
+    subgraph Programmatic["⚙️ Programmatic Services (Deterministic · No LLM)"]
+        Backend -->|Auth Endpoints| AuthSvc["🔑 User Auth (/auth/register, /auth/login, /auth/me)"]
+        Backend -->|Direct Engine| DashSvc["📊 Global Wealth Dashboard (/dashboard)"]
+        Backend -->|CRUD Operations| PortSvc["💼 Portfolio Holdings (/portfolio, /portfolio/save)"]
+        Backend -->|3-Attempt Backoff Retry| DivSvc["🎯 Diversification Score Retry (/portfolio/diversification)"]
+    end
+
+    subgraph AgentSystem["🤖 LangGraph Multi-Agent Orchestrator"]
+        Backend -->|ainvoke| LangGraph[LangGraph Stateful Supervisor]
+
+        LangGraph -->|Multi-Agent Intent Router| Sup[Supervisor Agent Node]
+        
+        Sup -->|route: FINANCIAL_QA| QA[Financial Q&A Worker Node]
+        Backend -->|Direct Route: PORTFOLIO_ANALYST| Analyst[Portfolio Analyst Worker Node]
+        Backend -->|Direct Route: MARKET_INSIGHTS| Insights[Market Insights Worker Node]
+        Backend -->|Direct Route: GOAL_STRATEGIST| Goals[Goal Strategist Worker Node]
+
+        QA       -->|POST-node| Compliance[Compliance Guardian Node]
+        Analyst  -->|POST-node| Compliance
+        Insights -->|POST-node| Compliance
+        Goals    -->|POST-node| Compliance
+
+        Compliance --> END([END])
+    end
+
+    subgraph Tools["🛠️ Agent Tool & Knowledge Layer"]
+        QA       -.-|Tool Call: RAG Search| Chroma[(ChromaDB Vector Store<br/>financial_kb · analytical_kb<br/>goal_rules · market_news_kb)]
+        Analyst  -.-|Tool Call: Benchmark & Prices| YFinance[Yahoo Finance API]
+        Analyst  -.-|Tool Call: RAG Search| Chroma
+        Insights -.-|Tool Call: News & Sentiment| AlphaV[Alpha Vantage API<br/>30-min SQLite Cache]
+        Goals    -.-|Tool Call: 10k Simulations| MonteCarlo[Monte Carlo Engine]
+        Goals    -.-|Tool Call: RAG Search| Chroma
+    end
+
+    subgraph LLMService["🌐 External LLM Services"]
+        AgentSystem -.-|LLM Reasoning| OpenAI{OpenAI GPT-4o / Azure OpenAI}
+        Backend     -.-|Telemetry| LangSmith[LangSmith Observability]
     end
 ```
+
+### 📊 Functionality & Execution Breakdown
+
+| Functionality | Primary Endpoint | Execution Mode | Agent Model | Tool Calls Required | Description |
+|---|---|---|---|---|---|
+| **User Auth & Profile** | `/auth/register`<br/>`/auth/login`<br/>`/auth/me` | **Programmatic** | *None (No LLM)* | *None* | Fast, deterministic JWT generation, password hashing (`bcrypt`), and user profile persistence. |
+| **Global Wealth View** | `/dashboard` | **Programmatic** | *None (No LLM)* | *yfinance price lookup* | Lightning-fast deterministic SQLite crunching and live market prices without LLM latency. |
+| **My Holdings CRUD** | `/portfolio`<br/>`/portfolio/save` | **Programmatic** | *None (No LLM)* | *None* | Multi-tenant portfolio CRUD operations with user isolation. |
+| **Diversification Score Tile Retry** | `/portfolio/diversification` | **Programmatic** | *None (No LLM)* | *yfinance sector info (3 retries)* | 3-attempt exponential backoff engine for sector Herfindahl-Hirschman Index (HHI) score. Shows manual retry button on tile if retries fail. |
+| **Deep Q&A Chat** | `/chat` | **AI Agentic** | **Multi-Agent Router** | ChromaDB RAG search | Supervisor Agent routes intent to Financial Q&A Agent → RAG search → Compliance Agent. |
+| **Portfolio Analyst** | `/portfolio/analysis` | **AI Agentic** | **Multi-Agent (Country-Aware)** | Benchmark routing + yfinance + ChromaDB RAG | Calculates Beta/Volatility/HHI, conducts 2-pass RAG, and synthesizes 3-card formatted insights. |
+| **Market Insights** | `/market/news` | **AI Agentic** | **Single Agent** | Alpha Vantage API + 30-min SQLite Cache | Direct route to Market Insights Agent for stock news & sentiment analysis. |
+| **Goal Planner** | `/goals/calculate` | **AI Agentic** | **Single Agent** | 10,000 Monte Carlo simulations + ChromaDB Tax RAG | Direct route to Goal Strategist Agent for retirement roadmap generation. |
 
 > 👁️ **Curious what it looks like?** Check out the [UI Preview Gallery](./docs/UI_PREVIEW.md) to see high-fidelity mockups of the finished Dashboard and Market Insights interfaces before you start the installation!
 
@@ -165,10 +211,10 @@ Open your web browser and navigate to:
 👉 **`http://localhost:5173`**
 
 You can now test all features natively:
-1. **Executive Edge (Dashboard)**: Automatically fetches live `yfinance` S&P 500 equivalent data for dynamic wealth tracking.
-2. **My Holdings**: Add sample stocks (`AAPL`, `RELIANCE.NS`) into your SQLite database.
-3. **Portfolio Analyst**: Triggers the AI to compute live Beta & Volatility algorithms against your holdings.
-4. **Market Insights**: Fetches real-time sentiment analysis from Alpha Vantage.
+1. **Executive Edge (Dashboard)**: Automatically fetches live `yfinance` market data for dynamic multi-country wealth tracking.
+2. **My Holdings**: Add sample stocks (`AAPL`, `RELIANCE.NS`, etc.) grouped by country into your SQLite database.
+3. **Portfolio Analyst**: Features country-specific benchmark routing (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, etc.), All-Markets combined view, formatted 3-card AI insights, instant session caching, and manual "Refresh Analysis" button.
+4. **Market Insights**: Fetches real-time sentiment analysis from Alpha Vantage with persistent 30-minute SQLite caching.
 5. **Goal Planner**: Runs 10,000-scenario Monte Carlo simulations cross-referenced against your RAG-ingested tax rules!
 
 ---
@@ -181,8 +227,13 @@ If you want to dive deeper into how specific features were engineered, check the
 |---|---|
 | [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md) | Mission, features, and full roadmap |
 | [DESIGN.md](./docs/DESIGN.md) | Multi-Agent LangGraph architecture map |
+| [ANALYTICAL_AGENT.md](./docs/ANALYTICAL_AGENT.md) | Country-aware Portfolio Analyst & RAG pipeline guide |
+| [MARKET_INSIGHT_AGENT.md](./docs/MARKET_INSIGHT_AGENT.md) | Market Insights news sentiment & caching guide |
+| [GOAL_PLANNER.md](./docs/GOAL_PLANNER.md) | Monte Carlo goal simulation & tax RAG guide |
 | [OBSERVABILITY_GUIDE.md](./docs/OBSERVABILITY_GUIDE.md) | LangSmith Tracing & FastAPI Middleware docs |
 | [DASHBOARD.md](./docs/DASHBOARD.md) | The deterministic dynamic Global Wealth system |
 | [RAG_GUIDE.md](./docs/RAG_GUIDE.md) | Semantic chunking and retrieval strategy |
 | [UI_DESIGN.md](./docs/UI_DESIGN.md) | Glass-Finance UX/UI specification |
+| [README.Docker.md](./docs/README.Docker.md) | Containerization & Azure deployment guide |
 | [STANDARDS.md](./docs/STANDARDS.md) | Engineering guidelines and AI policies |
+| [CODE_REVIEW.md](./docs/CODE_REVIEW.md) | Technical & business code review with improvement roadmap |

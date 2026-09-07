@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'user_1'
 
 export interface GoalConfig {
   goal_name: string
@@ -22,6 +22,7 @@ interface UseGoalStrategistReturn {
 }
 
 export function useGoalStrategist(): UseGoalStrategistReturn {
+  const { getAuthHeaders } = useAuth()
   const [goal, setGoal] = useState<GoalConfig | null>(null)
   const [roadmap, setRoadmap] = useState<string | null>(null)
   const [simulationResults, setSimulationResults] = useState<any | null>(null)
@@ -32,7 +33,7 @@ export function useGoalStrategist(): UseGoalStrategistReturn {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API_BASE}/goals/${USER_ID}`)
+      const res = await fetch(`${API_BASE}/goals`, { headers: getAuthHeaders() })
       if (!res.ok) throw new Error('Failed to fetch goal')
       const data = await res.json()
       if (data.status !== 'no_goal') {
@@ -43,16 +44,16 @@ export function useGoalStrategist(): UseGoalStrategistReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [getAuthHeaders])
 
-  const calculate = async (config: GoalConfig) => {
+  const calculate = useCallback(async (config: GoalConfig) => {
     setIsLoading(true)
     setError(null)
     try {
       const res = await fetch(`${API_BASE}/goals/calculate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...config, user_id: USER_ID }),
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(config),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -67,7 +68,7 @@ export function useGoalStrategist(): UseGoalStrategistReturn {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [getAuthHeaders])
 
   useEffect(() => {
     fetchGoal()

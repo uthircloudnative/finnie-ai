@@ -37,9 +37,14 @@ When a user logs in with no data, they are met with a high-impact onboarding flo
 - **Rich Cards**: Answers aren't just text; they include mini-charts or table data when relevant.
 - **Compliance Footer**: Persistent disclaimer: *"Finnie is an AI assistant, not a financial advisor. $NFA."*
 
-### 3.3 Portfolio Analysis (Deep Metrics)
-- **Visuals**: Donut chart for allocation, risk/return scatter plots.
-- **Insights**: Textual summaries like *"Your tech exposure is 45%, which is high for your moderate risk profile."*
+### 3.3 Portfolio Analysis (Deep Metrics & Formatted Insights)
+- **Country Tab Bar**: Interactive pills (`🌍 All Markets`, `🇺🇸 US`, `🇮🇳 India`, `🇬🇧 UK`, etc.) for filtering holdings and benchmarks instantly.
+- **Metric Cards**: Dynamic KPI pills displaying Beta (vs country benchmark), Annualized Volatility, Sharpe Ratio, and HHI Diversification Score.
+- **Finnie's Insights Cards**: Parsed 3-card structured layout:
+  - 📈 **Risk Profile**: Left border cyan, detailing market sensitivity & volatility tier.
+  - 🎯 **Diversification & Balance**: Left border purple, highlighting sector distribution & concentration metrics.
+  - 💡 **Action Plan & Strategic Advice**: Left border green, providing actionable financial guidance.
+- **Session Caching & Manual Refresh**: In-memory caching for zero-latency tab switches, paired with a prominent **"🔄 Refresh Analysis"** button to trigger re-calculation only when explicitly requested.
 
 ### 3.4 Market Insights (Real-Time Context)
 - **Watchlist**: Sleek sparklines for user-tracked assets.

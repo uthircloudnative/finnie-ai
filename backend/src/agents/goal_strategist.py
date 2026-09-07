@@ -5,11 +5,14 @@ Combines Monte Carlo math with RAG-based tax and regulatory rules.
 """
 from typing import Dict, Any
 import os
+from datetime import datetime
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage, SystemMessage
 from src.models.state import FinnieState
 from src.utils.simulations import run_monte_carlo
 from src.utils.vector_store import VectorStoreManager
+from src.database import SessionLocal
+from src.utils.dashboard_engine import build_dashboard_payload
 
 # Mock/Expert prompts for goal synthesis
 GOAL_PROMPT = """
@@ -41,13 +44,31 @@ def goal_strategist_node(state: FinnieState) -> Dict[str, Any]:
 
     # 1. Prepare Simulation Inputs
     target = config.get("target_amount", 1000000.0)
-    years = max(1, config.get("target_year", 2035) - 2024) # Simplified timeline
+    
+    # Dynamically calculate years horizon based on current year
+    current_year = datetime.now().year
+    years = max(1, config.get("target_year", 2035) - current_year)
+    
     savings = config.get("monthly_savings", 500.0)
     country = config.get("country", "USA")
     
-    # Use Portfolio Analyst risk metrics as the baseline
-    # Default to 8% return and 15% volatility if portfolio is empty
-    initial_val = sum(h.get("shares", 0) * 100 for h in state.get("portfolio_data", [])) # Mock price $100
+    # Query live portfolio valuation dynamically using dashboard engine
+    db = SessionLocal()
+    initial_val = 0.0
+    try:
+        user_id = config.get("user_id", "user_1")
+        dash_data = build_dashboard_payload(user_id, db)
+        if "portfolios" in dash_data and not dash_data.get("error"):
+            for portfolio in dash_data["portfolios"].values():
+                initial_val += portfolio.get("total_value", 0.0)
+        else:
+            # Fallback if dashboard engine data is empty/not available
+            print(f"[FINNIE-AI] Dashboard Engine data not available or failed. Falling back to $0.00.")
+    except Exception as e:
+        print(f"[FINNIE-AI] Error loading live portfolio value: {e}. Falling back to $0.00.")
+    finally:
+        db.close()
+        
     expected_return = 0.08 
     volatility = analysis.get("volatility", 15.0) / 100.0 # Convert from percentage
 

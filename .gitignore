@@ -7,6 +7,7 @@ env/
 backend/venv/
 backend/src/chroma_db/
 backend/chroma_db/
+backend/chroma_data_local/
 backend/finnie.db
 .uv/
 

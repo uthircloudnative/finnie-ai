@@ -448,17 +448,28 @@ def save_portfolio(
     # 1. Delete existing holdings for this user
     db.query(Holding).filter(Holding.user_id == effective_id).delete()
 
-    # 2. Insert the new holdings
-    new_rows = []
+    # 2. Consolidate duplicate (ticker, exchange) pairs defensively
+    consolidated: dict[tuple[str, str], dict] = {}
     for h in req.holdings:
-        row = Holding(
-            user_id=effective_id,
-            ticker=h.ticker.upper(),
-            shares=h.shares,
-            country=h.country.upper() if h.country else "US",
-            exchange=h.exchange.upper() if h.exchange else "NYSE",
-            added_date=date.today(),
-        )
+        t = h.ticker.upper().strip()
+        e = h.exchange.upper().strip() if h.exchange else "NYSE"
+        c = h.country.upper().strip() if h.country else "US"
+        key = (t, e)
+        if key in consolidated:
+            consolidated[key]["shares"] += h.shares
+        else:
+            consolidated[key] = {
+                "user_id": effective_id,
+                "ticker": t,
+                "shares": h.shares,
+                "country": c,
+                "exchange": e,
+                "added_date": date.today(),
+            }
+
+    new_rows = []
+    for item in consolidated.values():
+        row = Holding(**item)
         db.add(row)
         new_rows.append(row)
 

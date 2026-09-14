@@ -17,8 +17,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { usePortfolio, type Holding } from './usePortfolio'
 import { useAuth } from '../context/AuthContext'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API_BASE } from '../config'
 
 // Country metadata for display
 const COUNTRY_META: Record<string, { flag: string; name: string }> = {

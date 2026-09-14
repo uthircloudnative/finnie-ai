@@ -573,18 +573,17 @@ healthcheck:
 
 ### Phase 2 — Quality & Correctness
 
-| # | Issue | Location | Effort |
-|---|---|---|---|
-| 6 | Implement real diversification score (HHI or correlation) | `src/agents/portfolio_analyst.py:152` | 🟡 Medium |
-| 7 | Add `UniqueConstraint` to holdings table | `src/models/portfolio.py` | 🟢 Low |
-| 8 | Replace `datetime.utcnow()` with timezone-aware equivalent | `src/models/goal.py`, `market_cache.py` | 🟢 Low |
-| 9 | Singleton LLM and VectorStore instances | All agent files | 🟡 Medium |
-| 10 | Add rate limiting (`slowapi`) on LLM-triggering endpoints | `main.py` | 🟡 Medium |
-| 11 | Add `react-markdown` for roadmap rendering | `GoalPlanner.tsx` | 🟢 Low |
-| 12 | Centralize `API_BASE` and `USER_ID` constants | All hook files → `src/config.ts` | 🟢 Low |
-| 13 | Rotate and remove Chroma tenant UUID from `.env.example` | `.env.example` | 🟢 Low |
-| 14 | Add `aria-live` to holdings list for accessibility | `MyHoldings.tsx` | 🟢 Low |
-| 15 | Delete dead code `src/agents/stubs.py` | `src/agents/stubs.py` | 🟢 Low |
+| # | Issue | Location | Effort | Status |
+|---|---|---|---|---|
+| 7 | Add `UniqueConstraint` to holdings table | `src/models/portfolio.py` | 🟢 Low | ✅ **SHIPPED** |
+| 8 | Replace `datetime.utcnow()` with timezone-aware equivalent | `src/models/goal.py`, `market_cache.py` | 🟢 Low | ✅ **SHIPPED** |
+| 9 | Singleton LLM and VectorStore instances | All agent files | 🟡 Medium | ⏳ Planned |
+| 10 | Add rate limiting (`slowapi`) on LLM-triggering endpoints | `main.py` | 🟡 Medium | ⏳ Planned |
+| 11 | Structured markdown rendering for roadmap | `GoalPlanner.tsx`, `RoadmapRenderer.tsx` | 🟢 Low | ✅ **SHIPPED** |
+| 12 | Centralize `API_BASE` and endpoints | All hook files → `src/config.ts` | 🟢 Low | ✅ **SHIPPED** |
+| 13 | Rotate and remove Chroma tenant UUID from `.env.example` | `.env.example` | 🟢 Low | ⏳ Planned |
+| 14 | Add `aria-live` to holdings list for accessibility | `MyHoldings.tsx` | 🟢 Low | ⏳ Planned |
+| 15 | Delete dead code `src/agents/stubs.py` | `src/agents/stubs.py` | 🟢 Low | ✅ **SHIPPED** |
 
 ### Phase 3 — Production Hardening
 

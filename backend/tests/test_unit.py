@@ -4,6 +4,7 @@ Unit Tests for Finnie AI Core Functionality
 Offline tests verifying math, simulations, security, compliance, and graph routing.
 """
 import unittest
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch, MagicMock
 from langchain_core.messages import HumanMessage, AIMessage
 
@@ -129,5 +130,65 @@ class TestGraphRouting(unittest.TestCase):
         self.assertEqual(start_node({}), "supervisor")
 
 
+class TestModelIntegrityAndDatetimes(unittest.TestCase):
+    def test_holding_unique_constraint(self):
+        from src.models.portfolio import Holding
+        from sqlalchemy import UniqueConstraint
+
+        constraints = [
+            c for c in Holding.__table__.constraints
+            if isinstance(c, UniqueConstraint)
+        ]
+        self.assertTrue(len(constraints) >= 1)
+        col_names = [col.name for col in constraints[0].columns]
+        self.assertEqual(col_names, ["user_id", "ticker", "exchange"])
+
+    def test_market_cache_tz_aware_expiration(self):
+        from datetime import datetime, timezone, timedelta
+        from src.models.market_cache import MarketCache
+
+        # 1. Fresh cache entry (UTC aware)
+        cache_fresh = MarketCache(
+            key="TEST:FRESH",
+            data_json="{}",
+            timestamp=datetime.now(timezone.utc)
+        )
+        self.assertFalse(cache_fresh.is_expired(ttl_minutes=30))
+
+        # 2. Expired cache entry (UTC aware)
+        cache_old = MarketCache(
+            key="TEST:OLD",
+            data_json="{}",
+            timestamp=datetime.now(timezone.utc) - timedelta(minutes=45)
+        )
+        self.assertTrue(cache_old.is_expired(ttl_minutes=30))
+
+        # 3. Naive datetime fallback (legacy SQLite storage compatibility)
+        cache_naive = MarketCache(
+            key="TEST:NAIVE",
+            data_json="{}",
+            timestamp=(datetime.now(timezone.utc) - timedelta(minutes=45)).replace(tzinfo=None)
+        )
+        # Must not raise TypeError: can't subtract offset-naive and offset-aware datetimes
+        self.assertTrue(cache_naive.is_expired(ttl_minutes=30))
+        self.assertIn("key=TEST:NAIVE", repr(cache_naive))
+
+    def test_financial_goal_tz_aware(self):
+        from src.models.goal import FinancialGoal
+
+        goal = FinancialGoal(
+            user_id="user_test",
+            goal_name="Vacation Fund",
+            target_amount=15000.0,
+            target_year=2028,
+            monthly_contribution=300.0,
+        )
+        # Evaluates default callable
+        default_created = FinancialGoal.created_at.default.arg(None)
+        self.assertIsNotNone(default_created.tzinfo)
+        self.assertEqual(default_created.tzinfo, timezone.utc)
+
+
 if __name__ == "__main__":
     unittest.main()
+

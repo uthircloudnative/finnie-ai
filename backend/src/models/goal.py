@@ -4,7 +4,7 @@ goal.py — SQLAlchemy ORM model for user financial goals
 Stores persistent goal configurations (Target Amount, Year, Monthly Contributions)
 for the Goal Strategist Monte Carlo engine.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Float, DateTime
 from src.database import Base
 
@@ -27,8 +27,8 @@ class FinancialGoal(Base):
     # Used for RAG-based tax/regulatory metadata filtering
     country = Column(String, default="US")                # e.g. "US", "IN"
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     def __repr__(self) -> str:
         return f"<FinancialGoal user={self.user_id} name={self.goal_name} target={self.target_amount} year={self.target_year}>"

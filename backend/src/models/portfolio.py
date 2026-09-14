@@ -5,13 +5,16 @@ Stores each holding as a (user_id, ticker, shares) row.
 Weights are NOT stored — always computed at query time from live market prices.
 """
 from datetime import date
-from sqlalchemy import Column, String, Integer, Date, Float
+from sqlalchemy import Column, String, Integer, Date, Float, UniqueConstraint
 from src.database import Base
 
 
 class Holding(Base):
     """One row = one ticker position for one user."""
     __tablename__ = "holdings"
+    __table_args__ = (
+        UniqueConstraint("user_id", "ticker", "exchange", name="uq_user_ticker_exchange"),
+    )
 
     id       = Column(Integer, primary_key=True, autoincrement=True)
     user_id  = Column(String, nullable=False, index=True)  # e.g. "user_1"
@@ -23,3 +26,4 @@ class Holding(Base):
 
     def __repr__(self) -> str:
         return f"<Holding user={self.user_id} ticker={self.ticker} shares={self.shares} country={self.country}>"
+

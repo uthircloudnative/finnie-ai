@@ -4,6 +4,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts'
 import { useGoalStrategist, GoalConfig } from '../../hooks/useGoalStrategist'
+import RoadmapRenderer from './RoadmapRenderer'
 import './GoalPlanner.css'
 
 export default function GoalPlanner() {
@@ -284,11 +285,7 @@ export default function GoalPlanner() {
 
               {/* The AI Roadmap Report */}
               <div className="glass-card roadmap-report">
-                <div className="markdown-body">
-                  {roadmap?.split('\n').map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
-                </div>
+                <RoadmapRenderer markdown={roadmap} />
               </div>
             </>
           ) : (

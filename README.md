@@ -221,19 +221,19 @@ You can now test all features natively:
 
 ## 📂 Core Architecture Documentation
 
-If you want to dive deeper into how specific features were engineered, check the `docs/` folder:
+If you want to dive deeper into how specific features were engineered, check the streamlined documentation suite:
 
-| Document | Purpose |
-|---|---|
-| [PROJECT_PLAN.md](./docs/PROJECT_PLAN.md) | Mission, features, and full roadmap |
-| [DESIGN.md](./docs/DESIGN.md) | Multi-Agent LangGraph architecture map |
-| [ANALYTICAL_AGENT.md](./docs/ANALYTICAL_AGENT.md) | Country-aware Portfolio Analyst & RAG pipeline guide |
-| [MARKET_INSIGHT_AGENT.md](./docs/MARKET_INSIGHT_AGENT.md) | Market Insights news sentiment & caching guide |
-| [GOAL_PLANNER.md](./docs/GOAL_PLANNER.md) | Monte Carlo goal simulation & tax RAG guide |
-| [OBSERVABILITY_GUIDE.md](./docs/OBSERVABILITY_GUIDE.md) | LangSmith Tracing & FastAPI Middleware docs |
-| [DASHBOARD.md](./docs/DASHBOARD.md) | The deterministic dynamic Global Wealth system |
-| [RAG_GUIDE.md](./docs/RAG_GUIDE.md) | Semantic chunking and retrieval strategy |
-| [UI_DESIGN.md](./docs/UI_DESIGN.md) | Glass-Finance UX/UI specification |
-| [README.Docker.md](./docs/README.Docker.md) | Containerization & Azure deployment guide |
-| [STANDARDS.md](./docs/STANDARDS.md) | Engineering guidelines and AI policies |
-| [CODE_REVIEW.md](./docs/CODE_REVIEW.md) | Technical & business code review with improvement roadmap |
+| Document | Focus Area | Contents & Implementation Details |
+|---|---|---|
+| [**AGENTS.md**](./AGENTS.md) | Universal Agent Constitution | Coding standards, 4-space/2-space indentation rules, and feature lifecycles |
+| [**specs/**](./specs/) | Spec-Driven Development (SDD) | Baseline verified specs (SPEC-01 to 05) & upcoming feature spec templates |
+| [**FEATURES_AND_AGENTS.md**](./docs/FEATURES_AND_AGENTS.md) | Feature Intelligence | Technical & functional specifications for all 5 core features and agent nodes |
+| [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) | System Architecture | LangGraph hub-and-spoke topologies, state schemas, and LangSmith observability |
+| [**KNOWLEDGE_BASE_AND_RAG.md**](./docs/KNOWLEDGE_BASE_AND_RAG.md) | Grounding & Vectors | ChromaDB 3-collection strategy, embeddings factory, and scraping pipelines |
+| [**UI_DESIGN_SYSTEM.md**](./docs/UI_DESIGN_SYSTEM.md) | Glass-Finance UX | Design tokens, custom hook architecture, `RoadmapRenderer`, and design standards |
+| [**UI_PREVIEW.md**](./docs/UI_PREVIEW.md) | Visual UI Gallery | High-fidelity screenshots for all 6 workspace dashboards and agent views |
+| [**DEPLOYMENT.md**](./docs/DEPLOYMENT.md) | Cloud & Containers | Multi-worker Gunicorn Docker setup, persistent mounts, and Azure deployment |
+| [**PROGRESS_LOG.md**](./docs/PROGRESS_LOG.md) | Progress & Changelog | Date-stamped accomplishment logs, phase completions, and test records |
+| [**PROJECT_PLAN.md**](./docs/PROJECT_PLAN.md) | Product Roadmap | Strategic vision, future analytical use-cases (UC-PA-1 through UC-PA-6) |
+| [**CODE_REVIEW.md**](./docs/CODE_REVIEW.md) | Technical Debt & Audit | Senior engineering review and prioritized improvement roadmap |
+

@@ -1,46 +1,82 @@
-# Finnie AI: User Interface Previews
+# Finnie AI — UI Preview Gallery & Visual Walkthrough
 
-Welcome to the visual gallery of the **Finnie AI** platform. These prototype screens demonstrate the actual design language and User Experience (UX) of our intelligent financial hub.
-
-## 1. Executive Edge Dashboard
-The primary landing space for users. The dashboard is designed around a premium dark-mode aesthetic, providing a centralized view of Global Wealth Management and AI-driven insights.
-
-![Dashboard](../prototype/Dashboard.png)
+Welcome to the visual gallery of **Finnie AI**. These high-fidelity screens showcase the **Glass-Finance** design system, component states, and multi-agent financial interfaces in production.
 
 ---
 
-## 2. Deep QA Financial Agent
-An interactive AI engine capable of retrieving complex tax theory and investing strategies directly from a fully-ingested RAG ChromaDB vector store.
+## 1. 📊 Executive Edge Dashboard
+The primary landing workspace for investors. Built for speed and clarity, the dashboard delivers an instantaneous overview of global wealth holdings, daily P&L fluctuations, and asset allocations with **zero LLM latency** by fetching batched quotes directly.
 
-![Deep QA](../prototype/Deep%20QA.png)
+- **Key Highlights**: Real-time net portfolio value, daily gain/loss trend pills, multi-market asset breakdown, and quick stats.
+- **Underlying Specification**: [`specs/baseline/SPEC-05-EXECUTIVE-DASHBOARD.md`](file:///Users/prajosh/Development/finnie-ai/specs/baseline/SPEC-05-EXECUTIVE-DASHBOARD.md)
+
+![Executive Dashboard](../prototype/Dashboard.png)
 
 ---
 
-## 3. My Holdings Tracker
-A beautifully organized operational table displaying the user's localized stock holdings. Quantities, prices, and high-contrast glowing P&L badges are tracked dynamically alongside a fluid asset allocation donut chart.
+## 2. 💼 My Holdings & Portfolio Manager
+The operational portfolio table displaying tenant-isolated equity and ETF holdings across global exchanges (US, NSE India, London FTSE, TSX Canada, DAX Germany).
+
+- **Key Highlights**: Multi-tenant data isolation, in-memory duplicate consolidation, composite unique constraint enforcement (`uq_user_ticker_exchange`), dynamic country flags, and real-time asset allocation charts.
+- **Underlying Specification**: [`specs/baseline/SPEC-01-AUTH-MULTI-TENANCY.md`](file:///Users/prajosh/Development/finnie-ai/specs/baseline/SPEC-01-AUTH-MULTI-TENANCY.md)
 
 ![My Holdings](../prototype/MyHoldings.png)
 
 ---
 
-## 4. Portfolio Analyst
-Triggers the LangGraph specialized AI to read the user's precise holdings and compute live Beta & Volatility algorithms against market momentum to provide personalized risk strategies.
+## 3. 🌍 Multi-Market Portfolio Analyst
+Institutional-grade portfolio diagnostics powered by LangGraph. Benchmarks domestic equities against their local market indices and analyzes risk metrics.
+
+- **Key Highlights**:
+  - Country-aware benchmark routing (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, `^GSPTSE` for Canada, `^GDAXI` for Germany, `ALL` for blended).
+  - Herfindahl-Hirschman Index (HHI) sector diversification scoring with a 3-attempt exponential backoff scraper retry engine.
+  - Formatted 3-card strategic AI insights: 📈 **Risk Profile**, 🎯 **Diversification & Balance**, and 💡 **Action Plan**.
+  - Mandatory regulatory `$NFA` disclaimer enforcement.
+- **Underlying Specification**: [`specs/baseline/SPEC-02-PORTFOLIO-ANALYST.md`](file:///Users/prajosh/Development/finnie-ai/specs/baseline/SPEC-02-PORTFOLIO-ANALYST.md)
 
 ![Portfolio Analyst](../prototype/PortfolioAnalyst.png)
 
 ---
 
-## 5. Real-Time Market Insights
-Powered natively by AlphaVantage and LangGraph, this interface provides operational market intelligence, global macroeconomic news, and a sophisticated algorithmic sentiment analysis dial measuring market momentum.
+## 4. 🎯 Goal Strategist (Financial GPS)
+Interactive long-term wealth roadmap planning driven by advanced quantitative modeling and statutory tax knowledge.
+
+- **Key Highlights**:
+  - **10,000-iteration geometric Brownian motion Monte Carlo simulations** parameterized by live portfolio risk (Beta & Volatility).
+  - Monotonic percentile invariants ($P_{05} \le \text{Median} \le P_{95}$) plotted on an interactive Recharts probability fan chart.
+  - Regional statutory tax RAG (`goal_rules` collection in ChromaDB) for 2026 IRS 401(k)/IRA contribution caps or India Section 80C limits.
+  - Native [`RoadmapRenderer.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/RoadmapRenderer.tsx) markdown engine rendering glowing status badges (`● ON TRACK`, `▲ CAUTION`, `■ AT RISK`) and milestone action cards.
+- **Underlying Specification**: [`specs/baseline/SPEC-03-GOAL-STRATEGIST.md`](file:///Users/prajosh/Development/finnie-ai/specs/baseline/SPEC-03-GOAL-STRATEGIST.md)
+
+![Goal Planner](../prototype/GoalPlanner.png)
+
+---
+
+## 5. 📡 Real-Time Market Insights
+Real-time headline monitoring and sentiment analysis for portfolio positions.
+
+- **Key Highlights**:
+  - Live Alpha Vantage news and sentiment ingestion mapped to exchange-normalized ticker symbols (e.g. `RELIANCE.NS`).
+  - Sentiment classification into actionable signals: 📈 **Bullish**, 📉 **Bearish**, and ➡️ **Neutral**.
+  - **30-Minute SQLite `MarketCache` Layer**: Protects API quotas and prevents latency spikes with timezone-aware UTC expiration.
+  - Integrated with the compliance guardian node.
+- **Underlying Specification**: [`specs/baseline/SPEC-04-MARKET-INSIGHTS.md`](file:///Users/prajosh/Development/finnie-ai/specs/baseline/SPEC-04-MARKET-INSIGHTS.md)
 
 ![Market Insights](../prototype/Market-Insights.png)
 
 ---
 
-## 6. Goal Strategist
-The defining feature of the Finnie AI platform. This interactive UI generates massive, 30-year Monte Carlo simulation line graphs with multi-colored statistical confidence bands radiating outwards to plot safe retirement trajectories.
+## 6. 🧠 Deep Q&A Financial Worker
+Interactive conversational assistant grounded in curated financial and tax textbooks from Investor.gov, the SEC, and Vanguard research.
 
-![Goal Planner](../prototype/GoalPlanner.png)
+- **Key Highlights**:
+  - Supervisor Intent Router classifies financial queries and dispatches to the specialized Financial Q&A node.
+  - 3-collection ChromaDB vector store eliminates LLM hallucinations.
+  - Embedded inside the persistent sidebar for seamless side-by-side analysis across any tab.
+- **Underlying Architecture**: [`docs/ARCHITECTURE.md`](file:///Users/prajosh/Development/finnie-ai/docs/ARCHITECTURE.md) and [`docs/KNOWLEDGE_BASE_AND_RAG.md`](file:///Users/prajosh/Development/finnie-ai/docs/KNOWLEDGE_BASE_AND_RAG.md)
+
+![Deep QA](../prototype/Deep%20QA.png)
 
 ---
-*Note: These are genuine prototype designs illustrating the final layout of the Finnie UX.*
+
+> ℹ️ **Design System Tokens**: For CSS variable specifications, glassmorphism tokens, and accessibility standards, refer to [`docs/UI_DESIGN_SYSTEM.md`](file:///Users/prajosh/Development/finnie-ai/docs/UI_DESIGN_SYSTEM.md).

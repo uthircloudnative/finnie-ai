@@ -1,7 +1,8 @@
+from datetime import datetime, timezone
+import json
 from sqlalchemy import Column, String, Integer, DateTime, Text
 from src.database import Base
-import datetime
-import json
+
 
 class MarketCache(Base):
     """
@@ -12,12 +13,17 @@ class MarketCache(Base):
 
     key        = Column(String, primary_key=True)
     data_json  = Column(Text, nullable=False)
-    timestamp  = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def is_expired(self, ttl_minutes: int = 30) -> bool:
         """Checks if the cached data is older than the TTL."""
-        now = datetime.datetime.utcnow()
-        age = now - self.timestamp
+        now = datetime.now(timezone.utc)
+        ts = self.timestamp
+        if ts is None:
+            return True
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        age = now - ts
         return age.total_seconds() > (ttl_minutes * 60)
 
     @property
@@ -29,4 +35,10 @@ class MarketCache(Base):
         self.data_json = json.dumps(value)
 
     def __repr__(self) -> str:
-        return f"<MarketCache key={self.key} age={datetime.datetime.utcnow() - self.timestamp}>"
+        now = datetime.now(timezone.utc)
+        ts = self.timestamp
+        if ts is not None and ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        age_str = str(now - ts) if ts else "unknown"
+        return f"<MarketCache key={self.key} age={age_str}>"
+

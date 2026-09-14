@@ -1,11 +1,52 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-09-07
-**Current Status**: 🟢 Phase 6 (Multi-Tenancy, User Auth & Resilient Math Engine) — COMPLETE
+**Date**: 2026-09-13
+**Current Status**: 🟢 Phase 2 Quality & Correctness Quick Hits — COMPLETE
 
 ---
 
-## ✅ What We Accomplished Today (September 07, 2026)
+## ✅ What We Accomplished Today (September 13, 2026)
+
+### 🛡️ Quality & Correctness Quick Hits (Option A)
+1. **Holding Model Integrity (`backend/src/models/portfolio.py` & `main.py`)**:
+   - Added `UniqueConstraint("user_id", "ticker", "exchange", name="uq_user_ticker_exchange")` to `Holding`.
+   - Hardened `POST /portfolio/save` to defensively consolidate duplicate tickers and sum share quantities prior to DB insertion.
+2. **Timezone-Aware UTC Datetimes (`backend/src/models/market_cache.py` & `goal.py`)**:
+   - Modernized timestamp storage to `lambda: datetime.now(timezone.utc)` for Python 3.12+ compliance.
+   - Built backward-compatible offset-naive datetime normalization in `MarketCache.is_expired()` to prevent subtraction type errors with legacy records.
+3. **Dead Code Elimination & Centralized Config**:
+   - Removed obsolete stub file `backend/src/agents/stubs.py`.
+   - Created `frontend/src/config.ts` (`API_BASE` and typed `API_ENDPOINTS`), removing duplicate host strings across 8 frontend hooks/contexts.
+4. **Structured Roadmap Presentation (`frontend/src/components/Goals/RoadmapRenderer.tsx` & `GoalPlanner.css`)**:
+   - Created React 19 native markdown renderer for Goal Strategist output (headings, status chips, bullet lists, bold highlights, compliance callouts).
+   - Replaced unformatted line splitting in `GoalPlanner.tsx`.
+5. **Unit Test Expansion (`backend/tests/test_unit.py`)**:
+   - Added tests for `Holding` unique constraints, `MarketCache` timezone expiration (aware and naive), and `FinancialGoal` timezone awareness (14/14 tests passing).
+
+### 🏛️ Universal Agent Constitution & Coding Standards
+6. **Universal Constitution (`AGENTS.md`)**:
+   - Codified 11 Golden Rules (Multi-tenant isolation, LangGraph async uniformity, UTC datetimes, centralized config, decoupled hooks, 4-space Python/2-space TS indentation, Spec-Driven Development, and Human-in-the-Loop Doc Gate).
+7. **Modular Rules (`.agents/rules/`)**:
+   - Created `backend_standards.md`, `frontend_standards.md`, and `ux_design_standards.md`.
+8. **Specialized Agent Skills (`.agents/skills/`)**:
+   - Created executable skills: `fullstack-code-review`, `fastapi-langgraph-architect`, `react-glass-ui`, `finnie-domain-guardian`, `spec-driven-dev`, and `doc-architect`.
+
+### 📂 Standardized Documentation Consolidation (15 Files ➔ 7 Cohesive Docs)
+9. **Unified 4-Tier Document Template**:
+   - Consolidated technical & functional guides into: `docs/FEATURES_AND_AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/KNOWLEDGE_BASE_AND_RAG.md`, `docs/UI_DESIGN_SYSTEM.md`, and `docs/DEPLOYMENT.md`.
+   - Safely retired 10 obsolete/fragmented markdown documents.
+
+### 🧭 Spec-Driven Development (SDD) Foundation
+10. **Baseline Feature Specifications (`specs/baseline/`)**:
+    - Authored baseline regression specifications: `SPEC-01-AUTH-MULTI-TENANCY.md`, `SPEC-02-PORTFOLIO-ANALYST.md`, `SPEC-03-GOAL-STRATEGIST.md`, `SPEC-04-MARKET-INSIGHTS.md`, and `SPEC-05-EXECUTIVE-DASHBOARD.md`.
+11. **Upcoming Specification Template (`specs/upcoming/SPEC_TEMPLATE.md`)**:
+    - Created standard template for authoring future feature specifications.
+12. **Review & Promotion Integration**:
+    - Linked SDD into `AGENTS.md`, `fullstack-code-review`, `doc-architect`, and `README.md`.
+
+---
+
+## ✅ What We Accomplished (September 07, 2026)
 
 ### 🔑 Phase 6: Multi-Tenancy & JWT User Authentication (Phases 1, 2, 3 Complete)
 1. **User Database Model (`backend/src/models/user.py`)**: Designed `User` table (UUID primary key, email, bcrypt hashed password, full_name, base_currency) via SQLAlchemy ORM.

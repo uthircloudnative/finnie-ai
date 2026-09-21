@@ -1,0 +1,24 @@
+======================================================================
+[ 🤖 FINNIE AI SECURITY ] — PASSWORD RESET VERIFICATION CODE
+======================================================================
+
+We received a request to reset your Finnie AI account password.
+
+YOUR ONE-TIME VERIFICATION CODE:
+----------------------------------------------------------------------
+    {{otp_code}}
+----------------------------------------------------------------------
+
+• Expires in: {{expiry_minutes}} minutes
+• Security: Maximum 3 attempts allowed
+
+REQUEST ORIGIN TELEMETRY:
+Location: {{request_location}}
+
+If you did not request this password reset, please ignore this email.
+Your account remains secure and no modifications have been made.
+
+----------------------------------------------------------------------
+🔒 Secure 256-Bit TLS · Automated Notification
+Finnie AI Portfolio Guidance · Not Financial Advice ($NFA)
+======================================================================

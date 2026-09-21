@@ -11,12 +11,13 @@ Endpoints:
     POST /portfolio/save            - Save/replace holdings for a user
 """
 import os
+import secrets
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import FastAPI, HTTPException, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
@@ -35,8 +36,20 @@ from src.utils.telemetry import TraceContextMiddleware, setup_telemetry_logging,
 from src.utils.dashboard_engine import build_dashboard_payload # noqa: E402
 from src.agents.portfolio_analyst import compute_hhi_diversification # noqa: E402
 from src.models.user import User # noqa: E402
-from src.models.auth_schemas import UserRegisterRequest, UserLoginRequest, UserResponse, TokenResponse # noqa: E402
+from src.models.password_reset import PasswordResetAudit # noqa: E402
+from src.models.auth_schemas import ( # noqa: E402
+    UserRegisterRequest,
+    UserLoginRequest,
+    UserResponse,
+    TokenResponse,
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse
+)
 from src.auth.jwt import hash_password, verify_password, create_access_token, get_current_user # noqa: E402
+from src.utils.email_service import EmailService # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Telemetry Bootstrap
@@ -155,7 +168,7 @@ def register_user(req: UserRegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    token = create_access_token({"sub": new_user.id, "email": new_user.email})
+    token = create_access_token({"sub": new_user.id, "email": new_user.email, "v": new_user.token_version})
     return TokenResponse(access_token=token, token_type="bearer", user=UserResponse.model_validate(new_user))
 
 
@@ -166,8 +179,142 @@ def login_user(req: UserLoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(req.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
-    token = create_access_token({"sub": user.id, "email": user.email})
+    token = create_access_token({"sub": user.id, "email": user.email, "v": user.token_version})
     return TokenResponse(access_token=token, token_type="bearer", user=UserResponse.model_validate(user))
+
+
+# In-memory sliding window rate limiter for password reset requests (email -> list of UTC timestamps)
+_forgot_password_rate_limit: dict[str, list[datetime]] = {}
+
+
+@app.post("/auth/forgot-password", response_model=ForgotPasswordResponse, tags=["Auth"])
+def forgot_password(req: ForgotPasswordRequest, request: Request, db: Session = Depends(get_db)):
+    """Request a 6-digit password reset verification code."""
+    normalized_email = req.email.strip().lower()
+    now_utc = datetime.now(timezone.utc)
+
+    # Rate limiting: max 3 requests per 15 minutes per email
+    cutoff = now_utc - timedelta(minutes=15)
+    timestamps = _forgot_password_rate_limit.get(normalized_email, [])
+    timestamps = [t for t in timestamps if t > cutoff]
+    if len(timestamps) >= 3:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many password reset requests. Please wait a few minutes before trying again."
+        )
+    timestamps.append(now_utc)
+    _forgot_password_rate_limit[normalized_email] = timestamps
+
+    user = db.query(User).filter(User.email == normalized_email).first()
+    if user:
+        # Invalidate any existing pending codes for this user
+        pending_audits = db.query(PasswordResetAudit).filter(
+            PasswordResetAudit.user_id == user.id,
+            PasswordResetAudit.status == "PENDING"
+        ).all()
+        for p in pending_audits:
+            p.status = "FAILED"
+
+        # Generate CSPRNG 6-digit OTP
+        code_int = secrets.randbelow(900000) + 100000
+        code_str = str(code_int)
+        code_hash = hash_password(code_str)
+
+        # Extract client telemetry
+        forwarded = request.headers.get("X-Forwarded-For")
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "Unknown")
+        country = request.headers.get("CF-IPCountry", "")
+        location = "Localhost" if client_ip in ("127.0.0.1", "::1") else (f"{client_ip} ({country})" if country else client_ip)
+        user_agent = request.headers.get("User-Agent", "Unknown")[:255]
+
+        audit = PasswordResetAudit(
+            user_id=user.id,
+            code_hash=code_hash,
+            status="PENDING",
+            attempts=0,
+            requested_at=now_utc,
+            expires_at=now_utc + timedelta(minutes=15),
+            request_ip=client_ip,
+            request_location=location,
+            user_agent=user_agent
+        )
+        db.add(audit)
+        db.commit()
+
+        # Dispatch verification code via EmailService (Mailgun REST API or Console fallback)
+        EmailService.send_otp_reset_email(
+            to_email=normalized_email,
+            otp_code=code_str,
+            expiry_minutes=15,
+            location=location,
+            user_name=user.full_name
+        )
+
+
+    # Always return generic success to prevent email enumeration
+    return ForgotPasswordResponse()
+
+
+@app.post("/auth/reset-password", response_model=ResetPasswordResponse, tags=["Auth"])
+def reset_password(req: ResetPasswordRequest, request: Request, db: Session = Depends(get_db)):
+    """Verify 6-digit OTP and update user password."""
+    normalized_email = req.email.strip().lower()
+    user = db.query(User).filter(User.email == normalized_email).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid verification code or email.")
+
+    if verify_password(req.new_password, user.hashed_password):
+        raise HTTPException(
+            status_code=400,
+            detail="New password cannot be the same as your current password."
+        )
+
+    audit = db.query(PasswordResetAudit).filter(
+        PasswordResetAudit.user_id == user.id,
+        PasswordResetAudit.status == "PENDING"
+    ).order_by(PasswordResetAudit.requested_at.desc()).first()
+
+    if not audit:
+        raise HTTPException(status_code=400, detail="No active password reset request found. Please request a new code.")
+
+    now_utc = datetime.now(timezone.utc)
+    exp = audit.expires_at
+    if exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+
+    if now_utc > exp:
+        audit.status = "EXPIRED"
+        db.commit()
+        raise HTTPException(status_code=400, detail="Verification code has expired. Please request a new one.")
+
+    if not verify_password(req.code, audit.code_hash):
+        audit.attempts += 1
+        if audit.attempts >= 3:
+            audit.status = "FAILED"
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Too many failed attempts. Code has been invalidated. Please request a new code."
+            )
+        db.commit()
+        remaining = 3 - audit.attempts
+        raise HTTPException(status_code=400, detail=f"Invalid verification code. ({remaining} attempts remaining)")
+
+    # Telemetry for completion
+    forwarded = request.headers.get("X-Forwarded-For")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "Unknown")
+    country = request.headers.get("CF-IPCountry", "")
+    location = "Localhost" if client_ip in ("127.0.0.1", "::1") else (f"{client_ip} ({country})" if country else client_ip)
+
+    user.hashed_password = hash_password(req.new_password)
+    user.token_version = (user.token_version or 1) + 1  # Revokes all active JWT sessions
+    audit.status = "COMPLETED"
+    audit.completed_at = now_utc
+    audit.completed_ip = client_ip
+    audit.completed_location = location
+    db.commit()
+
+    return ResetPasswordResponse()
 
 
 @app.get("/auth/me", response_model=UserResponse, tags=["Auth"])

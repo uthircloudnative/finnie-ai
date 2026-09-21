@@ -7,6 +7,7 @@ import MyHoldings from './components/Portfolio/MyHoldings'
 import MarketInsights from './components/Market/MarketInsights'
 import GoalPlanner from './components/Goals/GoalPlanner'
 import { AuthModal } from './components/Auth/AuthModal'
+import { GoodbyeScreen } from './components/Auth/GoodbyeScreen'
 import { useAuth } from './context/AuthContext'
 import './App.css'
 
@@ -15,7 +16,18 @@ export type TabId = 'dashboard' | 'chat' | 'holdings' | 'portfolio' | 'market' |
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('chat')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isSignedOut, setIsSignedOut } = useAuth()
+
+  if (!isAuthenticated && isSignedOut) {
+    return (
+      <GoodbyeScreen
+        onLogin={() => {
+          setIsSignedOut(false)
+          setIsAuthModalOpen(false)
+        }}
+      />
+    )
+  }
 
   const renderTab = () => {
     switch (activeTab) {
@@ -30,13 +42,15 @@ function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-      />
+      {isAuthenticated && (
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        />
+      )}
       <main className="app-content">
-        {renderTab()}
+        {isAuthenticated ? renderTab() : null}
       </main>
 
       <AuthModal

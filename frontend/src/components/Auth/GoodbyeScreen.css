@@ -1,0 +1,175 @@
+/* ── Goodbye Screen Overlay & Card ─────────────────────────────────────── */
+.goodbye-screen-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 245, 255, 0.05) 0%, #05060a 80%);
+  backdrop-filter: var(--glass-blur);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.goodbye-card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: rgba(15, 17, 26, 0.88);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--card-radius);
+  padding: 2.75rem 2.25rem 2.25rem;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(0, 245, 255, 0.08);
+  box-sizing: border-box;
+}
+
+/* ── Glowing Avatar Orb ────────────────────────────────────────────────── */
+.goodbye-avatar-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goodbye-avatar {
+  position: relative;
+  z-index: 2;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+}
+
+.goodbye-avatar-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 245, 255, 0.4) 0%, transparent 70%);
+  filter: blur(10px);
+  animation: pulseGlow 3s ease-in-out infinite alternate;
+}
+
+/* ── Typography & Reassurance ──────────────────────────────────────────── */
+.goodbye-heading {
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 0.85rem 0;
+  letter-spacing: -0.02em;
+}
+
+.goodbye-message {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  margin: 0 0 1.5rem 0;
+}
+
+/* ── Security Status Badge ─────────────────────────────────────────────── */
+.goodbye-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.goodbye-badge-icon {
+  font-size: 0.9rem;
+}
+
+/* ── Action Buttons ────────────────────────────────────────────────────── */
+.goodbye-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.goodbye-btn {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--btn-radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+}
+
+.goodbye-btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, #2563eb 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 245, 255, 0.25);
+}
+
+.goodbye-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 25px rgba(0, 245, 255, 0.4);
+  opacity: 0.96;
+}
+
+.goodbye-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ── Security Tip & Footer ─────────────────────────────────────────────── */
+.goodbye-security-tip {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.45;
+}
+
+.goodbye-footer {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--glass-border);
+  padding-top: 1rem;
+}
+
+/* ── Animations ────────────────────────────────────────────────────────── */
+@keyframes pulseGlow {
+  from {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

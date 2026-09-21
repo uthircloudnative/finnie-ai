@@ -49,8 +49,10 @@ This skill governs the end-to-end Spec-Driven Development lifecycle across **Fin
   - Regulatory compliance disclosures.
 
 ### Phase 3: Test-First (TDD Alignment)
-- Translate Acceptance Criteria into automated test cases in `backend/tests/test_unit.py`.
-- Run `uv run python -m unittest discover -s tests` to confirm new tests fail for the expected reason (Red phase).
+- Translate Acceptance Criteria into automated test cases:
+  - **Backend**: Unit test cases in `backend/tests/test_unit.py`.
+  - **Frontend**: Integration test suites in `frontend/src/components/<Feature>/__tests__/<Feature>Flow.test.tsx` using Vitest + React Testing Library.
+- Run tests to confirm expected failure (Red phase) before writing feature implementation code.
 
 ### Phase 4: Implement
 Follow the structured 8-step lifecycle defined in `AGENTS.md` and `.agents/rules/`:
@@ -63,9 +65,11 @@ Follow the structured 8-step lifecycle defined in `AGENTS.md` and `.agents/rules
 7. **Custom Hook**: React custom hook in `frontend/src/hooks/` managing state and auth headers.
 8. **Component**: React 19 UI in `frontend/src/components/` with skeleton, empty, and error states.
 
-### Phase 5: Verify
-- Backend verification: `uv run python -m unittest discover -s tests` (must pass 100%).
-- Frontend verification: `npm run build` inside `frontend/` (0 errors, 0 warnings).
+### Phase 5: Sequential Verification Pipeline (Fail-Fast Gate)
+Before concluding any implementation or PR, execute the mandatory 3-step pipeline in order:
+1. **Step 1 (Backend Core)**: `uv run python -m unittest discover -s tests` (inside `backend/` — MUST pass 100%).
+2. **Step 2 (Frontend Integration)**: `npm test` (inside `frontend/` — MUST pass 100% across all critical UI flows).
+3. **Step 3 (Production Bundle Build)**: `npm run build` (inside `frontend/` — MUST pass with 0 errors and 0 warnings).
 
 ### Phase 6: Spec Promotion & Human-in-the-Loop Doc Gate
 - Once all verification tests pass:

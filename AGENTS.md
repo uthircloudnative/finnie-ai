@@ -78,10 +78,12 @@ finnie-ai/
    - **Frontend**: Strict **2 spaces per indent**. No tabs. No semicolons. Single quotes for strings. `PascalCase` components, `camelCase` hooks/functions.
 8. **Structured Lifecycle for New Functionality**:
    - **New Backend Feature**: Model (`src/models/`) → Schemas (`src/models/`) → Agent Node (`src/agents/`) → Graph Wiring (`src/graph.py`) → REST Route (`main.py`) → Unit Tests (`tests/test_unit.py`).
-   - **New Frontend View**: Endpoint (`src/config.ts`) → Types → Custom Hook (`src/hooks/`) → Component (`src/components/` with skeleton/empty/error states) → View/Sidebar wiring → `npm run build`.
-9. **Verification Before Concluding**:
-   - Backend changes MUST pass: `uv run python -m unittest discover -s tests` (inside `backend/`).
-   - Frontend changes MUST pass: `npm run build` (inside `frontend/`).
+   - **New Frontend View / State**: Endpoint (`src/config.ts`) → Types → Custom Hook (`src/hooks/`) → Component (`src/components/` with skeleton/empty/error states) → View/Sidebar wiring → Automated Integration Tests (`src/**/__tests__/`) → `npm run build`.
+9. **Sequential Verification Pipeline (Fail-Fast Gate)**:
+   Before concluding any task or PR, the agent MUST execute the sequential 3-step verification pipeline in exact order:
+   - **Step 1: Backend Test Suite**: `uv run python -m unittest discover -s tests` (inside `backend/` — MUST pass 100%). If fails, STOP and fix the backend contract first.
+   - **Step 2: Frontend Integration Test Suite**: `npm test` (inside `frontend/` — MUST pass 100% across all critical UI flows).
+   - **Step 3: Frontend Production Bundle Build**: `npm run build` (inside `frontend/` — MUST pass with 0 errors and 0 warnings).
 10. **Feature Completion & Documentation Gate (Human-in-the-Loop)**:
     - Documentation is NEVER modified on granular code edits or during intermediate debugging.
     - ONLY when a feature is fully completed and all verification tests pass, the agent MUST summarize the completed feature, list the affected technical and functional doc files, and **explicitly ask the developer for permission** before updating documentation.

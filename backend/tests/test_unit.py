@@ -3,9 +3,11 @@ Unit Tests for Finnie AI Core Functionality
 ===========================================
 Offline tests verifying math, simulations, security, compliance, and graph routing.
 """
+import os
 import unittest
 from datetime import datetime, timezone, timedelta
 from unittest.mock import patch, MagicMock
+
 from langchain_core.messages import HumanMessage, AIMessage
 
 from src.utils.simulations import run_monte_carlo
@@ -189,6 +191,376 @@ class TestModelIntegrityAndDatetimes(unittest.TestCase):
         self.assertEqual(default_created.tzinfo, timezone.utc)
 
 
+class TestPasswordRecovery(unittest.TestCase):
+    def setUp(self):
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from src.database import Base
+        from src.models.user import User
+        from main import _forgot_password_rate_limit
+
+        self.engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(bind=self.engine)
+        self.Session = sessionmaker(bind=self.engine)
+        self.db = self.Session()
+        _forgot_password_rate_limit.clear()
+
+        # Seed test user
+        self.test_user = User(
+            id="user_reset_test",
+            email="reset.tester@finnie.ai",
+            hashed_password=hash_password("OldPassword123!"),
+            full_name="Reset Tester",
+            token_version=1
+        )
+        self.db.add(self.test_user)
+        self.db.commit()
+
+        self.mock_request = MagicMock()
+        self.mock_request.client.host = "127.0.0.1"
+        self.mock_request.headers = {
+            "X-Forwarded-For": "198.51.100.42",
+            "User-Agent": "TestAgent/1.0",
+            "CF-IPCountry": "US"
+        }
+
+    def tearDown(self):
+        self.db.close()
+        from src.database import Base
+        Base.metadata.drop_all(bind=self.engine)
+        self.engine.dispose()
+
+    def test_forgot_password_registered_user(self):
+        from main import forgot_password
+        from src.models.auth_schemas import ForgotPasswordRequest
+        from src.models.password_reset import PasswordResetAudit
+
+        req = ForgotPasswordRequest(email="reset.tester@finnie.ai")
+        res = forgot_password(req, self.mock_request, self.db)
+        self.assertEqual(res.expires_in_minutes, 15)
+        self.assertIn("verification code has been sent", res.message)
+
+        # Confirm audit record in database
+        audit = self.db.query(PasswordResetAudit).filter(PasswordResetAudit.user_id == self.test_user.id).first()
+        self.assertIsNotNone(audit)
+        self.assertEqual(audit.status, "PENDING")
+        self.assertEqual(audit.attempts, 0)
+        self.assertEqual(audit.request_ip, "198.51.100.42")
+        self.assertIn("198.51.100.42", audit.request_location)
+
+    def test_forgot_password_unregistered_email_enumeration_defense(self):
+        from main import forgot_password
+        from src.models.auth_schemas import ForgotPasswordRequest
+        from src.models.password_reset import PasswordResetAudit
+
+        req = ForgotPasswordRequest(email="unknown@finnie.ai")
+        res = forgot_password(req, self.mock_request, self.db)
+        # Identical message returned
+        self.assertEqual(res.expires_in_minutes, 15)
+        self.assertIn("verification code has been sent", res.message)
+
+        # Zero audit records created
+        audits = self.db.query(PasswordResetAudit).all()
+        self.assertEqual(len(audits), 0)
+
+    @patch("secrets.randbelow")
+    def test_reset_password_success(self, mock_rand):
+        from main import forgot_password, reset_password
+        from src.models.auth_schemas import ForgotPasswordRequest, ResetPasswordRequest
+        from src.models.password_reset import PasswordResetAudit
+
+        # Mock OTP generation: 23456 + 100000 = 123456
+        mock_rand.return_value = 23456
+
+        forgot_password(ForgotPasswordRequest(email="reset.tester@finnie.ai"), self.mock_request, self.db)
+
+        # Perform password reset
+        reset_req = ResetPasswordRequest(
+            email="reset.tester@finnie.ai",
+            code="123456",
+            new_password="NewSecurePassword123!"
+        )
+        res = reset_password(reset_req, self.mock_request, self.db)
+        self.assertIn("successfully reset", res.message)
+
+        # Verify DB updates
+        self.db.refresh(self.test_user)
+        self.assertTrue(verify_password("NewSecurePassword123!", self.test_user.hashed_password))
+        self.assertEqual(self.test_user.token_version, 2)
+
+        audit = self.db.query(PasswordResetAudit).first()
+        self.assertEqual(audit.status, "COMPLETED")
+        self.assertIsNotNone(audit.completed_at)
+        self.assertEqual(audit.completed_ip, "198.51.100.42")
+
+    def test_session_revocation_on_token_version(self):
+        from fastapi import HTTPException
+        from src.auth.jwt import create_access_token, get_current_user
+
+        # Token created with version 1
+        valid_token = create_access_token({"sub": self.test_user.id, "v": 1})
+        user = get_current_user(token=valid_token, db=self.db)
+        self.assertEqual(user.id, self.test_user.id)
+
+        # Invalidate by incrementing version
+        self.test_user.token_version = 2
+        self.db.commit()
+
+        # Token with version 1 must now be rejected
+        with self.assertRaises(HTTPException) as ctx:
+            get_current_user(token=valid_token, db=self.db)
+        self.assertEqual(ctx.exception.status_code, 401)
+
+    def test_reset_password_expired_code(self):
+        from fastapi import HTTPException
+        from main import reset_password
+        from src.models.auth_schemas import ResetPasswordRequest
+        from src.models.password_reset import PasswordResetAudit
+
+        # Create expired code
+        expired_audit = PasswordResetAudit(
+            user_id=self.test_user.id,
+            code_hash=hash_password("123456"),
+            status="PENDING",
+            attempts=0,
+            requested_at=datetime.now(timezone.utc) - timedelta(minutes=20),
+            expires_at=datetime.now(timezone.utc) - timedelta(minutes=5)
+        )
+        self.db.add(expired_audit)
+        self.db.commit()
+
+        reset_req = ResetPasswordRequest(
+            email="reset.tester@finnie.ai",
+            code="123456",
+            new_password="NewSecurePassword123!"
+        )
+        with self.assertRaises(HTTPException) as ctx:
+            reset_password(reset_req, self.mock_request, self.db)
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("expired", ctx.exception.detail.lower())
+
+        self.db.refresh(expired_audit)
+        self.assertEqual(expired_audit.status, "EXPIRED")
+
+    def test_reset_password_attempt_capping_3_attempts(self):
+        from fastapi import HTTPException
+        from main import reset_password
+        from src.models.auth_schemas import ResetPasswordRequest
+        from src.models.password_reset import PasswordResetAudit
+
+        audit = PasswordResetAudit(
+            user_id=self.test_user.id,
+            code_hash=hash_password("654321"),
+            status="PENDING",
+            attempts=0,
+            requested_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
+        )
+        self.db.add(audit)
+        self.db.commit()
+
+        reset_req = ResetPasswordRequest(
+            email="reset.tester@finnie.ai",
+            code="000000",
+            new_password="NewSecurePassword123!"
+        )
+
+        # Attempt 1: 2 attempts remaining
+        with self.assertRaises(HTTPException) as ctx1:
+            reset_password(reset_req, self.mock_request, self.db)
+        self.assertEqual(ctx1.exception.status_code, 400)
+        self.assertIn("2 attempts remaining", ctx1.exception.detail)
+
+        # Attempt 2: 1 attempt remaining
+        with self.assertRaises(HTTPException) as ctx2:
+            reset_password(reset_req, self.mock_request, self.db)
+        self.assertEqual(ctx2.exception.status_code, 400)
+        self.assertIn("1 attempts remaining", ctx2.exception.detail)
+
+        # Attempt 3: Locked out, status FAILED
+        with self.assertRaises(HTTPException) as ctx3:
+            reset_password(reset_req, self.mock_request, self.db)
+        self.assertEqual(ctx3.exception.status_code, 400)
+        self.assertIn("Too many failed attempts", ctx3.exception.detail)
+
+        self.db.refresh(audit)
+        self.assertEqual(audit.status, "FAILED")
+        self.assertEqual(audit.attempts, 3)
+
+    def test_reset_password_same_password_rejected(self):
+        from fastapi import HTTPException
+        from main import reset_password
+        from src.models.auth_schemas import ResetPasswordRequest
+        from src.models.password_reset import PasswordResetAudit
+
+        audit = PasswordResetAudit(
+            user_id=self.test_user.id,
+            code_hash=hash_password("111222"),
+            status="PENDING",
+            attempts=0,
+            requested_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
+        )
+        self.db.add(audit)
+        self.db.commit()
+
+        reset_req = ResetPasswordRequest(
+            email="reset.tester@finnie.ai",
+            code="111222",
+            new_password="OldPassword123!"  # Reusing current password
+        )
+        with self.assertRaises(HTTPException) as ctx:
+            reset_password(reset_req, self.mock_request, self.db)
+        self.assertEqual(ctx.exception.status_code, 400)
+        self.assertIn("cannot be the same as your current password", ctx.exception.detail)
+
+    def test_forgot_password_rate_limiting(self):
+        from fastapi import HTTPException
+        from main import forgot_password
+        from src.models.auth_schemas import ForgotPasswordRequest
+
+        req = ForgotPasswordRequest(email="reset.tester@finnie.ai")
+
+        # First 3 calls succeed
+        for _ in range(3):
+            res = forgot_password(req, self.mock_request, self.db)
+            self.assertEqual(res.expires_in_minutes, 15)
+
+        # 4th call within 15 minutes triggers rate limit
+        with self.assertRaises(HTTPException) as ctx:
+            forgot_password(req, self.mock_request, self.db)
+        self.assertEqual(ctx.exception.status_code, 429)
+        self.assertIn("Too many password reset requests", ctx.exception.detail)
+
+
+class TestEmailService(unittest.TestCase):
+    """SPEC-09: Reusable Email Notification Engine & Mailgun Dispatch Test Suite."""
+
+    def test_email_masking(self):
+        from src.utils.email_service import mask_email
+
+        self.assertEqual(mask_email("investor@finnie.ai"), "in***@finnie.ai")
+        self.assertEqual(mask_email("uthircloudnative@gmail.com"), "ut***@gmail.com")
+        self.assertEqual(mask_email("a@b.com"), "a***@b.com")
+        self.assertEqual(mask_email("invalid"), "***")
+        self.assertEqual(mask_email(""), "***")
+
+    def test_provider_selection(self):
+        from src.utils.email_service import EmailService, ConsoleEmailProvider, MailgunEmailProvider
+
+        with patch.dict(os.environ, {}, clear=True):
+            provider = EmailService.get_provider()
+            self.assertIsInstance(provider, ConsoleEmailProvider)
+
+        with patch.dict(os.environ, {"MAILGUN_API_KEY": "key-12345", "MAILGUN_DOMAIN": "sandbox.test"}, clear=True):
+            provider = EmailService.get_provider()
+            self.assertIsInstance(provider, MailgunEmailProvider)
+            self.assertEqual(provider.domain, "sandbox.test")
+
+    def test_template_rendering(self):
+        from src.utils.email_service import EmailService
+
+        context = {
+            "otp_code": "987654",
+            "expiry_minutes": 15,
+            "request_location": "New York, US",
+            "user_name": "Alice Investor",
+            "recipient_email": "alice@finnie.ai"
+        }
+        html = EmailService.render_template("otp_reset.html", context)
+        text = EmailService.render_template("otp_reset.txt", context)
+
+        self.assertIn("987654", html)
+        self.assertIn("New York, US", html)
+        self.assertIn("15 minutes", html)
+        self.assertNotIn("{{otp_code}}", html)
+
+        self.assertIn("987654", text)
+        self.assertIn("New York, US", text)
+        self.assertNotIn("{{otp_code}}", text)
+
+    @patch("requests.post")
+    def test_mailgun_dispatch_mock(self, mock_post):
+        from src.utils.email_service import MailgunEmailProvider, EmailMessage
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.text = '{"id": "<2026.mailgun.org>", "message": "Queued. Thank you."}'
+        mock_post.return_value = mock_resp
+
+        provider = MailgunEmailProvider(
+            api_key="mock-api-key",
+            domain="sandbox123.mailgun.org",
+            base_url="https://api.mailgun.net"
+        )
+        msg = EmailMessage(
+            to_email="test@finnie.ai",
+            subject="Test Subject",
+            html_body="<p>Test</p>",
+            text_body="Test"
+        )
+
+        success = provider.send_email(msg)
+        self.assertTrue(success)
+        mock_post.assert_called_once()
+        args, kwargs = mock_post.call_args
+        self.assertEqual(args[0], "https://api.mailgun.net/v3/sandbox123.mailgun.org/messages")
+        self.assertEqual(kwargs["auth"], ("api", "mock-api-key"))
+        self.assertEqual(kwargs["data"]["to"], "test@finnie.ai")
+
+    @patch("requests.post")
+    def test_mailgun_sandbox_rejection_resilience(self, mock_post):
+        from src.utils.email_service import MailgunEmailProvider, EmailMessage
+
+        # Simulate Mailgun's HTTP 400 rejection for unauthorized sandbox recipients
+        mock_resp = MagicMock()
+        mock_resp.status_code = 400
+        mock_resp.text = "Sandbox subdomains are for test purposes only, and can only send to authorized recipients."
+        mock_post.return_value = mock_resp
+
+        provider = MailgunEmailProvider(
+            api_key="mock-api-key",
+            domain="sandbox123.mailgun.org"
+        )
+        msg = EmailMessage(
+            to_email="unauthorized@example.com",
+            subject="Verification Code",
+            html_body="<p>Code</p>",
+            text_body="Code"
+        )
+
+        # Must return False and not throw an uncaught exception
+        success = provider.send_email(msg)
+        self.assertFalse(success)
+
+    def test_console_email_provider_dispatch(self):
+        from src.utils.email_service import ConsoleEmailProvider, EmailMessage
+
+        provider = ConsoleEmailProvider()
+        msg = EmailMessage(
+            to_email="console.tester@finnie.ai",
+            subject="Offline Test",
+            html_body="<p>Body</p>",
+            text_body="Body"
+        )
+        self.assertTrue(provider.send_email(msg))
+
+    def test_email_service_send_otp_reset(self):
+        from src.utils.email_service import EmailService
+
+        # Should dispatch cleanly via console provider in test environment
+        success = EmailService.send_otp_reset_email(
+            to_email="investor.test@finnie.ai",
+            otp_code="123456",
+            expiry_minutes=15,
+            location="Chicago, US",
+            user_name="Test Investor"
+        )
+        self.assertTrue(success)
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
 

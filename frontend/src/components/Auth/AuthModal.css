@@ -15,6 +15,12 @@
   animation: fadeIn 0.25s ease-out;
 }
 
+.auth-modal-overlay.gate-mode {
+  background: radial-gradient(circle at center, rgba(0, 245, 255, 0.05) 0%, #05060a 80%);
+  backdrop-filter: var(--glass-blur);
+  animation: none;
+}
+
 .auth-modal-card {
   position: relative;
   width: 100%;
@@ -178,7 +184,99 @@
   text-align: center;
 }
 
+/* ── Forgot Password & Recovery Flow Styles ─────────────────────────── */
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.auth-link-inline {
+  background: none;
+  border: none;
+  color: var(--accent-cyan);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.auth-link-inline:hover {
+  opacity: 0.8;
+}
+
+.auth-code-input {
+  font-family: 'JetBrains Mono', monospace, Courier;
+  font-size: 1.25rem !important;
+  letter-spacing: 0.35rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--accent-cyan) !important;
+}
+
+.auth-resend-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.auth-resend-btn {
+  background: none;
+  border: none;
+  color: var(--accent-cyan);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.auth-resend-btn:disabled {
+  color: var(--text-dim);
+  cursor: not-allowed;
+  text-decoration: none;
+  opacity: 0.6;
+}
+
+.auth-back-btn {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-back-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.auth-success-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.auth-success-icon {
+  font-size: 3rem;
+  margin-bottom: 0.25rem;
+}
+
+.auth-success-text {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
+

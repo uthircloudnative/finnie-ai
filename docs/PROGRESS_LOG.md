@@ -1,11 +1,50 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-09-13
-**Current Status**: 🟢 Phase 2 Quality & Correctness Quick Hits — COMPLETE
+**Date**: 2026-09-20
+**Current Status**: 🟢 Phase 4.1 Identity Security & Email Notification Subsystem — COMPLETE
 
 ---
 
-## ✅ What We Accomplished Today (September 13, 2026)
+## ✅ What We Accomplished Today (September 20, 2026)
+
+### 🔐 SPEC-08: Password Reset via One-Time Verification Code (OTP) & Security Audit Trail
+1. **Cryptographic OTP & 3-Attempt Lockout**:
+   - Implemented CSPRNG 6-digit verification code generation (`secrets.randbelow(900000) + 100000`) with salted one-way hashing (`bcrypt`).
+   - Enforced strict 3-attempt capping: on the 3rd consecutive incorrect OTP submission, the record is immediately invalidated (`status = "FAILED"`).
+2. **Forensic Audit & Telemetry (`password_reset_audits`)**:
+   - Dedicated table recording UUID, user foreign key, hashed code, lifecycle state (`PENDING`, `COMPLETED`, `FAILED`, `EXPIRED`), failure counter, 15-minute expiration, and dual-origin telemetry (`request_ip`/`request_location` vs. `completed_ip`/`completed_location`).
+3. **Session Invalidation & Automatic Migration**:
+   - Added `token_version` to `User` model, embedded in JWT payload (`payload["v"]`), and checked actively in `get_current_user`.
+   - Automatic migration added to `init_db()` ensuring existing databases seamlessly receive the `token_version` column.
+   - Incrementing `token_version` immediately revokes all prior JWT sessions across all devices.
+4. **Sliding Rate Limiter & Enumeration Defense**:
+   - Sliding-window rate limiting (max 3 reset requests per 15 minutes per email).
+   - Uniform generic response regardless of whether email is registered to defeat email harvesting.
+5. **Frontend Multi-Step Recovery UX (`AuthModal.tsx` & `AuthModal.css`)**:
+   - Glassmorphic recovery views (`request_code`, `verify_and_reset`, `success`).
+   - 60-second cooldown timer for resending OTPs, client-side input validations, and test harness integration.
+
+### 📧 SPEC-09: Reusable Email Notification Engine & Mailgun Dispatch Architecture
+6. **Provider-Agnostic Notification Transport (`email_service.py`)**:
+   - Abstract `BaseEmailProvider` with concrete `MailgunEmailProvider` and zero-setup `ConsoleEmailProvider` fallback.
+   - Decoupled `EmailService` utility with `send_otp_reset_email()` and `send_custom_email()` ready for future notifications.
+7. **Professional Dark/Glass Financial Templates (`otp_reset.html` & `otp_reset.txt`)**:
+   - Inlined CSS dark fintech design (`#0b0f19` background, `#00f5ff` accents), 36px monospaced verification code highlight card, origin telemetry, and `$NFA` compliance footer.
+   - Clean ASCII plain-text fallback for maximum client compatibility.
+8. **Strict Zero-Exposure Privacy Protections**:
+   - Sensitive credentials loaded strictly from `.env` (git-ignored); zero secrets in source code or repositories.
+   - `mask_email()` automatically sanitizes runtime console outputs (e.g. `ut***@gmail.com`).
+   - Unit tests run 100% offline via HTTP mocking without external API quota consumption.
+9. **Full Sequential Verification Pipeline Green**:
+   - Backend test suite: **29/29 tests passed (100% OK)**.
+   - Frontend integration test suite: **7 suites, 20/20 tests passed (100% OK)**.
+   - Production bundle build: **0 errors, 0 warnings**.
+   - Both `SPEC-08` and `SPEC-09` promoted to `specs/baseline/`.
+
+---
+
+## ✅ Previous Accomplishments (September 13, 2026)
+
 
 ### 🛡️ Quality & Correctness Quick Hits (Option A)
 1. **Holding Model Integrity (`backend/src/models/portfolio.py` & `main.py`)**:

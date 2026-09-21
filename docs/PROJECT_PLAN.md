@@ -61,7 +61,14 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **Frontend Auth System**: Created `AuthProvider` & `useAuth` hook, `AuthModal` component (Sign In, Registration), Sidebar profile display & Sign Out button, and `getAuthHeaders()` token injection across all custom hooks.
 - **Diversification Score 3-Retry Engine**: Implemented 3-attempt exponential backoff retry loop for sector metadata calculations in `portfolio_analyst.py`. Returns `diversification_score = null` on retry failure to display an interactive retry tile button in the UI.
 
+### Phase 7: Account Security, Recovery & Email Notification Subsystem [COMPLETED]
+- **SPEC-06 Session-Scoped Authentication & Login Gate**: Mandatory gate mode for unauthenticated users, tab-isolated sessionStorage token lifecycle, and legacy storage cleansing.
+- **SPEC-07 Goodbye Confirmation & Session Termination**: Dedicated confirmation page upon sign-out with user reassurance and clean re-login state machine.
+- **SPEC-08 Password Recovery via OTP & Security Audit Trail**: Cryptographic 6-digit OTP generation, sliding rate limiting (3 requests/15m), strict 3-attempt brute force capping (`status = "FAILED"`), dual-origin forensic audit logging (`password_reset_audits`), automatic database migration, and active session revocation (`token_version`).
+- **SPEC-09 Reusable Email Notification Engine**: Swappable transport layer (`BaseEmailProvider`) featuring REST API integration with Mailgun, local console fallback, responsive glassmorphic HTML templates with inlined CSS, and zero-exposure privacy protection.
+
 ## 4. RAG Integration Matrix (Learning Reference)
+
 
 | UI Tab / Feature | RAG Required? | Data Sources | Implementation Summary |
 | :--- | :--- | :--- | :--- |

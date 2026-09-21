@@ -5,7 +5,7 @@ Stores user identity, hashed credentials, and preferences for multi-tenant isola
 """
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, Integer
 from src.database import Base
 
 
@@ -18,6 +18,7 @@ class User(Base):
     full_name       = Column(String, nullable=False)
     base_currency   = Column(String, default="USD")
     created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    token_version   = Column(Integer, default=1, nullable=False)
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email={self.email}>"

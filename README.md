@@ -5,11 +5,14 @@
   <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/LangGraph-1C3C3C?style=flat&logo=langchain&logoColor=white" alt="LangGraph" />
   <img src="https://img.shields.io/badge/OpenAI-412991?style=flat&logo=openai&logoColor=white" alt="OpenAI" />
-  <img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/React-19-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React 19" />
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E" alt="Vite" />
+  <img src="https://img.shields.io/badge/SQLAlchemy_2.0-D71F00?style=flat&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy 2.0" />
   <img src="https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white" alt="SQLite" />
   <img src="https://img.shields.io/badge/ChromaDB-FF6B6B?style=flat" alt="ChromaDB" />
+  <img src="https://img.shields.io/badge/Mailgun-F05A28?style=flat&logo=mailgun&logoColor=white" alt="Mailgun" />
+  <img src="https://img.shields.io/badge/JWT_Auth-000000?style=flat&logo=jsonwebtokens&logoColor=white" alt="JWT Auth" />
   <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/Docker_Compose-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker Compose" />
   <img src="https://img.shields.io/badge/Azure-0089D6?style=flat&logo=microsoft-azure&logoColor=white" alt="Azure" />
@@ -28,10 +31,10 @@ Instead of relying on a single underlying chat model, Finnie uses a **Supervisor
 
 ```mermaid
 graph TD
-    subgraph Client["📱 Frontend (React 18 + Vite + TypeScript)"]
+    subgraph Client["📱 Frontend (React 19 + Vite + TypeScript)"]
         UI[Glass-Finance Dashboard & Views]
         AuthCtx[AuthContext · Token Store & Bearer Injection]
-        AuthMod[AuthModal · Sign In / Register]
+        AuthMod[AuthModal · Sign In / Register / Forgot Password]
         UI --> AuthCtx
         AuthMod --> AuthCtx
     end
@@ -39,12 +42,13 @@ graph TD
     AuthCtx -->|HTTPS + Bearer JWT| Backend[FastAPI Backend · Python 3.13]
 
     subgraph Security["🔐 Security & Data Layer"]
-        Backend -->|Verify Token| JWT[JWT Core & bcrypt · jwt.py]
-        Backend -->|User Context| ORM[(SQLite Database<br/>users · holdings · goals · market_cache)]
+        Backend -->|Verify Token & Version| JWT[JWT Core & bcrypt · jwt.py]
+        Backend -->|User & Audit Context| ORM[(SQLite Database<br/>users · password_reset_audits<br/>holdings · goals · market_cache)]
     end
 
     subgraph Programmatic["⚙️ Programmatic Services (Deterministic · No LLM)"]
         Backend -->|Auth Endpoints| AuthSvc["🔑 User Auth (/auth/register, /auth/login, /auth/me)"]
+        Backend -->|Recovery Endpoints| RecovSvc["🔒 Password Recovery (/auth/forgot-password, /auth/reset-password)"]
         Backend -->|Direct Engine| DashSvc["📊 Global Wealth Dashboard (/dashboard)"]
         Backend -->|CRUD Operations| PortSvc["💼 Portfolio Holdings (/portfolio, /portfolio/save)"]
         Backend -->|3-Attempt Backoff Retry| DivSvc["🎯 Diversification Score Retry (/portfolio/diversification)"]
@@ -77,9 +81,10 @@ graph TD
         Goals    -.-|Tool Call: RAG Search| Chroma
     end
 
-    subgraph LLMService["🌐 External LLM Services"]
+    subgraph ExternalServices["🌐 External Services"]
         AgentSystem -.-|LLM Reasoning| OpenAI{OpenAI GPT-4o / Azure OpenAI}
         Backend     -.-|Telemetry| LangSmith[LangSmith Observability]
+        RecovSvc    -.-|Transactional Email| Mailgun[Mailgun REST API / Console Fallback]
     end
 ```
 
@@ -88,6 +93,7 @@ graph TD
 | Functionality | Primary Endpoint | Execution Mode | Agent Model | Tool Calls Required | Description |
 |---|---|---|---|---|---|
 | **User Auth & Profile** | `/auth/register`<br/>`/auth/login`<br/>`/auth/me` | **Programmatic** | *None (No LLM)* | *None* | Fast, deterministic JWT generation, password hashing (`bcrypt`), and user profile persistence. |
+| **Password Recovery** | `/auth/forgot-password`<br/>`/auth/reset-password` | **Programmatic** | *None (No LLM)* | *Mailgun REST API* | 6-digit CSPRNG OTP, sliding rate-limiting (3/15m), strict 3-attempt limit, dual-origin audit trail (`password_reset_audits`), and session revocation (`token_version`). |
 | **Global Wealth View** | `/dashboard` | **Programmatic** | *None (No LLM)* | *yfinance price lookup* | Lightning-fast deterministic SQLite crunching and live market prices without LLM latency. |
 | **My Holdings CRUD** | `/portfolio`<br/>`/portfolio/save` | **Programmatic** | *None (No LLM)* | *None* | Multi-tenant portfolio CRUD operations with user isolation. |
 | **Diversification Score Tile Retry** | `/portfolio/diversification` | **Programmatic** | *None (No LLM)* | *yfinance sector info (3 retries)* | 3-attempt exponential backoff engine for sector Herfindahl-Hirschman Index (HHI) score. Shows manual retry button on tile if retries fail. |
@@ -95,6 +101,7 @@ graph TD
 | **Portfolio Analyst** | `/portfolio/analysis` | **AI Agentic** | **Multi-Agent (Country-Aware)** | Benchmark routing + yfinance + ChromaDB RAG | Calculates Beta/Volatility/HHI, conducts 2-pass RAG, and synthesizes 3-card formatted insights. |
 | **Market Insights** | `/market/news` | **AI Agentic** | **Single Agent** | Alpha Vantage API + 30-min SQLite Cache | Direct route to Market Insights Agent for stock news & sentiment analysis. |
 | **Goal Planner** | `/goals/calculate` | **AI Agentic** | **Single Agent** | 10,000 Monte Carlo simulations + ChromaDB Tax RAG | Direct route to Goal Strategist Agent for retirement roadmap generation. |
+
 
 > 👁️ **Curious what it looks like?** Check out the [UI Preview Gallery](./docs/UI_PREVIEW.md) to see high-fidelity mockups of the finished Dashboard and Market Insights interfaces before you start the installation!
 

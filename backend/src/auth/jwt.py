@@ -91,6 +91,7 @@ def get_current_user(
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
+        token_v: Optional[int] = payload.get("v")
         if user_id is None:
             raise credentials_exception
     except JWTError:
@@ -98,6 +99,10 @@ def get_current_user(
 
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
+        raise credentials_exception
+
+    # Enforce session revocation: reject tokens with outdated token_version
+    if token_v is not None and token_v != getattr(user, "token_version", 1):
         raise credentials_exception
 
     return user

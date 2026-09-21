@@ -116,11 +116,14 @@ When introducing ANY new view, widget, or client functionality, follow this 6-st
 5. **Step 5: Shell & Navigation Wiring (`src/App.tsx` & `src/components/Sidebar/Sidebar.tsx`)**:
    - Add active tab view state in `App.tsx`.
    - Add navigation icon and label in `Sidebar.tsx`.
-6. **Step 6: Production Build Verification**:
+6. **Step 6: Automated Integration Testing (`npm test`)**:
+   - Create co-located integration tests in `src/components/<Feature>/__tests__/<Feature>Flow.test.tsx`.
+   - Must pass 100% via `npm test` (Vitest + React Testing Library).
+7. **Step 7: Production Build Verification (`npm run build`)**:
    - Execute `npm run build` (`tsc -b && vite build`) inside `frontend/`.
    - Must complete with **0 errors and 0 warnings**.
-7. **Step 7: Documentation Sync Gate (Human-in-the-Loop)**:
-   - When Step 6 passes cleanly, present the completed view to the developer and propose updating UI documentation and feature guides (`README.md`, `docs/UI_DESIGN.md`, `docs/PROGRESS_LOG.md`).
+8. **Step 8: Documentation Sync Gate (Human-in-the-Loop)**:
+   - When Step 7 passes cleanly, present the completed view to the developer and propose updating UI documentation and feature guides (`README.md`, `docs/UI_DESIGN_SYSTEM.md`, `docs/PROGRESS_LOG.md`).
    - NEVER update documentation without explicit developer approval.
 
 

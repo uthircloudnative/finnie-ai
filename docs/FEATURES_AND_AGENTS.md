@@ -12,12 +12,14 @@ This document is the authoritative technical and functional specification for al
 ├──────────────────────────┬──────────────────────────┬───────────────────────┤
 │ 1. Executive Dashboard   │ 2. Portfolio Analyst     │ 3. Market Insights    │
 │ (Speed & Asset Health)   │ (Country-Aware Risk/HHI) │ (Real-Time Sentiment) │
-├──────────────────────────┴──────────────────────────┴───────────────────────┤
-│ 4. Goal Strategist (Monte Carlo + Tax RAG)                                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 5. Financial Q&A Worker (Grounded Education)                                │
+├──────────────────────────┼──────────────────────────┴───────────────────────┤
+│ 4. Goal Strategist       │ 5. Financial Q&A Worker                          │
+│ (Monte Carlo + Tax RAG)  │ (Grounded Education)                             │
+├──────────────────────────┴──────────────────────────────────────────────────┤
+│ 6. Identity, Security & Email Notification Engine (Mailgun + JWT + OTP)      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
 
 ---
 
@@ -268,3 +270,56 @@ graph TD
 
 ## 4. 🛡️ Resilience, Edge Cases & Verification
 - **Vector DB Disconnection**: If ChromaDB is unavailable, falls back gracefully to standard LLM general knowledge while logging a diagnostic warning.
+
+---
+
+# Feature 6: Identity Management, Password Recovery & Email Notification Subsystem
+
+## 1. 🎯 Business Context & Domain Rules
+- **Problem Solved**: Provides multi-tenant security, session isolation, brute-force defense, and self-service account recovery via OTP verification codes.
+- **Domain Rules**:
+  - Stateless JWT authentication with composite database unique constraints (`users`).
+  - Active session invalidation via `token_version` (zombie session prevention).
+  - Cryptographic 6-digit OTP codes with 15-minute TTL and strict 3-attempt brute-force lockouts.
+  - Sliding-window rate limiter (3 requests / 15 minutes per email) and enumeration resistance.
+  - Pluggable notification engine (`EmailService`) with Mailgun REST API integration and console fallback.
+
+## 2. 🏗️ Diagrammatic Architectural Representation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as Investor (Browser)
+    participant UI as AuthModal.tsx
+    participant API as FastAPI (main.py)
+    participant Email as EmailService
+    participant Mailgun as Mailgun REST API
+    participant DB as SQLite (password_reset_audits)
+
+    User->>UI: Clicks "Forgot password?" & Enters email
+    UI->>API: POST /auth/forgot-password {email}
+    API->>DB: Query User & Record OTP Hash + Telemetry (Status: PENDING)
+    API->>Email: send_otp_reset_email(to_email, otp_code, location)
+    alt Mailgun Configured
+        Email->>Mailgun: POST /v3/{domain}/messages (Basic Auth)
+        Mailgun-->>User: Delivers Branded Dark/Glass HTML Email
+    else Fallback / Dev Mode
+        Email-->>API: Emits formatted OTP to Console
+    end
+    API-->>UI: 200 OK {"message": "Verification code sent"}
+    User->>UI: Submits 6-digit code + New password
+    UI->>API: POST /auth/reset-password {email, code, new_password}
+    API->>DB: Verify OTP, attempts < 3, and hash update
+    API->>DB: Increment user.token_version (Revokes old sessions)
+    API-->>UI: 200 OK {"message": "Password reset successfully"}
+```
+
+## 3. ⚙️ Detailed Technical Implementation
+- **Endpoints**: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/forgot-password`, `POST /auth/reset-password`.
+- **Database Models**: `User` (`token_version`), `PasswordResetAudit` (UUID, timestamps, attempt tracking, dual telemetry).
+- **Notification Transports**: `BaseEmailProvider`, `MailgunEmailProvider`, `ConsoleEmailProvider`.
+
+## 4. 🛡️ Resilience, Edge Cases & Verification
+- **Sandbox Domain Resilience**: If Mailgun returns HTTP 400 due to unverified recipients, `EmailService` falls back to `ConsoleEmailProvider` to keep codes accessible in local development.
+- **Fail-Fast Defense**: Brute-force guessing locks the OTP record after 3 failed attempts (`status = "FAILED"`).
+

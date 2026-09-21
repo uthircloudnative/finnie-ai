@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { API_BASE } from '../config'
+import { API_BASE, API_ENDPOINTS } from '../config'
 
 export interface UserProfile {
   id: string
@@ -18,15 +18,20 @@ interface AuthContextType {
   register: (email: string, password: string, fullName: string) => Promise<boolean>
   logout: () => void
   getAuthHeaders: () => Record<string, string>
+  isSignedOut: boolean
+  setIsSignedOut: (val: boolean) => void
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; message?: string }>
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; message?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('finnie_auth_token'))
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem('finnie_auth_token'))
   const [user, setUser] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSignedOut, setIsSignedOut] = useState<boolean>(false)
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {}
@@ -35,6 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Fetch active user profile when token exists
   useEffect(() => {
     let isMounted = true
+
+    // Defensively purge legacy localStorage residue to prevent persistent session revival
+    localStorage.removeItem('finnie_auth_token')
+
     if (!token) {
       setUser(null)
       setIsLoading(false)
@@ -56,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       .catch(() => {
         if (isMounted) {
+          sessionStorage.removeItem('finnie_auth_token')
           localStorage.removeItem('finnie_auth_token')
           setToken(null)
           setUser(null)
@@ -81,9 +91,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const data = await res.json()
-      localStorage.setItem('finnie_auth_token', data.access_token)
+      sessionStorage.setItem('finnie_auth_token', data.access_token)
+      localStorage.removeItem('finnie_auth_token')
       setToken(data.access_token)
       setUser(data.user)
+      setIsSignedOut(false)
       return true
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Login failed'
@@ -107,9 +119,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const data = await res.json()
-      localStorage.setItem('finnie_auth_token', data.access_token)
+      sessionStorage.setItem('finnie_auth_token', data.access_token)
+      localStorage.removeItem('finnie_auth_token')
       setToken(data.access_token)
       setUser(data.user)
+      setIsSignedOut(false)
       return true
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Registration failed'
@@ -119,10 +133,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const logout = () => {
+    sessionStorage.removeItem('finnie_auth_token')
     localStorage.removeItem('finnie_auth_token')
     setToken(null)
     setUser(null)
     setError(null)
+    setIsSignedOut(true)
+  }
+
+  const requestPasswordReset = async (email: string): Promise<{ success: boolean; message?: string }> => {
+    setError(null)
+    try {
+      const res = await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to send verification code')
+      }
+
+      return { success: true, message: data.message }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to send verification code'
+      setError(msg)
+      return { success: false, message: msg }
+    }
+  }
+
+  const resetPassword = async (email: string, code: string, newPassword: string): Promise<{ success: boolean; message?: string }> => {
+    setError(null)
+    try {
+      const res = await fetch(API_ENDPOINTS.RESET_PASSWORD, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code, new_password: newPassword })
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data.detail || 'Password reset failed')
+      }
+
+      return { success: true, message: data.message }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Password reset failed'
+      setError(msg)
+      return { success: false, message: msg }
+    }
   }
 
   return (
@@ -136,7 +196,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
-        getAuthHeaders
+        getAuthHeaders,
+        isSignedOut,
+        setIsSignedOut,
+        requestPasswordReset,
+        resetPassword
       }}
     >
       {children}

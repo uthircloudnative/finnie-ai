@@ -11,6 +11,8 @@ export const API_ENDPOINTS = {
   REGISTER: `${API_BASE}/auth/register`,
   LOGIN: `${API_BASE}/auth/login`,
   ME: `${API_BASE}/auth/me`,
+  FORGOT_PASSWORD: `${API_BASE}/auth/forgot-password`,
+  RESET_PASSWORD: `${API_BASE}/auth/reset-password`,
 
   // Core Features
   CHAT: `${API_BASE}/chat`,

@@ -51,11 +51,23 @@ def get_db():
 
 
 def init_db() -> None:
-    """Create all tables defined via Base.metadata on first startup."""
+    """Create all tables defined via Base.metadata on first startup and apply schema migrations."""
     from src.models.user import User                      # noqa: F401
+    from src.models.password_reset import PasswordResetAudit # noqa: F401
     from src.models.portfolio import Holding              # noqa: F401
     from src.models.market_metadata import MarketExchange # noqa: F401
     from src.models.market_cache import MarketCache       # noqa: F401
     from src.models.goal import FinancialGoal             # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # Automatic schema migration for new columns on existing tables
+    from sqlalchemy import inspect, text
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        if "users" in inspector.get_table_names():
+            columns = [col["name"] for col in inspector.get_columns("users")]
+            if "token_version" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN token_version INTEGER DEFAULT 1 NOT NULL"))
+                conn.commit()
+
 

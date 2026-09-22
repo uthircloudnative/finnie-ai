@@ -203,27 +203,36 @@
 
 ---
 
-## 🚀 Plan of Action (Next Session — Phase 3)
+## 🚀 Plan of Action (Next Session — Phase 8: Autonomous Financial GPS)
 
-Phase 2 is fully complete. The app is runnable end-to-end: ingest → vector store → agent graph → REST API → React UI.
+We are evolving the Goal Strategist ("Financial GPS") into a fully autonomous, state-of-the-art agentic application implementing the 5 core agentic pillars:
 
-### Phase 3: Agent Integration & Analysis
-- [x] **Portfolio Analyst Agent**: Implement Sharpe ratio, diversification score, and portfolio math — replace static UI data.
-- [x] **Compliance Guardian**: Post-processor node to inject `$NFA` disclaimers on every agent response.
-- [x] **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
-
-### Phase 4: The Financial GPS
-- [x] **Goal Strategist Agent**: Monte Carlo simulation engine powering the what-if sliders in the UI.
-- [x] **Statute-Based RAG**: IRS and regional tax logic grounding for goal projections.
-- [x] **Interactive Dashboard**: Configurator form + Confidence Gauge + Fan Chart UI.
+### Phase 8: Autonomous Agentic Evolution (SPEC-10)
+- [ ] **Step 1: Tool Manifest & Dynamic Tool Invocation (`src/tools/`)**:
+  - Extract deterministic Python API/math calls into `@tool` definitions (`fetch_user_portfolio`, `run_monte_carlo_engine`, `lookup_tax_rules`).
+  - Bind tools to the LLM via `.bind_tools()` with `ToolNode` execution loop.
+- [ ] **Step 2: Session Checkpointing & Conversational Memory**:
+  - Wire LangGraph `SqliteSaver` checkpointer into `src/graph.py` workflow compilation.
+  - Enable thread-based state persistence (`thread_id=f"goal_{user_id}_{goal_id}"`), eliminating single-turn amnesia.
+- [ ] **Step 3: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**:
+  - Add `goal_auditor_node` verifying LLM recommendations against statutory limits (e.g. IRS 401(k) / IRA, India Section 80C).
+  - Implement self-correcting critique loop routing back to the strategist if tax limits are violated.
+- [ ] **Step 4: Human-in-the-Loop (HITL) Strategy Approval**:
+  - Insert LangGraph `interrupt()` breakpoint prior to database persistence.
+  - Provide interactive UI approval card to confirm or tweak the strategy before committing.
+- [ ] **Step 5: Real-Time Event & Token Streaming (SSE)**:
+  - Implement `POST /goals/calculate/stream` Server-Sent Events endpoint using `astream_events`.
+  - Stream live thought telemetry badges and token deltas to `GoalPlanner.tsx`.
 
 ---
 
 ## 📂 Key Files to Review Upon Resume
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md) — Phase 3 roadmap
-- [DESIGN.md](./DESIGN.md) — Agent graph architecture
-- [RAG_GUIDE.md](./RAG_GUIDE.md) — RAG collection strategy for new agents
-- [UI_DESIGN.md](./UI_DESIGN.md) — Glass-Finance UX reference
+- [PROJECT_PLAN.md](./PROJECT_PLAN.md) — Phase 8 roadmap
+- [specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md](../specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) — Feature specification
+- [backend/src/agents/goal_strategist.py](../backend/src/agents/goal_strategist.py) — Target agent node
+- [backend/src/graph.py](../backend/src/graph.py) — Graph topology
+- [backend/src/tools/](../backend/src/tools/) — Tool manifest directory
+
 
 
 ---

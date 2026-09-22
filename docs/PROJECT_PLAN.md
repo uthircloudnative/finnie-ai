@@ -67,7 +67,15 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **SPEC-08 Password Recovery via OTP & Security Audit Trail**: Cryptographic 6-digit OTP generation, sliding rate limiting (3 requests/15m), strict 3-attempt brute force capping (`status = "FAILED"`), dual-origin forensic audit logging (`password_reset_audits`), automatic database migration, and active session revocation (`token_version`).
 - **SPEC-09 Reusable Email Notification Engine**: Swappable transport layer (`BaseEmailProvider`) featuring REST API integration with Mailgun, local console fallback, responsive glassmorphic HTML templates with inlined CSS, and zero-exposure privacy protection.
 
+### Phase 8: Autonomous Agentic Evolution — The Autonomous Financial GPS (SPEC-10) [PLANNED]
+- **Step 1: Tool Manifest & Dynamic Tool Invocation (`src/tools/`)**: Modular `@tool` definitions (`fetch_user_portfolio`, `run_monte_carlo_engine`, `lookup_tax_rules`) bound dynamically to the LLM.
+- **Step 2: Session Checkpointing & Conversational Memory**: LangGraph `SqliteSaver` integration enabling multi-turn scenario adjustments ("What if I save $300 instead?") without state amnesia.
+- **Step 3: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**: Pre-compliance reflection node verifying proposed roadmaps against IRS/tax limits with retry critique loop.
+- **Step 4: Human-in-the-Loop (HITL) Strategy Approval**: LangGraph `interrupt()` breakpoint requiring explicit user sign-off before locking strategic targets to the database.
+- **Step 5: Real-Time Event & Token Streaming (SSE)**: Server-Sent Events streaming thought badges and token deltas to replace static spinners.
+
 ## 4. RAG Integration Matrix (Learning Reference)
+
 
 
 | UI Tab / Feature | RAG Required? | Data Sources | Implementation Summary |

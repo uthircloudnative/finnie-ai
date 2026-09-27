@@ -52,6 +52,7 @@ finnie-ai/
 │   │   └── styles/                   # tokens.css and global.css design system
 │   └── package.json
 └── docs/                             # Deep-dive architecture & planning docs
+    └── DATA_MODEL.md                 # Single source of truth for all database tables & ER schemas
 ```
 
 ---
@@ -76,8 +77,9 @@ finnie-ai/
 7. **Strict Indentation & Code Formatting**:
    - **Backend**: Strict **4 spaces per indent** (PEP 8). No tabs. `snake_case` functions/modules, `PascalCase` classes/models, `UPPER_SNAKE_CASE` constants. Max 100 chars/line.
    - **Frontend**: Strict **2 spaces per indent**. No tabs. No semicolons. Single quotes for strings. `PascalCase` components, `camelCase` hooks/functions.
-8. **Structured Lifecycle for New Functionality**:
-   - **New Backend Feature**: Model (`src/models/`) → Schemas (`src/models/`) → Agent Node (`src/agents/`) → Graph Wiring (`src/graph.py`) → REST Route (`main.py`) → Unit Tests (`tests/test_unit.py`).
+8. **Structured Lifecycle for New Functionality & Data Modeling**:
+   - **Data Modeling Invariant**: Any change to tables, columns, indexes, or relations MUST conform to [docs/DATA_MODEL.md](docs/DATA_MODEL.md). Never add columns without verifying composite constraints and automatic migration logic in `init_db()`.
+   - **New Backend Feature**: Model (`src/models/` + `docs/DATA_MODEL.md`) → Schemas (`src/models/`) → Agent Node (`src/agents/`) → Graph Wiring (`src/graph.py`) → REST Route (`main.py`) → Unit Tests (`tests/test_unit.py`).
    - **New Frontend View / State**: Endpoint (`src/config.ts`) → Types → Custom Hook (`src/hooks/`) → Component (`src/components/` with skeleton/empty/error states) → View/Sidebar wiring → Automated Integration Tests (`src/**/__tests__/`) → `npm run build`.
 9. **Sequential Verification Pipeline (Fail-Fast Gate)**:
    Before concluding any task or PR, the agent MUST execute the sequential 3-step verification pipeline in exact order:

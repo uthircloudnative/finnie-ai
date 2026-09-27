@@ -1,11 +1,35 @@
 # Finnie AI: Progress Log & Next Steps
 
-**Date**: 2026-09-20
-**Current Status**: 🟢 Phase 4.1 Identity Security & Email Notification Subsystem — COMPLETE
+**Date**: 2026-09-27
+**Current Status**: 🟡 Phase 8: Autonomous Financial GPS & Production In-Session Memory (SPEC-10) — SPEC FINALIZED / READY FOR IMPLEMENTATION
 
 ---
 
-## ✅ What We Accomplished Today (September 20, 2026)
+## ✅ What We Accomplished Today (September 27, 2026)
+
+### 🧠 Architectural Convergence: In-Session Memory (SPEC-10) vs. Long-Term Memory (SPEC-11)
+1. **Pillar 1: Production In-Session Thread Memory (SPEC-10 Finalized)**:
+   - **Primary Objective**: Focus Phase 8 exclusively on achieving complete production-grade **In-Session Working Memory** for the Goal Strategist.
+   - **Hybrid Bootstrap Engine**: Deterministic baseline Monte Carlo run upfront (rock-solid Recharts data) + dynamic tool-calling loop for tax validation and proactive what-if exploration.
+   - **Multi-Turn Micro-Chat UX**: Dedicated glassmorphic refinement chat positioned directly below the Strategic Roadmap report in `GoalPlanner.tsx`.
+   - **Frictionless HITL on Save**: Calculations and chat refinements run freely; LangGraph `interrupt()` triggers **only when the user clicks "Lock In & Save Goal"**.
+   - **Cloud-Ready Dual Checkpointer**: Single-database architecture using `finnie.db` (`checkpoints`, `checkpoint_blobs`, `checkpoint_writes`) supporting `SqliteSaver` locally and `PostgresSaver` in Azure Container Apps without code refactoring.
+
+2. **Pillar 2: Future Cross-Session Long-Term Episodic Memory (SPEC-11 Strategy)**:
+   - **Engine Selection**: Evaluated Mem0 vs. Zep vs. Letta. Selected **Mem0 (Embedded Mode with Graph Memory)** as the ideal architecture for Finnie AI (in-process, zero new infrastructure, native contradiction resolution, multi-tenant by user ID).
+   - **Graph Engineering Convergence**: Analyzed the intersection of LangGraph (Control Flow Execution Graph) and Mem0 (Entity-Relationship Knowledge Graph).
+   - **SPEC-10 Forward Compatibility**: Reserved `memory_context` and `user_profile` in `FinnieState`, enforced `goal_{user_id}_{goal_id}` thread namespacing, and established a pluggable `@tool` registry so SPEC-11 plugs in without technical debt.
+
+3. **Pillar 3: Production Cloud Scale & In-Memory Infrastructure (Phase 10 Strategy)**:
+   - Defined specific scenarios for **Redis**: distributed rate limiting across load-balanced Azure containers, multi-worker SSE Pub/Sub token streaming, and ephemeral checkpoint TTL pruning.
+
+4. **Updated Core Specifications**:
+   - Updated [specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md](../specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) to status `READY FOR IMPLEMENTATION`.
+   - Updated [PROJECT_PLAN.md](./PROJECT_PLAN.md) codifying Phase 8 (In-Session Memory), Phase 9 (Long-Term Episodic Memory), and Phase 10 (Redis Scale).
+
+---
+
+## ✅ Previous Accomplishments (September 20, 2026)
 
 ### 🔐 SPEC-08: Password Reset via One-Time Verification Code (OTP) & Security Audit Trail
 1. **Cryptographic OTP & 3-Attempt Lockout**:
@@ -203,27 +227,47 @@
 
 ---
 
-## 🚀 Plan of Action (Next Session — Phase 3)
+## 🚀 Plan of Action (Next Session — Phase 8: Autonomous Financial GPS & Production In-Session Memory)
 
-Phase 2 is fully complete. The app is runnable end-to-end: ingest → vector store → agent graph → REST API → React UI.
+Our primary focus is implementing complete, production-grade **In-Session Memory (SPEC-10)**, designed to be cloud-ready for Azure and cleanly extendable to **Long-Term Episodic Memory (SPEC-11)**:
 
-### Phase 3: Agent Integration & Analysis
-- [x] **Portfolio Analyst Agent**: Implement Sharpe ratio, diversification score, and portfolio math — replace static UI data.
-- [x] **Compliance Guardian**: Post-processor node to inject `$NFA` disclaimers on every agent response.
-- [x] **Market Insights Agent**: Build NewsAPI/Alpha Vantage live data connectors; wire to `MARKET_INSIGHTS` routing stub.
+### Phase 8: Autonomous Agentic Evolution & In-Session Memory (SPEC-10)
+- [ ] **Step 1: Tool Manifest & Dynamic Tool Invocation (`src/tools/goal_tools.py`)**:
+  - Modular `@tool` functions: `fetch_user_portfolio_valuation`, `run_monte_carlo_engine`, `lookup_tax_and_contribution_limits`.
+  - Dynamic tool binding via `.bind_tools()` with LangGraph `ToolNode` execution loop.
+- [ ] **Step 2: Dual-Mode Checkpointing & In-Session Memory**:
+  - Cloud-ready checkpointer factory (`SqliteSaver` for local dev in `finnie.db`, `PostgresSaver` for Azure production).
+  - Thread persistence keyed by `thread_id=f"goal_{user_id}_{goal_id}"` eliminating single-turn amnesia.
+  - Reserved state fields (`memory_context`, `user_profile`) for SPEC-11 forward compatibility.
+- [ ] **Step 3: Multi-Turn Micro-Chat UX (`GoalChatRefinement.tsx`)**:
+  - Implement "Refine Roadmap with Finnie" micro-chat prompt below the Strategic Roadmap report in `GoalPlanner.tsx`.
+  - Wire custom hook `useGoalStrategist.ts` to submit follow-up prompts against the persistent goal thread.
+- [ ] **Step 4: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**:
+  - Add `goal_auditor_node` verifying LLM savings advice against statutory contribution limits (IRS 401(k), Section 80C).
+  - Self-correcting critique loop routing back to the strategist if limits are breached (capped at 2 retries).
+- [ ] **Step 5: Selective HITL Strategy Approval on Lock-In ("On Save")**:
+  - Insert LangGraph `interrupt()` breakpoint triggering **only when user clicks "Lock In & Save Goal"**.
+  - Interactive confirmation modal (`[Confirm & Commit]` vs `[Cancel / Tweak]`) before writing to `financial_goals`.
+- [ ] **Step 6: Real-Time Event & Token Streaming (SSE)**:
+  - Implement `POST /goals/calculate/stream` Server-Sent Events endpoint using `astream_events`.
+  - Stream live thought telemetry badges (`🔍 Fetching Holdings` ➔ `🎲 Simulating 10,000 Paths` ➔ `⚖️ Auditing Limits`) to `ThoughtStream.tsx`.
 
-### Phase 4: The Financial GPS
-- [x] **Goal Strategist Agent**: Monte Carlo simulation engine powering the what-if sliders in the UI.
-- [x] **Statute-Based RAG**: IRS and regional tax logic grounding for goal projections.
-- [x] **Interactive Dashboard**: Configurator form + Confidence Gauge + Fan Chart UI.
+### Phase 9: Future Cross-Session Long-Term Episodic Memory (SPEC-11)
+- [ ] Integrate **Mem0 (Embedded Mode with Graph Memory)** into FastAPI backend.
+- [ ] Implement autonomous memory extraction (`save_user_memory` tool) capturing user preferences, risk tolerance, life events, and family context.
+- [ ] Inject persistent memory profile on session boot across all agents (Chat, Portfolio, Goals, Market).
 
 ---
 
 ## 📂 Key Files to Review Upon Resume
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md) — Phase 3 roadmap
-- [DESIGN.md](./DESIGN.md) — Agent graph architecture
-- [RAG_GUIDE.md](./RAG_GUIDE.md) — RAG collection strategy for new agents
-- [UI_DESIGN.md](./UI_DESIGN.md) — Glass-Finance UX reference
+- [PROJECT_PLAN.md](./PROJECT_PLAN.md) — Phase 8, 9, 10 roadmap
+- [specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md](../specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) — Production specification
+- [backend/src/models/state.py](../backend/src/models/state.py) — Extended state definitions
+- [backend/src/tools/goal_tools.py](../backend/src/tools/goal_tools.py) — Target tool manifest
+- [backend/src/graph.py](../backend/src/graph.py) — Graph topology & checkpointer factory
+- [backend/src/agents/goal_strategist.py](../backend/src/agents/goal_strategist.py) — Target agent node
+- [frontend/src/components/Goals/GoalPlanner.tsx](../frontend/src/components/Goals/GoalPlanner.tsx) — Target UI view
+
 
 
 ---

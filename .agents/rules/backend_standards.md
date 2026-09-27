@@ -43,6 +43,18 @@ This document establishes the mandatory architectural, security, and coding stan
 
 ---
 
+## 2.1 Database Architecture & Canonical Data Dictionary
+- **Canonical Specification**:
+  - All database tables, columns, constraints, foreign keys, and indexes MUST strictly follow [docs/DATA_MODEL.md](../../docs/DATA_MODEL.md).
+  - Before modifying any model in `backend/src/models/`, agents MUST consult `docs/DATA_MODEL.md` to ensure architectural alignment.
+- **Zero-Downtime Migration Policy**:
+  - Any new column added to existing tables (`users`, `holdings`, `financial_goals`) must be registered in the idempotent automatic migration checks inside `init_db()` in `backend/src/database.py`.
+  - NEVER execute `DROP TABLE` in development or migration scripts. All migrations must be non-destructive (`ALTER TABLE ... ADD COLUMN ...`).
+- **Cloud-Agnostic Database Portability**:
+  - Code must operate identically on **SQLite 3** (`finnie.db`) for local testing and **PostgreSQL** in Azure cloud deployments.
+
+---
+
 ## 3. LangGraph Orchestrator & Node Conventions
 - **Uniform Signatures**:
   - All nodes in a compiled graph MUST share the same sync/async signature. In Finnie AI, all node functions are synchronous:

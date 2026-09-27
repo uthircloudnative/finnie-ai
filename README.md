@@ -233,6 +233,7 @@ If you want to dive deeper into how specific features were engineered, check the
 | Document | Focus Area | Contents & Implementation Details |
 |---|---|---|
 | [**AGENTS.md**](./AGENTS.md) | Universal Agent Constitution | Coding standards, 4-space/2-space indentation rules, and feature lifecycles |
+| [**DATA_MODEL.md**](./docs/DATA_MODEL.md) | Database Architecture & ERD | Single source of truth for all 7 database tables, ER diagram, constraints, and migrations |
 | [**specs/**](./specs/) | Spec-Driven Development (SDD) | Baseline verified specs (SPEC-01 to 05) & upcoming feature spec templates |
 | [**FEATURES_AND_AGENTS.md**](./docs/FEATURES_AND_AGENTS.md) | Feature Intelligence | Technical & functional specifications for all 5 core features and agent nodes |
 | [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) | System Architecture | LangGraph hub-and-spoke topologies, state schemas, and LangSmith observability |

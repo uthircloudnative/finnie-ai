@@ -77,7 +77,12 @@ db.commit()
 
 ## 3. Database & ORM Standards (SQLAlchemy 2.0)
 
+> [!IMPORTANT]
+> Always consult [docs/DATA_MODEL.md](../../../docs/DATA_MODEL.md) before creating or modifying any database models, columns, indexes, or constraints. It is the single source of truth for all 7 application tables.
+
+- **Canonical Data Dictionary**: Consult `docs/DATA_MODEL.md` for column data types, nullability, relationships, and multi-tenant constraints.
 - **Database Agnosticism**: Use standard SQLAlchemy models. The application runs on SQLite in local/dev and seamlessly targets PostgreSQL in production via `DATABASE_URL`.
+- **Zero-Downtime Migration Policy**: When adding columns, register non-destructive idempotent migration checks (`ALTER TABLE ... ADD COLUMN ...`) in `init_db()` in `src/database.py`.
 - **Timezone-Aware Timestamps**:
   ```python
   from datetime import datetime, timezone

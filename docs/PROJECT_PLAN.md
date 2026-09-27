@@ -67,12 +67,29 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **SPEC-08 Password Recovery via OTP & Security Audit Trail**: Cryptographic 6-digit OTP generation, sliding rate limiting (3 requests/15m), strict 3-attempt brute force capping (`status = "FAILED"`), dual-origin forensic audit logging (`password_reset_audits`), automatic database migration, and active session revocation (`token_version`).
 - **SPEC-09 Reusable Email Notification Engine**: Swappable transport layer (`BaseEmailProvider`) featuring REST API integration with Mailgun, local console fallback, responsive glassmorphic HTML templates with inlined CSS, and zero-exposure privacy protection.
 
-### Phase 8: Autonomous Agentic Evolution — The Autonomous Financial GPS (SPEC-10) [PLANNED]
-- **Step 1: Tool Manifest & Dynamic Tool Invocation (`src/tools/`)**: Modular `@tool` definitions (`fetch_user_portfolio`, `run_monte_carlo_engine`, `lookup_tax_rules`) bound dynamically to the LLM.
-- **Step 2: Session Checkpointing & Conversational Memory**: LangGraph `SqliteSaver` integration enabling multi-turn scenario adjustments ("What if I save $300 instead?") without state amnesia.
-- **Step 3: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**: Pre-compliance reflection node verifying proposed roadmaps against IRS/tax limits with retry critique loop.
-- **Step 4: Human-in-the-Loop (HITL) Strategy Approval**: LangGraph `interrupt()` breakpoint requiring explicit user sign-off before locking strategic targets to the database.
-- **Step 5: Real-Time Event & Token Streaming (SSE)**: Server-Sent Events streaming thought badges and token deltas to replace static spinners.
+### Phase 8: Autonomous Agentic Evolution & Production-Grade In-Session Memory (SPEC-10) [IN PROGRESS]
+- **Focus**: Production-grade In-Session Thread Memory, Autonomous Dynamic Tools, and Human-in-the-Loop Gatekeeper.
+- **Step 1: Modular Tool Manifest (`src/tools/goal_tools.py`)**: Dynamic tool definitions (`fetch_user_portfolio_valuation`, `run_monte_carlo_engine`, `lookup_tax_and_contribution_limits`) bound via `llm.bind_tools()`.
+- **Step 2: Dual-Mode Checkpointer & Thread Memory**: Cloud-ready checkpointer factory (`SqliteSaver` for local dev in `finnie.db`, `PostgresSaver` for Azure production) with thread persistence (`thread_id=f"goal_{user_id}_{goal_id}"`).
+- **Step 3: Multi-Turn Micro-Chat UX**: Dedicated glassmorphic refinement chat below the Strategic Roadmap in `GoalPlanner.tsx` for real-time iterative what-if scenario adjustments.
+- **Step 4: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**: Pre-compliance reflection node (`goal_auditor_node`) checking outputs against statutory limits (IRS 401(k), Section 80C) with retry critique loop.
+- **Step 5: Selective HITL Strategy Approval**: LangGraph `interrupt()` breakpoint triggering exclusively when the user clicks "Lock In & Save Goal" to keep exploration frictionless.
+- **Step 6: Real-Time Event & Token Streaming (SSE)**: Server-Sent Events endpoint streaming live thought badges (`🔍 Fetching Holdings` ➔ `🎲 Simulating 10,000 Paths` ➔ `⚖️ Auditing Limits`) to `ThoughtStream.tsx`.
+
+### Phase 9: Cross-Session Long-Term Episodic Memory & Knowledge Graph (SPEC-11) [PLANNED]
+- **Focus**: Global cross-session user memory (ChatGPT-style persistent memory) across all Finnie tabs and agents.
+- **Engine**: **Mem0 (Embedded Mode with Graph Memory)** integrated into FastAPI backend, storing extracted user facts and entity relationships in PostgreSQL / SQLite and ChromaDB.
+- **Cross-Agent Memory Injection**:
+  - Automatically extracts user investment preferences, risk tolerance, life milestones, family context, and tax brackets.
+  - Injects relevant long-term memory context into Live Chat, Portfolio Analyst, Market Insights, and Goal Strategist prompts.
+  - Automatic contradiction resolution (e.g. updating salary or risk appetite changes over time).
+
+### Phase 10: Production Cloud Scale, Distributed Rate Limiting & Ephemeral Caching (Redis) [PLANNED]
+- **Focus**: High-concurrency enterprise infrastructure for multi-instance Azure Container Apps / AWS deployments.
+- **Distributed Rate Limiting**: Shared atomic token-bucket rate limiter across load-balanced container replicas protecting against LLM API quota exhaustion.
+- **Pub/Sub Event Streaming**: Redis Streams / Pub-Sub coordinating real-time SSE token streaming across multi-worker Gunicorn processes and container replicas.
+- **Ephemeral State Pruning**: Auto-expiring intermediate draft checkpoints (TTL: 24h) to prevent disk bloat.
+- **Hot Market & Sentiment Cache**: Sub-millisecond in-memory caching of live stock ticks and news sentiment.
 
 ## 4. RAG Integration Matrix (Learning Reference)
 

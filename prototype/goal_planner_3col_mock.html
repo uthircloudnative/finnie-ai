@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finnie AI — Top Header Navigation & Expansive 3-Bar Goal Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #05060a;
+      --bg-surface: #0f111a;
+      --glass-bg: rgba(15, 17, 26, 0.78);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-cyan: #00f5ff;
+      --accent-cyan-glow: rgba(0, 245, 255, 0.22);
+      --accent-emerald: #10b981;
+      --text-bright: #ffffff;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-body: 'Inter', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP HEADER NAVIGATION BAR (REPLACES LEFT SIDEBAR!) ── */
+    .top-navbar {
+      height: 60px;
+      background: rgba(10, 12, 20, 0.9);
+      backdrop-filter: blur(28px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00f5ff, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #000;
+      font-size: 1rem;
+      box-shadow: 0 0 14px rgba(0, 245, 255, 0.35);
+    }
+
+    .brand-text {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--text-bright);
+      letter-spacing: 0.05em;
+    }
+
+    /* Center Navigation Tabs */
+    .nav-tabs-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-tab-item:hover {
+      color: var(--text-bright);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-tab-item.active {
+      background: rgba(0, 245, 255, 0.12);
+      border-color: rgba(0, 245, 255, 0.35);
+      color: var(--accent-cyan);
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(0, 245, 255, 0.15);
+    }
+
+    .nav-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Glowing Interactive Copilot Trigger Button */
+    .copilot-nav-trigger {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.42rem 0.9rem;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(16, 185, 129, 0.15));
+      border: 1px solid var(--accent-cyan);
+      border-radius: 9999px;
+      color: var(--text-bright);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(0, 245, 255, 0.25);
+      transition: all 0.2s ease;
+    }
+    .copilot-nav-trigger:hover { box-shadow: 0 0 22px rgba(0, 245, 255, 0.5); }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+      animation: beaconPulse 1.8s infinite;
+    }
+
+    @keyframes beaconPulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 14px var(--accent-cyan); }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .lock-in-nav-btn {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(16, 185, 129, 0.25));
+      border: 1px solid var(--accent-emerald);
+      color: var(--accent-emerald);
+      padding: 0.42rem 0.95rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .user-pill {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+    }
+
+    /* ── FULL-WIDTH EXPANSIVE 3-BAR WORKSPACE (HEIGHT: CALC(100VH - 60PX)) ── */
+    .app-workspace {
+      flex: 1;
+      height: calc(100vh - 60px);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      gap: 1rem;
+      overflow: hidden;
+    }
+
+    /* Common Card */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-header {
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      flex-shrink: 0;
+    }
+
+    .card-header h3 {
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .card-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.9rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      font-size: 0.80rem;
+    }
+
+    .card-body::-webkit-scrollbar { width: 4px; }
+    .card-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+
+    /* ── COLUMN 1: GOAL TARGETS (LEFT 280px) ── */
+    .column-targets {
+      width: 280px;
+      flex-shrink: 0;
+      height: 100%;
+    }
+
+    .input-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .input-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--text-dim); }
+    
+    .glass-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      padding: 0.45rem 0.65rem;
+      color: var(--text-bright);
+      font-size: 0.78rem;
+      width: 100%;
+    }
+    .glass-input:focus { outline: none; border-color: var(--accent-cyan); }
+
+    .presets-row { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.1rem; }
+    .preset-pill {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 0.4rem 0.65rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+    }
+    .preset-pill:hover { background: rgba(0, 245, 255, 0.08); border-color: var(--accent-cyan); color: #fff; }
+
+    .action-btn {
+      background: var(--accent-cyan);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-weight: 700;
+      font-family: var(--font-heading);
+      font-size: 0.80rem;
+      cursor: pointer;
+      margin-top: 0.2rem;
+    }
+
+    /* ── COLUMN 2: EXPANSIVE CENTER STAGE (FAN CHART + SYNTHESIS) ── */
+    .column-center-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      height: 100%;
+      min-width: 0;
+    }
+
+    /* Top Fan Chart Card (Height ~215px, Broad horizontal breathing room!) */
+    .chart-card {
+      height: 215px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .telemetry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--glass-border);
+      flex-shrink: 0;
+    }
+
+    .status-badge-risk {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 2px 7px;
+      border-radius: 9999px;
+      font-size: 0.70rem;
+      font-weight: 700;
+    }
+
+    .confidence-badge {
+      background: rgba(0, 245, 255, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 245, 255, 0.35);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    /* Bottom Synthesis Card (Occupies All Remaining Vertical Space) */
+    .synthesis-card {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .milestone-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-left: 3px solid var(--accent-cyan);
+      border-radius: 6px;
+      padding: 0.65rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .milestone-header { font-size: 0.78rem; font-weight: 700; color: #c7d2fe; }
+    .milestone-desc { font-size: 0.78rem; color: #cbd5e1; line-height: 1.45; }
+
+    /* ── COLUMN 3: STRATEGY COPILOT DRAWER (RIGHT 340px) ── */
+    .column-copilot {
+      width: 340px;
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .column-copilot.closed {
+      width: 0;
+      margin-left: -1rem;
+      opacity: 0;
+      pointer-events: none;
+      border: none;
+    }
+
+    .transient-thought {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 0.75rem;
+      background: rgba(0, 245, 255, 0.08);
+      border: 1px solid rgba(0, 245, 255, 0.25);
+      border-radius: 8px;
+      font-size: 0.72rem;
+      color: var(--accent-cyan);
+      animation: beaconPulse 1.8s infinite;
+    }
+
+    .prompt-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      padding: 3px 8px;
+      font-size: 0.68rem;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .prompt-chip:hover { border-color: var(--accent-cyan); color: #fff; }
+
+    .bubble {
+      padding: 0.55rem 0.8rem;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      max-width: 90%;
+    }
+    .bubble.bot { align-self: flex-start; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #f8fafc; }
+    .bubble.user { align-self: flex-end; background: rgba(0,245,255,0.12); border: 1px solid rgba(0,245,255,0.3); color: #f8fafc; }
+  </style>
+</head>
+<body>
+
+  <!-- ── 1. SLEEK FROSTED-GLASS TOP NAVIGATION BAR ── -->
+  <nav class="top-navbar">
+    <!-- Brand -->
+    <div class="nav-brand">
+      <div class="logo-icon">F</div>
+      <span class="brand-text">FINNIE AI</span>
+    </div>
+
+    <!-- Center Navigation Tabs -->
+    <div class="nav-tabs-group">
+      <a class="nav-tab-item" href="#"><span>🏠</span> Dashboard</a>
+      <a class="nav-tab-item" href="#"><span>💬</span> Deep Q&A</a>
+      <a class="nav-tab-item" href="#"><span>💼</span> My Holdings</a>
+      <a class="nav-tab-item" href="#"><span>📈</span> Portfolio Analyst</a>
+      <a class="nav-tab-item" href="#"><span>🌐</span> Market Insights</a>
+      <a class="nav-tab-item active" href="#"><span>🎯</span> Goal Planner</a>
+    </div>
+
+    <!-- Right Header Actions -->
+    <div class="nav-right-actions">
+      <!-- Interactive Glowing Copilot Trigger -->
+      <button class="copilot-nav-trigger" id="btnCopilotToggle" onclick="toggleCopilot()">
+        <div class="pulse-dot"></div>
+        <span>💬 Strategy Copilot</span>
+      </button>
+
+      <button class="lock-in-nav-btn" onclick="alert('Goal Locked In & Saved to Profile!')">
+        Lock In & Save Goal 🔒
+      </button>
+
+      <div class="user-pill">👤 Test User</div>
+    </div>
+  </nav>
+
+  <!-- ── 2. FULL-WIDTH 3-BAR WORKSPACE (ZERO SIDEBAR CROWDING!) ── -->
+  <main class="app-workspace">
+
+    <!-- ── COLUMN 1: GOAL TARGETS FORM (LEFT 280px) ── -->
+    <section class="glass-card column-targets">
+      <div class="card-header">
+        <h3><span>⚙️</span> Goal Targets</h3>
+        <span style="font-size: 0.68rem; color: var(--accent-cyan); font-weight: 700;">CONFIG</span>
+      </div>
+
+      <div class="card-body">
+        <div class="input-group">
+          <label class="input-label">Goal Name</label>
+          <input class="glass-input" id="inpName" value="Retirement Fund" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Target Amount ($)</label>
+          <input class="glass-input" id="inpAmount" type="number" value="1000000" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Target Year</label>
+          <input class="glass-input" id="inpYear" type="number" value="2040" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monthly Savings ($)</label>
+          <input class="glass-input" id="inpSavings" type="number" value="1000" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Jurisdiction</label>
+          <select class="glass-input">
+            <option>USA (IRS 401k/IRA)</option>
+            <option>India (80C / NPS)</option>
+            <option>UK (ISA Rules)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Quick Presets</label>
+          <div class="presets-row">
+            <div class="preset-pill" onclick="setPreset('Retirement Fund', 1000000, 2040, 1000)">
+              <span>🏖️ Retirement</span><strong>$1M · 2040</strong>
+            </div>
+            <div class="preset-pill" onclick="setPreset('First Home', 250000, 2030, 1500)">
+              <span>🏡 First Home</span><strong>$250k · 2030</strong>
+            </div>
+            <div class="preset-pill" onclick="setPreset('Wealth Acceleration', 500000, 2035, 800)">
+              <span>🚀 Wealth</span><strong>$500k · 2035</strong>
+            </div>
+          </div>
+        </div>
+
+        <button class="action-btn" onclick="simulateCalculation()">⚡ Recalculate Roadmap</button>
+      </div>
+    </section>
+
+    <!-- ── COLUMN 2: EXPANSIVE CENTER STAGE (WIDE FAN CHART + SYNTHESIS) ── -->
+    <section class="column-center-stage">
+
+      <!-- Top: Wide Monte Carlo Fan Chart Card (Height ~215px) -->
+      <div class="glass-card chart-card">
+        <div class="telemetry-header">
+          <div style="display: flex; gap: 0.65rem; align-items: center;">
+            <span class="status-badge-risk">■ AT RISK</span>
+            <span class="confidence-badge">0.0% Success Probability</span>
+            <span style="font-size: 0.72rem; color: #cbd5e1;">Target: <strong>$1,000,000 by 2040</strong> ($1,000/mo)</span>
+          </div>
+          <div style="display: flex; gap: 1rem; font-size: 0.68rem; color: #94a3b8;">
+            <span><strong style="color: var(--accent-cyan);">●</strong> Median Path: $284k</span>
+            <span><strong style="color: rgba(0,245,255,0.4);">▨</strong> 90% Confidence Interval</span>
+          </div>
+        </div>
+
+        <!-- SVG Monte Carlo Projection Simulation -->
+        <div style="flex: 1; padding: 0.35rem 0.85rem; position: relative;">
+          <svg viewBox="0 0 850 135" style="width: 100%; height: 100%; overflow: visible;">
+            <defs>
+              <linearGradient id="band90" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00f5ff" stop-opacity="0.14"/>
+                <stop offset="100%" stop-color="#00f5ff" stop-opacity="0.02"/>
+              </linearGradient>
+              <linearGradient id="band50" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00f5ff" stop-opacity="0.28"/>
+                <stop offset="100%" stop-color="#00f5ff" stop-opacity="0.06"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Grid Lines -->
+            <line x1="45" y1="20" x2="820" y2="20" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+            <line x1="45" y1="60" x2="820" y2="60" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+            <line x1="45" y1="100" x2="820" y2="100" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+
+            <!-- Axis Labels -->
+            <text x="35" y="24" fill="#64748b" font-size="9" text-anchor="end">$1.0M (Goal)</text>
+            <text x="35" y="64" fill="#64748b" font-size="9" text-anchor="end">$500k</text>
+            <text x="35" y="104" fill="#64748b" font-size="9" text-anchor="end">$100k</text>
+
+            <text x="55" y="125" fill="#64748b" font-size="9">2026</text>
+            <text x="245" y="125" fill="#64748b" font-size="9">2030</text>
+            <text x="475" y="125" fill="#64748b" font-size="9">2035</text>
+            <text x="700" y="125" fill="#64748b" font-size="9">2040</text>
+
+            <!-- Target Goal Line -->
+            <line x1="45" y1="20" x2="820" y2="20" stroke="#f87171" stroke-width="1.5" stroke-dasharray="4 4"/>
+            
+            <!-- 90% Confidence Interval Band -->
+            <polygon points="55,110 245,95 475,80 700,55 700,115 475,112 245,110 55,110" fill="url(#band90)"/>
+            
+            <!-- 50% Confidence Interval Band -->
+            <polygon points="55,110 245,100 475,90 700,70 700,105 475,105 245,105 55,110" fill="url(#band50)"/>
+
+            <!-- Median Path Line -->
+            <path d="M 55 110 Q 245 102 475 96 T 700 85" fill="none" stroke="#00f5ff" stroke-width="2.5"/>
+            
+            <circle cx="700" cy="85" r="4" fill="#00f5ff"/>
+            <text x="712" y="88" fill="#00f5ff" font-size="10" font-weight="700">$284k (Median)</text>
+            <text x="712" y="24" fill="#f87171" font-size="10" font-weight="700">▲ $1.0M Target</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Bottom: Strategic Roadmap Synthesis Card (Full Remaining Vertical Space) -->
+      <div class="glass-card synthesis-card">
+        <div class="card-header">
+          <h3><span>📜</span> Strategic Roadmap Synthesis</h3>
+          <span style="font-size: 0.68rem; color: var(--accent-cyan); font-weight: 600;">IRS-Grounded Plan</span>
+        </div>
+
+        <div class="card-body">
+          <h4 style="color: var(--accent-cyan); font-family: var(--font-heading); font-size: 0.95rem;">
+            🎯 Executive Assessment: Retirement Fund
+          </h4>
+          <p style="font-size: 0.78rem; line-height: 1.5; color: #e2e8f0;">
+            Under current contributions ($1,000/mo), the median terminal capital reaches <strong>$284,512</strong> by 2040, resulting in a <strong>0.0% probability</strong> of hitting your $1,000,000 target. A systematic contribution escalation and tax-bucket strategy is outlined below to bridge the gap.
+          </p>
+
+          <div class="milestone-item">
+            <div class="milestone-header">🛤️ Phase 1 (Months 1–12): Tax-Advantaged Maximum Capture</div>
+            <div class="milestone-desc">
+              Direct $583.33/mo to employer 401(k) to secure the 100% company match. Route remaining $416.67/mo to a Roth IRA for tax-free retirement growth.
+            </div>
+          </div>
+
+          <div class="milestone-item">
+            <div class="milestone-header">🛤️ Phase 2 (Years 2–5): Contribution Escalation</div>
+            <div class="milestone-desc">
+              Escalate savings by <strong>+$1,450/mo</strong> (to $2,450/mo total). This accelerates compounding, lifting your success probability to <strong>74.2% (ON TRACK)</strong>.
+            </div>
+          </div>
+
+          <div class="milestone-item">
+            <div class="milestone-header">🛤️ Phase 3 (Years 6–14): Horizon Glidepath De-risking</div>
+            <div class="milestone-desc">
+              Gradually taper portfolio risk from 85/15 equity/debt toward 60/40 as 2040 nears, shielding accumulated capital from late-horizon market shocks.
+            </div>
+          </div>
+
+          <div style="font-size: 0.70rem; color: #94a3b8; background: rgba(15,23,42,0.6); padding: 0.5rem 0.75rem; border-radius: 6px; border-left: 2px solid #64748b;">
+            ⚖️ <strong>$NFA Compliance:</strong> For educational simulation only. Finnie AI does not provide registered investment advice.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── COLUMN 3: STRATEGY COPILOT DRAWER (RIGHT 340px) ── -->
+    <section class="glass-card column-copilot" id="copilotDrawer">
+      <div class="card-header">
+        <h3><span>💬</span> Strategy Copilot</h3>
+        <div style="display: flex; align-items: center; gap: 0.45rem;">
+          <span style="font-size: 0.65rem; color: var(--accent-cyan); font-weight: 700; padding: 2px 7px; background: rgba(0,245,255,0.1); border-radius: 9999px;">MULTI-TURN</span>
+          <button onclick="toggleCopilot()" style="background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1.1rem;">✕</button>
+        </div>
+      </div>
+
+      <div class="card-body" style="padding-bottom: 0.6rem;">
+        <!-- Transient Living Indicator -->
+        <div class="transient-thought" id="thoughtIndicator" style="display: none;">
+          <span>🧠</span>
+          <span id="thoughtText">Simulating 10,000 paths & auditing limits...</span>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+          <span class="prompt-chip" onclick="askCopilot('What if I increase monthly savings by $500?')">+ $500/mo?</span>
+          <span class="prompt-chip" onclick="askCopilot('How to split between 401(k) and brokerage?')">401(k) split?</span>
+          <span class="prompt-chip" onclick="askCopilot('What if market volatility drops 5%?')">-5% Volatility?</span>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.65rem;" id="chatList">
+          <div class="bubble bot">
+            <div style="font-size: 0.62rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.2rem;">FINNIE COPILOT</div>
+            I’m your dedicated Strategy Copilot. Ask what-if scenarios or test contribution shifts with persistent in-session continuity.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.45rem; padding-top: 0.5rem; border-top: 1px solid var(--glass-border);">
+          <input class="glass-input" id="chatInput" placeholder="Ask what-if scenario..." onkeydown="if(event.key==='Enter') sendChat()" />
+          <button class="action-btn" style="padding: 0 0.85rem; font-size: 0.75rem; margin-top: 0;" onclick="sendChat()">Send ⚡</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let isCopilotOpen = true; // Open by default in this preview to show complete 3-bar synergy!
+
+    function toggleCopilot() {
+      isCopilotOpen = !isCopilotOpen;
+      const drawer = document.getElementById('copilotDrawer');
+      const triggerBtn = document.getElementById('btnCopilotToggle');
+
+      if (isCopilotOpen) {
+        drawer.classList.remove('closed');
+        triggerBtn.style.opacity = '0.5';
+      } else {
+        drawer.classList.add('closed');
+        triggerBtn.style.opacity = '1';
+      }
+    }
+
+    function setPreset(name, amt, yr, sav) {
+      document.getElementById('inpName').value = name;
+      document.getElementById('inpAmount').value = amt;
+      document.getElementById('inpYear').value = yr;
+      document.getElementById('inpSavings').value = sav;
+    }
+
+    function simulateCalculation() {
+      if (!isCopilotOpen) toggleCopilot();
+      const indicator = document.getElementById('thoughtIndicator');
+      const text = document.getElementById('thoughtText');
+      indicator.style.display = 'flex';
+      text.innerText = 'Evaluating portfolio risk metrics...';
+
+      setTimeout(() => { text.innerText = 'Simulating 10,000 Monte Carlo paths...'; }, 800);
+      setTimeout(() => { text.innerText = 'Auditing statutory contribution limits...'; }, 1600);
+      setTimeout(() => {
+        indicator.style.display = 'none';
+      }, 2400);
+    }
+
+    function askCopilot(msg) {
+      document.getElementById('chatInput').value = msg;
+      sendChat();
+    }
+
+    function sendChat() {
+      const inp = document.getElementById('chatInput');
+      const text = inp.value.trim();
+      if (!text) return;
+
+      const chatList = document.getElementById('chatList');
+      const userBubble = document.createElement('div');
+      userBubble.className = 'bubble user';
+      userBubble.innerHTML = `<div style="font-size: 0.62rem; color: #38bdf8; font-weight: 700; margin-bottom: 0.2rem;">YOU</div>${text}`;
+      chatList.appendChild(userBubble);
+      inp.value = '';
+
+      simulateCalculation();
+
+      setTimeout(() => {
+        const botBubble = document.createElement('div');
+        botBubble.className = 'bubble bot';
+        botBubble.innerHTML = `<div style="font-size: 0.62rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.2rem;">FINNIE COPILOT</div>Analyzing scenario: "<em>${text}</em>". Statutory boundaries validated. Fan chart median outcome lifted.`;
+        chatList.appendChild(botBubble);
+        chatList.scrollTop = chatList.scrollHeight;
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

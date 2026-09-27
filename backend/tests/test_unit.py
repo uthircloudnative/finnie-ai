@@ -559,8 +559,195 @@ class TestEmailService(unittest.TestCase):
         self.assertTrue(success)
 
 
+class TestGoalTools(unittest.TestCase):
+    def test_run_monte_carlo_engine_standard(self):
+        from src.tools.goal_tools import run_monte_carlo_engine
+
+        res = run_monte_carlo_engine.invoke({
+            "initial_balance": 10000.0,
+            "target_amount": 50000.0,
+            "monthly_savings": 500.0,
+            "years": 5,
+            "expected_return": 0.08,
+            "volatility": 0.15
+        })
+        self.assertIn("confidence_score", res)
+        self.assertIn("median_path", res)
+        self.assertIn("p05_path", res)
+        self.assertIn("p95_path", res)
+        self.assertIn("status", res)
+        self.assertTrue(0.0 <= res["confidence_score"] <= 100.0)
+        self.assertEqual(len(res["years_axis"]), 6)
+
+    def test_run_monte_carlo_engine_target_already_achieved_ec2(self):
+        from src.tools.goal_tools import run_monte_carlo_engine
+
+        res = run_monte_carlo_engine.invoke({
+            "initial_balance": 75000.0,
+            "target_amount": 50000.0,
+            "monthly_savings": 200.0,
+            "years": 3
+        })
+        self.assertEqual(res["confidence_score"], 100.0)
+        self.assertEqual(res["status"], "ACHIEVED")
+        self.assertEqual(res["final_median"], 75000.0)
+        self.assertEqual(len(res["median_path"]), 4)
+
+    def test_run_monte_carlo_engine_defensive_clamping_ec1_ec3(self):
+        from src.tools.goal_tools import run_monte_carlo_engine
+
+        # Negative initial balance and zero savings clamped safely
+        res = run_monte_carlo_engine.invoke({
+            "initial_balance": -5000.0,
+            "target_amount": 10000.0,
+            "monthly_savings": -100.0,
+            "years": 0
+        })
+        self.assertIn("confidence_score", res)
+        self.assertEqual(len(res["years_axis"]), 2)  # Clamped to min 1 year -> [0, 1]
+
+    def test_lookup_tax_and_contribution_limits_statutory_fallbacks(self):
+        from src.tools.goal_tools import lookup_tax_and_contribution_limits
+
+        # USA limits
+        us_res = lookup_tax_and_contribution_limits.invoke({"country": "USA"})
+        self.assertIn("30,500", us_res)
+        self.assertIn("401(k)", us_res)
+
+        # India limits
+        in_res = lookup_tax_and_contribution_limits.invoke({"country": "India"})
+        self.assertIn("80C", in_res)
+        self.assertIn("2,00,000", in_res)
+
+        # UK limits
+        uk_res = lookup_tax_and_contribution_limits.invoke({"country": "UK"})
+        self.assertIn("20,000", uk_res)
+        self.assertIn("ISA", uk_res)
+
+        # Unknown country fallback
+        sg_res = lookup_tax_and_contribution_limits.invoke({"country": "Singapore"})
+        self.assertIn("Singapore", sg_res)
+
+    def test_fetch_user_portfolio_valuation_resilience(self):
+        from src.tools.goal_tools import fetch_user_portfolio_valuation
+
+        # Valid invocation with dummy user
+        res = fetch_user_portfolio_valuation.invoke({"user_id": "test_user_offline_001"})
+        self.assertIn("total_valuation", res)
+        self.assertIn("asset_count", res)
+        self.assertIn("holdings", res)
+        self.assertEqual(res["user_id"], "test_user_offline_001")
+
+
+class TestGoalSecurityAndMultiTenancy(unittest.IsolatedAsyncioTestCase):
+    async def test_foreign_thread_rejected_with_403_calculate(self):
+        from fastapi import HTTPException
+        from main import calculate_goal_roadmap, GoalCalculationRequest
+        from src.models.user import User
+
+        mock_user = User(id="victim_user_101", email="victim@finnie.ai")
+        mock_db = MagicMock()
+
+        req = GoalCalculationRequest(
+            goal_name="Retirement",
+            target_amount=1000000.0,
+            target_year=2035,
+            monthly_savings=500.0,
+            country="USA",
+            thread_id="goal_attacker_user_999_retirement"
+        )
+
+        with self.assertRaises(HTTPException) as ctx:
+            await calculate_goal_roadmap(req=req, current_user=mock_user, db=mock_db)
+
+        self.assertEqual(ctx.exception.status_code, 403)
+        self.assertIn("Forbidden", ctx.exception.detail)
+
+    async def test_foreign_thread_rejected_with_403_lock_in(self):
+        from fastapi import HTTPException
+        from main import lock_in_goal, GoalLockInRequest
+        from src.models.user import User
+
+        mock_user = User(id="victim_user_101", email="victim@finnie.ai")
+        mock_db = MagicMock()
+
+        req = GoalLockInRequest(
+            thread_id="goal_attacker_user_999_retirement",
+            approved=True
+        )
+
+        with self.assertRaises(HTTPException) as ctx:
+            await lock_in_goal(req=req, current_user=mock_user, db=mock_db)
+
+        self.assertEqual(ctx.exception.status_code, 403)
+        self.assertIn("Forbidden", ctx.exception.detail)
+
+    def test_goal_auditor_flags_statutory_violation(self):
+        from src.agents.goal_auditor import goal_auditor_node
+        from langchain_core.messages import AIMessage
+
+        # State with $3,500/mo savings in USA (ceiling is $2,541.67) and no mention of taxable account
+        state = {
+            "goal_configuration": {
+                "goal_name": "Retirement",
+                "monthly_savings": 3500.0,
+                "country": "USA"
+            },
+            "messages": [AIMessage(content="Here is your standard roadmap. Save all into 401k.")],
+            "critic_retry_count": 0,
+            "critic_feedback": None
+        }
+
+        result = goal_auditor_node(state)
+        self.assertIsNotNone(result.get("critic_feedback"))
+        self.assertEqual(result.get("critic_retry_count"), 1)
+        self.assertIn("2,541.67", result["critic_feedback"])
+
+    def test_goal_auditor_approves_when_mitigated(self):
+        from src.agents.goal_auditor import goal_auditor_node
+        from langchain_core.messages import AIMessage
+
+        # State with $3,500/mo savings and message that mentions taxable brokerage account
+        state = {
+            "goal_configuration": {
+                "goal_name": "Retirement",
+                "monthly_savings": 3500.0,
+                "country": "USA"
+            },
+            "messages": [AIMessage(content="Max out 401k at $2,541.67 and invest remainder in a taxable brokerage account.")],
+            "critic_retry_count": 0,
+            "critic_feedback": None
+        }
+
+        result = goal_auditor_node(state)
+        self.assertIsNone(result.get("critic_feedback"))
+        self.assertEqual(result.get("critic_retry_count"), 0)
+
+    def test_goal_auditor_appends_callout_on_exhaustion(self):
+        from src.agents.goal_auditor import goal_auditor_node
+        from langchain_core.messages import AIMessage
+
+        # State with retry_count = 2 (exhausted)
+        state = {
+            "goal_configuration": {
+                "goal_name": "Retirement",
+                "monthly_savings": 3500.0,
+                "country": "USA"
+            },
+            "messages": [AIMessage(content="Standard retirement draft.")],
+            "critic_retry_count": 2,
+            "critic_feedback": None
+        }
+
+        result = goal_auditor_node(state)
+        self.assertIsNone(result.get("critic_feedback"))
+        self.assertIn("messages", result)
+        self.assertIn("Statutory Notice", result["messages"][0].content)
+
+
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

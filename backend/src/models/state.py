@@ -1,7 +1,13 @@
-
-from typing import TypedDict, Annotated, Optional
+"""
+state.py — LangGraph Shared State Definition
+=============================================
+Defines the typed dictionary passed between the Supervisor, Worker Agents,
+Critic / Reflection nodes, and the Compliance Guardian.
+"""
+from typing import TypedDict, Annotated, Optional, Union, Any
 from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage
+
 
 class FinnieState(TypedDict):
     """
@@ -30,7 +36,6 @@ class FinnieState(TypedDict):
     # Format: {"target_amount": 1000000, "target_year": 2035, "monthly_savings": 500, "country": "USA"}
     goal_configuration: Optional[dict]
 
-
     # The unique request ID tied to LangSmith traces and system logs
     trace_id: Optional[str]
 
@@ -40,3 +45,17 @@ class FinnieState(TypedDict):
 
     # Authenticated user tenant ID
     user_id: Optional[str]
+
+    # ── SPEC-10 Extensions ──
+    # Reflection loop feedback from goal_auditor_node
+    critic_feedback: Optional[str]
+    # Reflection loop counter (capped at 2 retries)
+    critic_retry_count: Optional[int]
+    # Flag triggering HITL interrupt() only when user commits/saves strategy
+    is_save_intent: Optional[bool]
+
+    # ── SPEC-11 Future-Proofing Hooks ──
+    # User demographic and risk profiling for Mem0 episodic integration
+    user_profile: Optional[dict]
+    # Injected episodic memory context / retrieval context
+    memory_context: Optional[Union[str, dict]]

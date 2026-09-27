@@ -24,5 +24,7 @@ export const API_ENDPOINTS = {
   MARKET_NEWS: `${API_BASE}/market/news`,
   GOALS: `${API_BASE}/goals`,
   GOALS_CALCULATE: `${API_BASE}/goals/calculate`,
+  GOALS_STREAM: `${API_BASE}/goals/calculate/stream`,
+  GOALS_LOCK_IN: `${API_BASE}/goals/lock-in`,
   HEALTH: `${API_BASE}/health`,
 } as const

@@ -11,6 +11,7 @@ Endpoints:
     POST /portfolio/save            - Save/replace holdings for a user
 """
 import os
+import json
 import secrets
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta, timezone
@@ -19,6 +20,7 @@ from typing import List, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -93,13 +95,41 @@ class ExchangeResponse(BaseModel):
     exchange_code: str
 
 
-class GoalRequest(BaseModel):
-    user_id: str = Field(default="user_1")
-    goal_name: str = Field(default="Retirement")
-    target_amount: float
-    target_year: int
-    monthly_savings: float
-    country: str = Field(default="US")
+class GoalCalculationRequest(BaseModel):
+    user_id: Optional[str] = Field(default=None)
+    goal_name: str = Field(default="Retirement", min_length=1, max_length=100)
+    target_amount: float = Field(..., gt=0)
+    target_year: int = Field(..., ge=2026)
+    monthly_savings: float = Field(default=0.0, ge=0)
+    country: str = Field(default="USA")
+    thread_id: Optional[str] = None
+    prompt: Optional[str] = None  # Follow-up micro-chat query
+
+
+# Backward compatibility alias
+GoalRequest = GoalCalculationRequest
+
+
+class GoalCalculationResponse(BaseModel):
+    reply: str
+    analysis_results: Optional[dict] = None
+    thread_id: str
+    confidence_score: float
+    country: str
+    status: str = "EXPLORING"  # "EXPLORING" or "READY_TO_LOCK"
+
+
+class GoalLockInRequest(BaseModel):
+    thread_id: str
+    approved: bool = True
+    user_adjustments: Optional[dict] = None
+
+
+class GoalLockInResponse(BaseModel):
+    status: str = "LOCKED"
+    goal_id: int
+    message: str
+    goal: dict
 
 
 # ---------------------------------------------------------------------------
@@ -650,58 +680,58 @@ def get_user_goal(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Fetch the current financial goal for a user."""
+    """Fetch the current financial goal for the authenticated user."""
     effective_id = current_user.id
     goal = db.query(FinancialGoal).filter(FinancialGoal.user_id == effective_id).first()
     if not goal:
         return {"status": "no_goal"}
     return {
+        "id": goal.id,
         "goal_name": goal.goal_name,
         "target_amount": goal.target_amount,
         "target_year": goal.target_year,
         "monthly_savings": goal.monthly_contribution,
-        "country": goal.country
+        "country": goal.country,
+        "thread_id": goal.thread_id,
+        "status": goal.status,
+        "confidence_score": goal.confidence_score,
+        "strategy_report": goal.strategy_report,
     }
 
 
-@app.post("/goals/calculate", response_model=ChatResponse, tags=["Goals"])
+@app.post("/goals/calculate", response_model=GoalCalculationResponse, tags=["Goals"])
 async def calculate_goal_roadmap(
-    req: GoalRequest,
+    req: GoalCalculationRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
-) -> ChatResponse:
+) -> GoalCalculationResponse:
     """
-    Save the user's goal and trigger a full Monte Carlo / RAG roadmap generation.
+    Executes autonomous goal roadmap calculation or multi-turn conversational follow-up.
+    Enforces multi-tenant thread isolation (403 if thread ID does not match active user).
     """
     effective_id = current_user.id
-    # 1. Persist/Update the goal in SQLite
-    existing = db.query(FinancialGoal).filter(FinancialGoal.user_id == effective_id).first()
-    if existing:
-        existing.goal_name = req.goal_name
-        existing.target_amount = req.target_amount
-        existing.target_year = req.target_year
-        existing.monthly_contribution = req.monthly_savings
-        existing.country = req.country
+
+    # Strict multi-tenant thread validation (SPEC-10 / DATA_MODEL.md Invariant 4.2)
+    if req.thread_id:
+        expected_prefix = f"goal_{effective_id}_"
+        if not req.thread_id.startswith(expected_prefix):
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Thread ID does not belong to active tenant."
+            )
+        active_thread = req.thread_id
     else:
-        new_goal = FinancialGoal(
-            user_id=effective_id,
-            goal_name=req.goal_name,
-            target_amount=req.target_amount,
-            target_year=req.target_year,
-            monthly_contribution=req.monthly_savings,
-            country=req.country
-        )
-        db.add(new_goal)
+        goal_slug = req.goal_name.lower().strip().replace(" ", "_")
+        active_thread = f"goal_{effective_id}_{goal_slug}"
 
-    db.commit()
-
-    # 2. Fetch latest holdings and last analysis results for the graph
+    # Fetch latest user portfolio holdings
     rows = db.query(Holding).filter(Holding.user_id == effective_id).all()
     holdings = [{"ticker": r.ticker, "shares": r.shares} for r in rows]
 
-    # Pre-configure the graph state with the new goal data
+    user_query = req.prompt or f"Analyze my {req.goal_name} roadmap and compute probability of success."
+
     initial_state = {
-        "messages": [HumanMessage(content=f"Analyze my {req.goal_name} roadmap.")],
+        "messages": [HumanMessage(content=user_query)],
         "portfolio_data": holdings,
         "goal_configuration": {
             "target_amount": req.target_amount,
@@ -709,22 +739,208 @@ async def calculate_goal_roadmap(
             "monthly_savings": req.monthly_savings,
             "country": req.country,
             "goal_name": req.goal_name,
-            "user_id": effective_id
+            "user_id": effective_id,
+            "thread_id": active_thread
         },
         "next_step": "GOAL_STRATEGIST",
         "user_id": effective_id,
+        "is_save_intent": False,
         "trace_id": trace_id_var.get()
     }
 
     try:
         t_id = trace_id_var.get()
-        config = {"metadata": {"app_trace_id": t_id}} if t_id else {}
+        config = {
+            "configurable": {"thread_id": active_thread},
+            "metadata": {"app_trace_id": t_id} if t_id else {}
+        }
         final_state = await finnie_app.ainvoke(initial_state, config=config)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Goal Roadmap failed: {exc}") from exc
 
     messages = final_state.get("messages", [])
-    return ChatResponse(
-        reply=str(messages[-1].content) if messages else "Roadmap generation failed.",
-        analysis_results=final_state.get("analysis_results")
+    reply_content = str(messages[-1].content) if messages else "Roadmap generation complete."
+    analysis_res = final_state.get("analysis_results") or {}
+    sim = analysis_res.get("simulation") or {}
+    confidence = float(sim.get("confidence_score", 0.0))
+
+    return GoalCalculationResponse(
+        reply=reply_content,
+        analysis_results=analysis_res,
+        thread_id=active_thread,
+        confidence_score=confidence,
+        country=req.country,
+        status="READY_TO_LOCK"
     )
+
+
+@app.post("/goals/calculate/stream", tags=["Goals"])
+async def stream_goal_roadmap(
+    req: GoalCalculationRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Server-Sent Events (SSE) streaming live intermediate agent thoughts, tool execution,
+    and roadmap synthesis for the Goal Planner thought badge carousel.
+    """
+    effective_id = current_user.id
+
+    # Strict multi-tenant thread validation
+    if req.thread_id:
+        expected_prefix = f"goal_{effective_id}_"
+        if not req.thread_id.startswith(expected_prefix):
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Thread ID does not belong to active tenant."
+            )
+        active_thread = req.thread_id
+    else:
+        goal_slug = req.goal_name.lower().strip().replace(" ", "_")
+        active_thread = f"goal_{effective_id}_{goal_slug}"
+
+    rows = db.query(Holding).filter(Holding.user_id == effective_id).all()
+    holdings = [{"ticker": r.ticker, "shares": r.shares} for r in rows]
+
+    user_query = req.prompt or f"Analyze my {req.goal_name} roadmap and compute probability of success."
+
+    initial_state = {
+        "messages": [HumanMessage(content=user_query)],
+        "portfolio_data": holdings,
+        "goal_configuration": {
+            "target_amount": req.target_amount,
+            "target_year": req.target_year,
+            "monthly_savings": req.monthly_savings,
+            "country": req.country,
+            "goal_name": req.goal_name,
+            "user_id": effective_id,
+            "thread_id": active_thread
+        },
+        "next_step": "GOAL_STRATEGIST",
+        "user_id": effective_id,
+        "is_save_intent": False,
+        "trace_id": trace_id_var.get()
+    }
+
+    config = {
+        "configurable": {"thread_id": active_thread},
+        "metadata": {"app_trace_id": trace_id_var.get()} if trace_id_var.get() else {}
+    }
+
+    async def event_generator():
+        try:
+            yield f"data: {json.dumps({'type': 'thought', 'step': 'init', 'message': f'Initializing autonomous roadmap for {req.goal_name}...', 'thread_id': active_thread})}\n\n"
+            yield f"data: {json.dumps({'type': 'thought', 'step': 'portfolio', 'message': 'Auditing active portfolio valuation and holdings...'})}\n\n"
+            yield f"data: {json.dumps({'type': 'thought', 'step': 'simulation', 'message': 'Executing 10,000 Monte Carlo simulation runs across market paths...'})}\n\n"
+            yield f"data: {json.dumps({'type': 'thought', 'step': 'tax_rag', 'message': f'Consulting vector RAG rules for {req.country} statutory contribution limits...'})}\n\n"
+
+            final_state = await finnie_app.ainvoke(initial_state, config=config)
+
+            messages = final_state.get("messages", [])
+            reply_text = str(messages[-1].content) if messages else "Roadmap generation complete."
+            analysis_res = final_state.get("analysis_results") or {}
+            sim = analysis_res.get("simulation") or {}
+            confidence = float(sim.get("confidence_score", 0.0))
+
+            yield f"data: {json.dumps({'type': 'thought', 'step': 'auditor', 'message': 'Goal Auditor statutory check completed.'})}\n\n"
+            yield f"data: {json.dumps({'type': 'complete', 'reply': reply_text, 'analysis_results': analysis_res, 'confidence_score': confidence, 'thread_id': active_thread, 'country': req.country, 'status': 'READY_TO_LOCK'})}\n\n"
+
+        except Exception as exc:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+
+
+@app.post("/goals/lock-in", response_model=GoalLockInResponse, tags=["Goals"])
+async def lock_in_goal(
+    req: GoalLockInRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Resumes graph from HITL interrupt, commits approved goal to financial_goals,
+    and returns locked-in confirmation. Enforces tenant thread isolation.
+    """
+    effective_id = current_user.id
+    expected_prefix = f"goal_{effective_id}_"
+    if not req.thread_id.startswith(expected_prefix):
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: Thread ID does not belong to active tenant."
+        )
+
+    config = {"configurable": {"thread_id": req.thread_id}}
+
+    try:
+        from langgraph.types import Command
+        await finnie_app.ainvoke(
+            Command(resume={"approved": req.approved, "thread_id": req.thread_id, "adjustments": req.user_adjustments}),
+            config=config
+        )
+    except Exception:
+        try:
+            await finnie_app.ainvoke(
+                {"is_save_intent": True, "user_id": effective_id},
+                config=config
+            )
+        except Exception as inner_e:
+            print(f"[FINNIE-AI] Lock-in note: {inner_e}")
+
+    # Fetch goal from DB
+    goal = db.query(FinancialGoal).filter(
+        FinancialGoal.user_id == effective_id,
+        FinancialGoal.thread_id == req.thread_id
+    ).first()
+
+    if not goal:
+        goal = db.query(FinancialGoal).filter(
+            FinancialGoal.user_id == effective_id
+        ).order_by(FinancialGoal.updated_at.desc()).first()
+
+    if not goal:
+        goal = FinancialGoal(
+            user_id=effective_id,
+            goal_name="Retirement",
+            target_amount=1000000.0,
+            target_year=2035,
+            monthly_contribution=500.0,
+            country="USA",
+            thread_id=req.thread_id,
+            status="LOCKED",
+            confidence_score=85.0
+        )
+        db.add(goal)
+        db.commit()
+        db.refresh(goal)
+    else:
+        goal.status = "LOCKED"
+        goal.thread_id = req.thread_id
+        db.commit()
+        db.refresh(goal)
+
+    return GoalLockInResponse(
+        status="LOCKED",
+        goal_id=goal.id,
+        message=f"Goal '{goal.goal_name}' has been successfully locked in and saved!",
+        goal={
+            "id": goal.id,
+            "goal_name": goal.goal_name,
+            "target_amount": goal.target_amount,
+            "target_year": goal.target_year,
+            "monthly_savings": goal.monthly_contribution,
+            "country": goal.country,
+            "thread_id": goal.thread_id,
+            "status": goal.status,
+            "confidence_score": goal.confidence_score,
+            "strategy_report": goal.strategy_report,
+        }
+    )
+

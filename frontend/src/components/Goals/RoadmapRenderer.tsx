@@ -8,8 +8,8 @@ interface RoadmapRendererProps {
  * Parses inline markdown: **bold**, *italic*, `code`, and status badges.
  */
 function renderInline(text: string): React.ReactNode[] {
-  // Pattern to match bold, italic, code, or status keywords
-  const tokenRegex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\bON TRACK\b|\bCAUTION\b|\bAT RISK\b)/g
+  // Pattern to match bold, italic, code, or status keywords (with or without underscores)
+  const tokenRegex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\bON[_\s]TRACK\b|\bCAUTION\b|\bAT[_\s]RISK\b)/gi
   const parts = text.split(tokenRegex)
 
   return parts.map((part, index) => {
@@ -22,13 +22,14 @@ function renderInline(text: string): React.ReactNode[] {
     if (part.startsWith('`') && part.endsWith('`')) {
       return <code key={index} className="inline-code">{part.slice(1, -1)}</code>
     }
-    if (part === 'ON TRACK') {
+    const normalized = part.toUpperCase().replace('_', ' ')
+    if (normalized === 'ON TRACK') {
       return <span key={index} className="roadmap-status-badge status-on-track">● ON TRACK</span>
     }
-    if (part === 'CAUTION') {
+    if (normalized === 'CAUTION') {
       return <span key={index} className="roadmap-status-badge status-caution">▲ CAUTION</span>
     }
-    if (part === 'AT RISK') {
+    if (normalized === 'AT RISK') {
       return <span key={index} className="roadmap-status-badge status-at-risk">■ AT RISK</span>
     }
     return part
@@ -109,6 +110,31 @@ export default function RoadmapRenderer({ markdown }: RoadmapRendererProps) {
         <h3 key={`h-${i}`} className="roadmap-h3">
           {renderInline(trimmed.replace(/^#+\s+/, ''))}
         </h3>
+      )
+      continue
+    }
+
+    // Executive Status & Confidence Banner Detection
+    // Matches e.g. **Status**: AT_RISK · **Confidence Score**: 0.0%
+    const statusBannerMatch = trimmed.match(/(?:\*\*Status\*\*|Status):\s*([A-Za-z_]+)\s*(?:[·|\-])\s*(?:\*\*Confidence Score\*\*|Confidence Score):\s*([0-9.]+%?)/i)
+    if (statusBannerMatch) {
+      flushList()
+      const rawStatus = statusBannerMatch[1].toUpperCase().replace('_', ' ')
+      const scoreStr = statusBannerMatch[2]
+      const statusClass = rawStatus === 'ON TRACK' ? 'status-on-track' : (rawStatus === 'CAUTION' ? 'status-caution' : 'status-at-risk')
+      const statusIcon = rawStatus === 'ON TRACK' ? '●' : (rawStatus === 'CAUTION' ? '▲' : '■')
+      
+      elements.push(
+        <div key={`status-banner-${i}`} className="roadmap-status-strip">
+          <div className="status-pill-group">
+            <span className="status-pill-label">STRATEGIC STATUS</span>
+            <span className={`roadmap-status-badge ${statusClass}`}>{statusIcon} {rawStatus}</span>
+          </div>
+          <div className="status-pill-group">
+            <span className="status-pill-label">CONFIDENCE SCORE</span>
+            <span className="roadmap-confidence-badge">{scoreStr.includes('%') ? scoreStr : `${scoreStr}%`}</span>
+          </div>
+        </div>
       )
       continue
     }

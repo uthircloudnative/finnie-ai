@@ -18,6 +18,7 @@ interface UseChatReturn {
   isLoading: boolean
   error: string | null
   sendMessage: (text: string, preferredWorker?: string, analysisContext?: any) => Promise<void>
+  clearMessages: () => void
 }
 
 export function useChat(): UseChatReturn {
@@ -93,5 +94,9 @@ export function useChat(): UseChatReturn {
     }
   }, [isLoading, getAuthHeaders])
 
-  return { messages, isLoading, error, sendMessage }
+  const clearMessages = useCallback(() => {
+    setMessages([])
+  }, [])
+
+  return { messages, isLoading, error, sendMessage, clearMessages }
 }

@@ -682,6 +682,29 @@ class TestGoalSecurityAndMultiTenancy(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(ctx.exception.status_code, 403)
         self.assertIn("Forbidden", ctx.exception.detail)
 
+    async def test_off_topic_prompt_intercepted_by_guardrail(self):
+        from main import calculate_goal_roadmap, GoalCalculationRequest
+        from src.models.user import User
+
+        mock_user = User(id="user_101", email="user@finnie.ai")
+        mock_db = MagicMock()
+        mock_db.query.return_value.filter.return_value.all.return_value = []
+
+        req = GoalCalculationRequest(
+            goal_name="Retirement",
+            target_amount=1000000.0,
+            target_year=2035,
+            monthly_savings=500.0,
+            country="USA",
+            prompt="test"
+        )
+
+        res = await calculate_goal_roadmap(req=req, current_user=mock_user, db=mock_db)
+        self.assertTrue(res.is_off_topic)
+        self.assertEqual(res.status, "OFF_TOPIC")
+        self.assertIn("Goal Strategist", res.reply)
+        self.assertIsNone(res.analysis_results)
+
     def test_goal_auditor_flags_statutory_violation(self):
         from src.agents.goal_auditor import goal_auditor_node
         from langchain_core.messages import AIMessage

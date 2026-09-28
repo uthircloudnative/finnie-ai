@@ -44,7 +44,7 @@ def goal_auditor_node(state: FinnieState) -> Dict[str, Any]:
       - retry_count < 2: Sets critic_feedback and prompts goal_strategist to revise.
       - retry_count >= 2: Appends statutory warning callout to report to avoid infinite loops.
     """
-    print("[FINNIE-AI] 🔍 Entering Goal Auditor Node (Critic / Reflection)...")
+    print("[FINNIE-AI] 🔍 Entering Goal Auditor Node (Deterministic Critic / Reflection, 0 LLM calls)...")
     config = state.get("goal_configuration") or {}
     messages = state.get("messages") or []
     savings = float(config.get("monthly_savings", 0.0))

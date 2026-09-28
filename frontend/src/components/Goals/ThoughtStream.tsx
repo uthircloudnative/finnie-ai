@@ -19,8 +19,8 @@ export default function ThoughtStream({ thoughts, isStreaming }: ThoughtStreamPr
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1rem', animation: isStreaming ? 'pulse 1.2s infinite' : 'none' }}>
-            {isStreaming ? '⚡' : '🧠'}
+          <span style={{ fontSize: '0.9rem', color: 'var(--accent-cyan)', animation: isStreaming ? 'pulse 1.2s infinite' : 'none' }}>
+            ✦
           </span>
           <span style={{
             fontSize: '0.8rem',

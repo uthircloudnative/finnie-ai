@@ -61,6 +61,14 @@ Parses LLM markdown reports into native, accessible React elements:
 - Bullet points (`- `) ➔ `.roadmap-list` bulleted items.
 - Status keywords ➔ Styled `.roadmap-status-badge` pills.
 - Compliance text (`$NFA`) ➔ Styled callout box with `⚖️ Compliance Note` badge.
+- Inline Markdown (`renderFormattedContent`) ➔ Converts `**bold**`, `*italic*`, and code tokens into styled typography across all chat message bubbles without raw asterisks.
+
+### D. Universal Copilot Drawer (`CopilotDrawer.tsx` & `CopilotDrawer.css`)
+Provides a consistent, reusable side-panel interaction pattern across all multi-turn workspaces:
+- **Left Edge Drag Handle**: Smooth horizontal dragging with dynamic boundaries (320px to 720px).
+- **Expand/Compact Toggle**: Instant toggle between standard (380px) and wide analysis (580px).
+- **Single Close Button**: Top-right corner `✕ Close` button (`.copilot-close-btn`), with parent header triggers automatically hiding when open.
+- **Optional Questionnaire Section**: `suggestionChips?: string[]` renders prompt chips only when provided; completely hidden when omitted (e.g. Portfolio Analyst and Market Insights).
 
 ---
 

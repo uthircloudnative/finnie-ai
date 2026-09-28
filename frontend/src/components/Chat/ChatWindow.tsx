@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Message } from '../../hooks/useChat'
 import ThinkingIndicator from './ThinkingIndicator'
+import { renderFormattedContent } from '../Goals/RoadmapRenderer'
 import './ChatWindow.css'
 
 interface ChatWindowProps {
@@ -22,7 +23,7 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
         <div key={msg.id} className={`message-row ${msg.role}`}>
           {msg.role === 'ai' && <div className="agent-orb" />}
           <div className={`bubble bubble-${msg.role}`}>
-            {msg.content}
+            {renderFormattedContent(msg.content)}
           </div>
         </div>
       ))}

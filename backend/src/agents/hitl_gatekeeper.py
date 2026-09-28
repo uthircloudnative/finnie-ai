@@ -18,7 +18,7 @@ def hitl_approval_node(state: FinnieState) -> Dict[str, Any]:
     Halts execution and yields control to the user only when is_save_intent is True.
     Persists to financial_goals upon confirmation.
     """
-    print("[FINNIE-AI] 🛡️ Entering HITL Gatekeeper Node...")
+    print("[FINNIE-AI] 🛡️ Entering HITL Gatekeeper Node (Deterministic Checkpoint, 0 LLM calls)...")
     config = state.get("goal_configuration") or {}
     analysis = state.get("analysis_results") or {}
     sim_data = analysis.get("simulation") or {}

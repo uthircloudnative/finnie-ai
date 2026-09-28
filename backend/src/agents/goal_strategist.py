@@ -7,6 +7,7 @@ and reflection loop resolution guided by the Goal Auditor.
 """
 from typing import Dict, Any, List
 import os
+import time
 from datetime import datetime
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
@@ -61,9 +62,28 @@ def goal_strategist_node(state: FinnieState) -> Dict[str, Any]:
     # 2. Hybrid Bootstrap Step 1: Upfront Portfolio Valuation via Tool
     portfolio_res = fetch_user_portfolio_valuation.invoke({"user_id": user_id})
     initial_val = float(portfolio_res.get("total_valuation", 0.0))
+    asset_count = int(portfolio_res.get("asset_count", 0))
+    holdings_list = portfolio_res.get("holdings", [])
 
     expected_return = 0.08
     volatility = float(analysis.get("volatility", 15.0)) / 100.0
+
+    if asset_count == 0:
+        portfolio_telemetry = (
+            "- User Portfolio Status: No stock holdings linked ($0.00 initial balance).\n"
+            "- Volatility Assumption: 15.0% broad-market benchmark standard deviation (e.g. S&P 500 equity index baseline), "
+            "used purely for modeling future monthly savings.\n"
+            "- CRITICAL TRUTH INVARIANT: The user has NO stock portfolio loaded in the system. NEVER tell the user 'as per your stock profile' "
+            "or 'based on your stock variation'. If discussing volatility, explicitly state that since no individual stocks are linked, "
+            "the simulation applies a standard 15.0% broad-market equity index assumption for future projected savings."
+        )
+    else:
+        tickers = ", ".join(h.get("ticker", "") for h in holdings_list[:5])
+        portfolio_telemetry = (
+            f"- User Portfolio Status: {asset_count} asset(s) linked ({tickers}).\n"
+            f"- Current Portfolio Valuation: ${initial_val:,.2f}.\n"
+            f"- Portfolio Volatility: {volatility*100:.1f}% derived from active holdings."
+        )
 
     # 3. Hybrid Bootstrap Step 2: Deterministic Monte Carlo Simulation via Tool
     sim_data = run_monte_carlo_engine.invoke({
@@ -116,25 +136,56 @@ You MUST explicitly address this issue in your revised roadmap by recommending a
     if recent_user_query:
         conversation_context = f"\n## USER FOLLOW-UP QUESTION\nThe user asked: \"{recent_user_query}\"\nAddress this specific question in your strategic response."
 
-    system_prompt = f"""
-{GOAL_PROMPT}
+    is_refinement = bool(config.get("is_refinement"))
+    has_baseline = bool(config.get("has_baseline"))
 
-## SCENARIO TELEMETRY (2026)
-- Goal Name: {config.get('goal_name', 'Retirement')}
-- Current Portfolio Valuation: ${initial_val:,.2f}
+    if is_refinement:
+        system_prompt = f"""
+You are Finnie's **Autonomous Interactive Wealth Copilot & Financial GPS**.
+The user is conversing with you directly in the Ask Finnie Strategy drawer.
+
+CURRENT GOAL STATE:
+- Goal: {config.get('goal_name', 'Retirement')}
+{portfolio_telemetry}
 - Target: ${target:,.0f} by {config.get('target_year')} ({years} years)
-- Committed Monthly Savings: ${savings:,.2f}
-- Country Jurisdiction: {country}
-- Simulation Status: {sim_status}
-- Market Confidence Score: {confidence:.1f}%
-- Median Outcome: ${median_val:,.0f}
-- Portfolio Volatility: {volatility*100:.1f}%
-{critic_section}
-## JURISDICTION STATUTORY CONTEXT
-{rag_context}
-{conversation_context}
+- Monthly Contribution: ${savings:,.2f}
+- Jurisdiction: {country}
+- Monte Carlo Confidence Score: {confidence:.1f}% (Median Path: ${median_val:,.0f})
+- Baseline Roadmap Status: {"Generated & Active" if has_baseline else "Pending User Click on 'Generate Roadmap'"}
 
-## OUTPUT FORMAT
+STATUTORY TAX GUIDELINES:
+{rag_context}
+
+CRITICAL RULES FOR CHAT INTERACTIONS:
+1. ANSWER THE SPECIFIC QUESTION: Directly address the user's latest inquiry: "{recent_user_query}".
+2. DO NOT REPEAT OLD ANSWERS: Treat previous questions and answers in this thread as read-only history. Do NOT repeat or paraphrase previous answers.
+3. NO FULL ROADMAP OVERVIEW: Do NOT output "### 🎯 Your Strategic Roadmap:" or full multi-phase milestones (Phase 1, Phase 2, Phase 3) unless the user specifically asks for milestone breakdowns.
+4. NO REPETITIVE DISCLAIMERS: If a baseline roadmap has not yet been generated, answer their financial question directly first, then append a brief 1-line note: "💡 You can generate your full 10,000-scenario Monte Carlo simulation anytime using the 'Generate Roadmap' button on the left." Do NOT repeat the full form configuration parameters on every turn.
+5. CONCISE & EMPIRICAL: Keep the response conversational, focused (1-2 crisp paragraphs or bullet points), and grounded in exact financial math and statutory rules.
+6. HONEST PORTFOLIO RECOGNITION: If the user has 0 linked stock holdings, NEVER claim they have an existing stock profile or stock variation. State that 15% is a standard broad-market benchmark assumption for projected savings.
+7. Always end with the $NFA disclaimer.
+"""
+        prompt_messages: List[Any] = [SystemMessage(content=system_prompt)]
+
+        # Extract prior dialogue turns (up to 8 messages) so LLM has read-only multi-turn context
+        dialogue_history: List[Any] = []
+        for m in history_messages:
+            content = m.content if hasattr(m, "content") else str(m)
+            msg_type = getattr(m, "type", "")
+            if msg_type == "human" or (isinstance(m, dict) and m.get("role") == "user"):
+                dialogue_history.append(HumanMessage(content=content))
+            elif msg_type == "ai" or (isinstance(m, dict) and m.get("role") == "assistant"):
+                dialogue_history.append(AIMessage(content=content))
+
+        if dialogue_history and isinstance(dialogue_history[-1], HumanMessage) and dialogue_history[-1].content == recent_user_query:
+            prompt_messages.extend(dialogue_history[-8:])
+        else:
+            prompt_messages.extend(dialogue_history[-8:])
+            if recent_user_query:
+                prompt_messages.append(HumanMessage(content=recent_user_query))
+    else:
+        output_format_instruction = f"""
+## OUTPUT FORMAT (FULL ROADMAP SYNTHESIS)
 ### 🎯 Your Strategic Roadmap: {config.get('goal_name', 'Retirement')}
 **Status**: {sim_status} · **Confidence Score**: {confidence:.1f}%
 
@@ -148,10 +199,31 @@ You MUST explicitly address this issue in your revised roadmap by recommending a
 $NFA: Include the disclaimer at the very end.
 """
 
-    print(f"[FINNIE-AI] 🧠 Goal Strategist synthesizing roadmap for {country} goal (confidence {confidence:.1f}%)...")
-    prompt_messages: List[Any] = [SystemMessage(content=system_prompt)]
-    if recent_user_query:
-        prompt_messages.append(HumanMessage(content=recent_user_query))
+        system_prompt = f"""
+{GOAL_PROMPT}
+
+## SCENARIO TELEMETRY (2026)
+- Goal Name: {config.get('goal_name', 'Retirement')}
+{portfolio_telemetry}
+- Target: ${target:,.0f} by {config.get('target_year')} ({years} years)
+- Committed Monthly Savings: ${savings:,.2f}
+- Country Jurisdiction: {country}
+- Simulation Status: {sim_status}
+- Market Confidence Score: {confidence:.1f}%
+- Median Outcome: ${median_val:,.0f}
+{critic_section}
+## JURISDICTION STATUTORY CONTEXT
+{rag_context}
+{conversation_context}
+
+{output_format_instruction}
+"""
+        prompt_messages = [SystemMessage(content=system_prompt)]
+        if recent_user_query:
+            prompt_messages.append(HumanMessage(content=recent_user_query))
+
+    print(f"[FINNIE-AI] 🎲 [DETERMINISTIC ENGINE] Monte Carlo 10,000 scenarios ({years}y horizon) -> Confidence: {confidence:.1f}% | Median: ${median_val:,.0f} (0 LLM calls)")
+    print(f"[FINNIE-AI] 📚 [DETERMINISTIC RAG] Statutory limits lookup for '{country}' complete (0 LLM calls)")
 
     ai_response = llm.invoke(prompt_messages)
     report = ai_response.content if hasattr(ai_response, "content") else str(ai_response)

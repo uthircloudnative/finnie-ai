@@ -122,6 +122,16 @@ class FinnieState(TypedDict):
 - Every request generates a unique `trace_id` propagated via FastAPI `TraceContextMiddleware`.
 - LangSmith Tracing automatically tags executions with `user_id` and intent for audit compliance.
 
+### D. Unified Copilot Drawer Architecture (`CopilotDrawer.tsx`)
+- **Universal Experience**: Single shared glassmorphic copilot drawer across Goal Planner, Portfolio Analyst, and Market Insights.
+- **Encapsulated Controls**:
+  - Horizontal drag resize handle (`copilot-resize-handle`) with dynamic width bounds (`320px` to `720px`).
+  - Single-click horizontal expand/compact toggle (`⤢ Expand` / `⤡ Compact`).
+  - Single `✕ Close` button at top-right corner; parent header buttons automatically hide while drawer is open to prevent duplicate close buttons.
+  - Session-storage width memory per domain (`finnie_copilot_width`, `finnie_portfolio_copilot_width`, `finnie_market_copilot_width`).
+- **Clean Markdown Bubble Rendering**: All chat messages process through `renderFormattedContent()`, transforming raw asterisks (`**bold**`), bullets, and code into styled typography without printing raw markdown.
+- **Optional Suggestion Section**: Questionnaire / suggestion chips (`suggestionChips?: string[]`) are purely optional and only render when passed (e.g. Goal Planner what-if scenarios), keeping views like Portfolio Analyst and Market Insights clean and flexible.
+
 ---
 
 ## 4. 🛡️ Resilience, Edge Cases & Verification

@@ -6,7 +6,7 @@ def compliance_guardian_node(state: FinnieState) -> dict:
     A post-processor node that ensures all AI messages 
     related to analysis include the $NFA disclaimer.
     """
-    print("--- ENTERING COMPLIANCE GUARDIAN NODE ---")
+    print("[FINNIE-AI] 🛡️ [COMPLIANCE GUARDIAN] Enforcing $NFA disclaimers (Deterministic Post-Processor, 0 LLM calls)")
     
     messages = state.get("messages", [])
     if not messages:

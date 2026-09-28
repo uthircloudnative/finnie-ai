@@ -9,13 +9,14 @@
 }
 
 .insights-workspace.sidebar-open {
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr auto;
 }
 
 /* Ensure grid children don't overflow their parents */
 .insights-main-content, 
 .insights-sidebar {
   min-height: 0; 
+  min-width: 0;
 }
 
 .insights-main-content {

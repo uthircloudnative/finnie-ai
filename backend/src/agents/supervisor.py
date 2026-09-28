@@ -57,8 +57,6 @@ def supervisor_node(state: FinnieState) -> dict:
 
     # EXPLANATION: How `invoke` works:
     # .invoke() actively sends the conversation list over the internet to the AI.
-    # Because we used `with_structured_output`, the variable `result` is NOT a text string! 
-    # `result` is a fully populated `RoutingDecision` Python object (our blueprint).
     result = structured_llm.invoke(messages)
 
     print(f"[FINNIE-AI] 🎯 Decision: Routing to {result.next_step}")

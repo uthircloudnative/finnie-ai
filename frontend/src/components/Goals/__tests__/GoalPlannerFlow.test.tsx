@@ -96,8 +96,13 @@ describe('GoalPlannerFlow Integration Tests', () => {
     fireEvent.click(calcBtn)
 
     expect(await screen.findByRole('button', { name: /Lock In & Save Goal/i })).toBeInTheDocument()
-    expect(await screen.findByText(/Autonomous Agent Thought Stream/i)).toBeInTheDocument()
+
+    // 2. Open Ask Finnie assistant drawer
+    const askFinnieBtn = screen.getByRole('button', { name: /Ask Finnie/i })
+    fireEvent.click(askFinnieBtn)
+
     expect(await screen.findByText(/Autonomous Strategy Refinement/i)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/Ask a what-if question/i)).toBeInTheDocument()
   })
 
   it('opens StrategyLockInModal on Lock In button click', async () => {

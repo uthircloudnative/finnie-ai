@@ -9,7 +9,7 @@
 }
 
 .analyst-workspace-root.sidebar-open {
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr auto;
 }
 
 /* Ensure main content is scrollable exactly like Market Insights */
@@ -20,6 +20,7 @@
   overflow-y: auto;
   padding-right: 0.5rem;
   min-height: 0;
+  min-width: 0;
 }
 
 .analyst-header {

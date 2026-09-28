@@ -98,9 +98,9 @@ graph TD
 | **My Holdings CRUD** | `/portfolio`<br/>`/portfolio/save` | **Programmatic** | *None (No LLM)* | *None* | Multi-tenant portfolio CRUD operations with user isolation. |
 | **Diversification Score Tile Retry** | `/portfolio/diversification` | **Programmatic** | *None (No LLM)* | *yfinance sector info (3 retries)* | 3-attempt exponential backoff engine for sector Herfindahl-Hirschman Index (HHI) score. Shows manual retry button on tile if retries fail. |
 | **Deep Q&A Chat** | `/chat` | **AI Agentic** | **Multi-Agent Router** | ChromaDB RAG search | Supervisor Agent routes intent to Financial Q&A Agent → RAG search → Compliance Agent. |
-| **Portfolio Analyst** | `/portfolio/analysis` | **AI Agentic** | **Multi-Agent (Country-Aware)** | Benchmark routing + yfinance + ChromaDB RAG | Calculates Beta/Volatility/HHI, conducts 2-pass RAG, and synthesizes 3-card formatted insights. |
-| **Market Insights** | `/market/news` | **AI Agentic** | **Single Agent** | Alpha Vantage API + 30-min SQLite Cache | Direct route to Market Insights Agent for stock news & sentiment analysis. |
-| **Goal Planner** | `/goals/calculate` | **AI Agentic** | **Single Agent** | 10,000 Monte Carlo simulations + ChromaDB Tax RAG | Direct route to Goal Strategist Agent for retirement roadmap generation. |
+| **Portfolio Analyst** | `/portfolio/analysis` | **AI Agentic** | **Multi-Agent (Country-Aware)** | Benchmark routing + yfinance + ChromaDB RAG | Calculates Beta/Volatility/HHI, conducts 2-pass RAG, synthesizes 3-card formatted insights, and provides on-demand `CopilotDrawer` interaction. |
+| **Market Insights** | `/market/news` | **AI Agentic** | **Single Agent** | Alpha Vantage API + 30-min SQLite Cache | Direct route to Market Insights Agent for stock news & sentiment analysis with on-demand `CopilotDrawer` ticker deep-dive. |
+| **Goal Planner** | `/goals/calculate` | **AI Agentic** | **Single Agent** | 10,000 Monte Carlo simulations + ChromaDB Tax RAG | Direct route to Goal Strategist Agent for retirement roadmap generation with multi-turn `CopilotDrawer` what-if refinement and optional prompt chips. |
 
 
 > 👁️ **Curious what it looks like?** Check out the [UI Preview Gallery](./docs/UI_PREVIEW.md) to see high-fidelity mockups of the finished Dashboard and Market Insights interfaces before you start the installation!
@@ -220,9 +220,9 @@ Open your web browser and navigate to:
 You can now test all features natively:
 1. **Executive Edge (Dashboard)**: Automatically fetches live `yfinance` market data for dynamic multi-country wealth tracking.
 2. **My Holdings**: Add sample stocks (`AAPL`, `RELIANCE.NS`, etc.) grouped by country into your SQLite database.
-3. **Portfolio Analyst**: Features country-specific benchmark routing (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, etc.), All-Markets combined view, formatted 3-card AI insights, instant session caching, and manual "Refresh Analysis" button.
-4. **Market Insights**: Fetches real-time sentiment analysis from Alpha Vantage with persistent 30-minute SQLite caching.
-5. **Goal Planner**: Runs 10,000-scenario Monte Carlo simulations cross-referenced against your RAG-ingested tax rules!
+3. **Portfolio Analyst**: Features country-specific benchmark routing (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, etc.), All-Markets combined view, formatted 3-card AI insights, instant session caching, manual "Refresh Analysis" button, and on-demand **Portfolio Deep-Dive Copilot Drawer**.
+4. **Market Insights**: Fetches real-time sentiment analysis from Alpha Vantage with persistent 30-minute SQLite caching and **Ticker Deep-Dive Copilot Drawer**.
+5. **Goal Planner**: Runs 10,000-scenario Monte Carlo simulations cross-referenced against RAG-ingested tax rules, with Recharts fan chart, interactive milestone synthesis, and **Autonomous Strategy Copilot Drawer** with what-if scenario chips!
 
 ---
 
@@ -233,6 +233,7 @@ If you want to dive deeper into how specific features were engineered, check the
 | Document | Focus Area | Contents & Implementation Details |
 |---|---|---|
 | [**AGENTS.md**](./AGENTS.md) | Universal Agent Constitution | Coding standards, 4-space/2-space indentation rules, and feature lifecycles |
+| [**Goal Planner Deep-Dive**](./docs/agentic_architecture/GOAL_PLANNER.md) | Agentic Use Case Architecture | End-to-end technical implementation of the Goal Planner, 10k Monte Carlo engine, statutory tax RAG, and Copilot Drawer |
 | [**DATA_MODEL.md**](./docs/DATA_MODEL.md) | Database Architecture & ERD | Single source of truth for all 7 database tables, ER diagram, constraints, and migrations |
 | [**specs/**](./specs/) | Spec-Driven Development (SDD) | Baseline verified specs (SPEC-01 to 05) & upcoming feature spec templates |
 | [**FEATURES_AND_AGENTS.md**](./docs/FEATURES_AND_AGENTS.md) | Feature Intelligence | Technical & functional specifications for all 5 core features and agent nodes |

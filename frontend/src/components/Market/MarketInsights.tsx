@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMarketInsights } from '../../hooks/useMarketInsights'
-import ChatWindow from '../Chat/ChatWindow'
-import ChatInput from '../Chat/ChatInput'
+import CopilotDrawer from '../Chat/CopilotDrawer'
 import { useChat } from '../../hooks/useChat'
 import './MarketInsights.css'
 
@@ -21,13 +20,15 @@ export default function MarketInsights() {
         <div className="insights-header-section">
           <div className="header-top-row">
             <h1>Market Insights</h1>
-            <button 
-              className={`ask-finnie-toggle ${isChatOpen ? 'active' : ''}`}
-              onClick={() => setIsChatOpen(!isChatOpen)}
-            >
-              <span className="toggle-icon">🧠</span>
-              {isChatOpen ? 'Close Assistant' : 'Ask Finnie'}
-            </button>
+            {!isChatOpen && (
+              <button 
+                className="ask-finnie-toggle"
+                onClick={() => setIsChatOpen(true)}
+              >
+                <span className="toggle-icon">✦</span>
+                Ask Finnie
+              </button>
+            )}
           </div>
           <p className="insights-subtitle">
             Real-time sentiment and news analysis for your global portfolio.
@@ -37,11 +38,11 @@ export default function MarketInsights() {
         <div className="glass-card pulse-card">
           <div className="pulse-card-header">
             <div className="pulse-title-group">
-              <span className="pulse-icon">📡</span>
+              <span className="pulse-icon">●</span>
               <h3>Portfolio Market Pulse</h3>
             </div>
             <button className="refresh-btn" onClick={refetch} disabled={isLoading}>
-              {isLoading ? '🔄' : 'Refresh'}
+              {isLoading ? 'Syncing…' : 'Refresh'}
             </button>
           </div>
 
@@ -76,23 +77,20 @@ export default function MarketInsights() {
 
       {/* ── Right Column: Ticker Deep-Dive Assistant ────────────────────── */}
       {isChatOpen && (
-        <div className="workspace-sidebar">
-          <div className="workspace-sidebar-header">
-            <div className="workspace-sidebar-title-group">
-              <span className="workspace-sidebar-icon">🔍</span>
-              <h3>Ticker Deep-Dive</h3>
-            </div>
-            <span className="workspace-sidebar-status">Live Assistant</span>
-          </div>
-          
-          <div className="workspace-sidebar-chat-wrapper">
-            <ChatWindow messages={chat.messages} isLoading={chat.isLoading} />
-            <ChatInput 
-              onSend={handleSendMessage} 
-              isLoading={chat.isLoading} 
-            />
-          </div>
-        </div>
+        <CopilotDrawer
+          title="Ticker Deep-Dive"
+          subtitle="Real-time sentiment and market pulse assistant."
+          statusBadge="Live Assistant"
+          messages={chat.messages}
+          isLoading={chat.isLoading}
+          loadingText="Finnie is analyzing global news and sentiment..."
+          onSendMessage={handleSendMessage}
+          onClearHistory={chat.clearMessages}
+          onClose={() => setIsChatOpen(false)}
+          inputPlaceholder="Ask about ticker news, sentiment, or macro trends..."
+          storageKey="finnie_market_copilot_width"
+          disclaimerText="$NFA — Finnie is an AI assistant, not a licensed financial advisor. All answers are grounded in public educational sources."
+        />
       )}
     </div>
   )

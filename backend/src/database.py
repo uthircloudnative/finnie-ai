@@ -64,10 +64,24 @@ def init_db() -> None:
     from sqlalchemy import inspect, text
     with engine.connect() as conn:
         inspector = inspect(engine)
-        if "users" in inspector.get_table_names():
+        tables = inspector.get_table_names()
+        if "users" in tables:
             columns = [col["name"] for col in inspector.get_columns("users")]
             if "token_version" not in columns:
                 conn.execute(text("ALTER TABLE users ADD COLUMN token_version INTEGER DEFAULT 1 NOT NULL"))
                 conn.commit()
+
+        if "financial_goals" in tables:
+            goal_cols = [col["name"] for col in inspector.get_columns("financial_goals")]
+            if "thread_id" not in goal_cols:
+                conn.execute(text("ALTER TABLE financial_goals ADD COLUMN thread_id VARCHAR(100)"))
+            if "status" not in goal_cols:
+                conn.execute(text("ALTER TABLE financial_goals ADD COLUMN status VARCHAR(20) DEFAULT 'LOCKED' NOT NULL"))
+            if "confidence_score" not in goal_cols:
+                conn.execute(text("ALTER TABLE financial_goals ADD COLUMN confidence_score FLOAT"))
+            if "strategy_report" not in goal_cols:
+                conn.execute(text("ALTER TABLE financial_goals ADD COLUMN strategy_report TEXT"))
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_user_goal_name ON financial_goals (user_id, goal_name)"))
+            conn.commit()
 
 

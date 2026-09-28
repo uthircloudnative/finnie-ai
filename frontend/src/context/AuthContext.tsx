@@ -134,7 +134,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     sessionStorage.removeItem('finnie_auth_token')
+    sessionStorage.removeItem('finnie_goal_session')
+    sessionStorage.removeItem('finnie_copilot_open')
+    sessionStorage.removeItem('finnie_copilot_width')
     localStorage.removeItem('finnie_auth_token')
+    localStorage.removeItem('finnie_draft_goal')
     setToken(null)
     setUser(null)
     setError(null)

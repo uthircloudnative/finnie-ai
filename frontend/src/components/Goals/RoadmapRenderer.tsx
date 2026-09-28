@@ -7,14 +7,14 @@ interface RoadmapRendererProps {
 /**
  * Parses inline markdown: **bold**, *italic*, `code`, and status badges.
  */
-function renderInline(text: string): React.ReactNode[] {
-  // Pattern to match bold, italic, code, or status keywords
-  const tokenRegex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\bON TRACK\b|\bCAUTION\b|\bAT RISK\b)/g
+export function renderInline(text: string): React.ReactNode[] {
+  // Pattern to match bold, italic, code, or status keywords (with or without underscores)
+  const tokenRegex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\bON[_\s]TRACK\b|\bCAUTION\b|\bAT[_\s]RISK\b)/gi
   const parts = text.split(tokenRegex)
 
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>
+      return <strong key={index} style={{ color: 'var(--text-bright)', fontWeight: 600 }}>{part.slice(2, -2)}</strong>
     }
     if (part.startsWith('*') && part.endsWith('*')) {
       return <em key={index}>{part.slice(1, -1)}</em>
@@ -22,16 +22,45 @@ function renderInline(text: string): React.ReactNode[] {
     if (part.startsWith('`') && part.endsWith('`')) {
       return <code key={index} className="inline-code">{part.slice(1, -1)}</code>
     }
-    if (part === 'ON TRACK') {
+    const normalized = part.toUpperCase().replace('_', ' ')
+    if (normalized === 'ON TRACK') {
       return <span key={index} className="roadmap-status-badge status-on-track">● ON TRACK</span>
     }
-    if (part === 'CAUTION') {
+    if (normalized === 'CAUTION') {
       return <span key={index} className="roadmap-status-badge status-caution">▲ CAUTION</span>
     }
-    if (part === 'AT RISK') {
+    if (normalized === 'AT RISK') {
       return <span key={index} className="roadmap-status-badge status-at-risk">■ AT RISK</span>
     }
     return part
+  })
+}
+
+/**
+ * Parses multiline chat message strings with bold, italics, bullets, and linebreaks.
+ */
+export function renderFormattedContent(text: string): React.ReactNode {
+  if (!text) return null
+  const lines = text.split('\n')
+  return lines.map((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      return <span key={idx} style={{ display: 'block', height: '0.45rem' }} />
+    }
+    if (trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) {
+      const bulletContent = trimmed.replace(/^[-•*]\s+/, '')
+      return (
+        <div key={idx} style={{ display: 'flex', gap: '0.45rem', marginTop: '0.2rem', marginBottom: '0.2rem' }}>
+          <span style={{ color: 'var(--accent-cyan)', flexShrink: 0 }}>•</span>
+          <div>{renderInline(bulletContent)}</div>
+        </div>
+      )
+    }
+    return (
+      <span key={idx} style={{ display: 'block', marginBottom: idx === lines.length - 1 ? 0 : '0.35rem' }}>
+        {renderInline(line)}
+      </span>
+    )
   })
 }
 
@@ -113,6 +142,31 @@ export default function RoadmapRenderer({ markdown }: RoadmapRendererProps) {
       continue
     }
 
+    // Executive Status & Confidence Banner Detection
+    // Matches e.g. **Status**: AT_RISK · **Confidence Score**: 0.0%
+    const statusBannerMatch = trimmed.match(/(?:\*\*Status\*\*|Status):\s*([A-Za-z_]+)\s*(?:[·|\-])\s*(?:\*\*Confidence Score\*\*|Confidence Score):\s*([0-9.]+%?)/i)
+    if (statusBannerMatch) {
+      flushList()
+      const rawStatus = statusBannerMatch[1].toUpperCase().replace('_', ' ')
+      const scoreStr = statusBannerMatch[2]
+      const statusClass = rawStatus === 'ON TRACK' ? 'status-on-track' : (rawStatus === 'CAUTION' ? 'status-caution' : 'status-at-risk')
+      const statusIcon = rawStatus === 'ON TRACK' ? '●' : (rawStatus === 'CAUTION' ? '▲' : '■')
+      
+      elements.push(
+        <div key={`status-banner-${i}`} className="roadmap-status-strip">
+          <div className="status-pill-group">
+            <span className="status-pill-label">STRATEGIC STATUS</span>
+            <span className={`roadmap-status-badge ${statusClass}`}>{statusIcon} {rawStatus}</span>
+          </div>
+          <div className="status-pill-group">
+            <span className="status-pill-label">CONFIDENCE SCORE</span>
+            <span className="roadmap-confidence-badge">{scoreStr.includes('%') ? scoreStr : `${scoreStr}%`}</span>
+          </div>
+        </div>
+      )
+      continue
+    }
+
     // Bullet lists (- or * )
     const bulletMatch = trimmed.match(/^[-*]\s+(.*)$/)
     if (bulletMatch) {
@@ -140,7 +194,12 @@ export default function RoadmapRenderer({ markdown }: RoadmapRendererProps) {
       flushList()
       elements.push(
         <div key={`nfa-${i}`} className="roadmap-disclaimer">
-          <span className="disclaimer-badge">⚖️ Compliance Note</span>
+          <span className="disclaimer-badge">
+            <svg style={{ width: '12px', height: '12px', display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Statutory Compliance Note
+          </span>
           <p className="disclaimer-text">{renderInline(trimmed)}</p>
         </div>
       )

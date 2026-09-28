@@ -13,13 +13,19 @@ export default function Dashboard() {
   const { dashboardData, isLoading, error } = useDashboard()
 
   if (isLoading) {
-    return <div className="loading-spinner">🌐 Syncing Global Portfolio...</div>
+    return <div className="loading-spinner">Syncing Global Portfolio...</div>
   }
 
   if (error || dashboardData?.error) {
     return (
       <div className="empty-state" style={{ borderColor: '#ff6b6b' }}>
-        <div className="empty-icon">⚠️</div>
+        <div className="empty-icon">
+          <svg style={{ width: '28px', height: '28px', stroke: '#ff6b6b' }} viewBox="0 0 24 24" fill="none" strokeWidth="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
         <h3>Sync Error</h3>
         <p style={{ color: 'var(--text-dim)' }}>We couldn't reach the live market feeds. Please try again later.</p>
       </div>
@@ -29,7 +35,13 @@ export default function Dashboard() {
   if (!dashboardData || dashboardData.total_assets === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">🌍</div>
+        <div className="empty-icon">
+          <svg style={{ width: '28px', height: '28px', stroke: 'var(--accent-cyan)' }} viewBox="0 0 24 24" fill="none" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+        </div>
         <h2>Your Global Wealth Tracker</h2>
         <p style={{ color: 'var(--text-dim)', maxWidth: '400px', marginTop: '1rem' }}>
           This dashboard automatically syncs with live market data to give you an overview of your localized wealth. 

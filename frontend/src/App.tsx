@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Sidebar from './components/Sidebar/Sidebar'
+import TopNav from './components/Navigation/TopNav'
 import Dashboard from './components/Dashboard/Dashboard'
 import Chat from './components/Chat/Chat'
 import PortfolioAnalyst from './components/Portfolio/PortfolioAnalyst'
@@ -43,7 +43,7 @@ function App() {
   return (
     <div className="app-layout">
       {isAuthenticated && (
-        <Sidebar
+        <TopNav
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onOpenAuthModal={() => setIsAuthModalOpen(true)}

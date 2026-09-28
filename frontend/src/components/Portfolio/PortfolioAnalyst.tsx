@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import { useCountryPortfolio } from '../../hooks/useCountryPortfolio'
 import { useChat } from '../../hooks/useChat'
-import ChatWindow from '../Chat/ChatWindow'
-import ChatInput from '../Chat/ChatInput'
+import CopilotDrawer from '../Chat/CopilotDrawer'
 import './PortfolioAnalyst.css'
 
 // ── Insight section definitions ─────────────────────────────────────────────
 const INSIGHT_SECTIONS = [
-  { key: 'risk',    icon: '📈', color: 'cyan',    patterns: ['risk profile', 'your risk', '1.', 'beta', 'volatility'] },
-  { key: 'divers', icon: '🎯', color: 'emerald', patterns: ['diversification', '2.', 'sector', 'spread'] },
-  { key: 'advice', icon: '💡', color: 'amber',   patterns: ['means for you', '3.', 'consider', 'advice', 'what this'] },
+  { key: 'risk',    icon: '●', color: 'cyan',    patterns: ['risk profile', 'your risk', '1.', 'beta', 'volatility'] },
+  { key: 'divers', icon: '◆', color: 'emerald', patterns: ['diversification', '2.', 'sector', 'spread'] },
+  { key: 'advice', icon: '▲', color: 'amber',   patterns: ['means for you', '3.', 'consider', 'advice', 'what this'] },
 ]
 
 /**
@@ -40,7 +39,7 @@ function parseInsightSections(raw: string): Array<{ icon: string; color: string;
 
   // Fallback: show as one plain section
   return [{
-    icon: '📊',
+    icon: '●',
     color: 'blue',
     title: "Finnie's Analysis",
     body: raw.replace(/\*\*?/g, '').trim(),
@@ -126,13 +125,15 @@ export default function PortfolioAnalyst() {
           </div>
 
           <div className="header-actions">
-            <button
-              className={`ask-finnie-toggle ${isChatOpen ? 'active' : ''}`}
-              onClick={() => setIsChatOpen(!isChatOpen)}
-            >
-              <span className="toggle-icon">💬</span>
-              {isChatOpen ? 'Close Assistant' : 'Ask Finnie'}
-            </button>
+            {!isChatOpen && (
+              <button
+                className="ask-finnie-toggle"
+                onClick={() => setIsChatOpen(true)}
+              >
+                <span className="toggle-icon">✦</span>
+                Ask Finnie
+              </button>
+            )}
 
             <button
               className="refresh-btn"
@@ -141,10 +142,10 @@ export default function PortfolioAnalyst() {
               title={isBatchLoading ? 'Loading all markets in background…' : 'Re-run fresh analysis'}
             >
               {isBatchLoading
-                ? '⏳ Loading markets…'
+                ? 'Loading markets…'
                 : isLoading
-                ? '⌛ Analyzing…'
-                : '🔄 Refresh Analysis'
+                ? 'Analyzing…'
+                : 'Refresh Analysis'
               }
             </button>
           </div>
@@ -365,22 +366,22 @@ export default function PortfolioAnalyst() {
         </div>
       </div>
 
-      {/* ── Interaction Sidebar ───────────────────────────────────────────── */}
+      {/* ── Copilot Drawer ───────────────────────────────────────────── */}
       {isChatOpen && (
-        <div className="workspace-sidebar">
-          <div className="workspace-sidebar-header">
-            <div className="workspace-sidebar-title-group">
-              <span className="workspace-sidebar-icon">📊</span>
-              <h3>Portfolio Deep-Dive</h3>
-            </div>
-            <span className="workspace-sidebar-status">Live Expert</span>
-          </div>
-
-          <div className="workspace-sidebar-chat-wrapper">
-            <ChatWindow messages={chat.messages} isLoading={chat.isLoading} />
-            <ChatInput onSend={handleSendMessage} isLoading={chat.isLoading} />
-          </div>
-        </div>
+        <CopilotDrawer
+          title="Portfolio Deep-Dive"
+          subtitle="Interactive risk and diversification analysis copilot."
+          statusBadge="Live Expert"
+          messages={chat.messages}
+          isLoading={chat.isLoading}
+          loadingText="Finnie is analyzing portfolio risk and market factors..."
+          onSendMessage={handleSendMessage}
+          onClearHistory={chat.clearMessages}
+          onClose={() => setIsChatOpen(false)}
+          inputPlaceholder="Ask about beta, volatility, or diversification..."
+          storageKey="finnie_portfolio_copilot_width"
+          disclaimerText="$NFA — Finnie is an AI assistant, not a licensed financial advisor. All answers are grounded in public educational sources."
+        />
       )}
     </div>
   )

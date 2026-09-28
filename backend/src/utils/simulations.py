@@ -78,14 +78,14 @@ def run_monte_carlo(
     percentiles = np.percentile(yearly_paths, [5, 25, 50, 75, 95], axis=0)
     
     return {
-        "confidence_score": round(confidence_score, 1),
-        "target_amount": target_amount,
+        "confidence_score": float(round(float(confidence_score), 1)),
+        "target_amount": float(target_amount),
         "years_axis": [int(y) for y in range(years + 1)],
-        "p05_path": percentiles[0].tolist(),
-        "p25_path": percentiles[1].tolist(),
-        "median_path": percentiles[2].tolist(),
-        "p75_path": percentiles[3].tolist(),
-        "p95_path": percentiles[4].tolist(),
-        "final_median": round(percentiles[2][-1], 2),
-        "num_simulations": num_simulations
+        "p05_path": [float(x) for x in percentiles[0].tolist()],
+        "p25_path": [float(x) for x in percentiles[1].tolist()],
+        "median_path": [float(x) for x in percentiles[2].tolist()],
+        "p75_path": [float(x) for x in percentiles[3].tolist()],
+        "p95_path": [float(x) for x in percentiles[4].tolist()],
+        "final_median": float(round(float(percentiles[2][-1]), 2)),
+        "num_simulations": int(num_simulations)
     }

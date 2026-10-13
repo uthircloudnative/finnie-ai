@@ -1,0 +1,332 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19" />
+      <stop offset="50%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#0A0E17" />
+    </linearGradient>
+
+    <!-- Card Background Gradients -->
+    <linearGradient id="azureBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.9" />
+    </linearGradient>
+
+    <linearGradient id="azureBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0078D4" />
+      <stop offset="100%" stop-color="#005A9E" />
+    </linearGradient>
+
+    <linearGradient id="azureCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#50E6FF" />
+      <stop offset="100%" stop-color="#0078D4" />
+    </linearGradient>
+
+    <linearGradient id="githubGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D3748" />
+      <stop offset="100%" stop-color="#1A202C" />
+    </linearGradient>
+
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#6D28D9" />
+    </linearGradient>
+
+    <!-- Filters & Shadows -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+
+    <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <style>
+    .title-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 700; fill: #F8FAFC; }
+    .subtitle-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 400; fill: #94A3B8; font-size: 13px; }
+    .header-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 600; fill: #E2E8F0; font-size: 14px; }
+    .body-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 400; fill: #94A3B8; font-size: 11px; }
+    .bold-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 600; fill: #CBD5E1; font-size: 12px; }
+    .badge-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 600; font-size: 10px; }
+    .conn-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 600; font-size: 10px; fill: #38BDF8; }
+  </style>
+
+  <!-- Deep Canvas Background -->
+  <rect width="1200" height="800" fill="url(#bgGradient)" rx="16" />
+
+  <!-- Top Banner Title -->
+  <g transform="translate(50, 40)">
+    <!-- Microsoft Azure Official Logo Shape -->
+    <path d="M 0,28 L 14,0 L 26,0 L 10,28 Z" fill="#0078D4" />
+    <path d="M 17,28 L 34,6 L 40,16 L 24,28 Z" fill="#50E6FF" opacity="0.9" />
+    <text x="54" y="16" class="title-text" font-size="20">Finnie AI — Microsoft Azure Production Cloud Architecture</text>
+    <text x="54" y="32" class="subtitle-text">Low-Cost Zero-Maintenance Stack (~$5–$15/mo) · GitHub Actions CI/CD · Custom Domain SSL</text>
+  </g>
+
+  <!-- =============================================================== -->
+  <!-- 1. CLIENT & DNS TIER (Left) -->
+  <!-- =============================================================== -->
+  <g transform="translate(50, 100)">
+    <rect width="240" height="650" rx="12" fill="url(#azureBoxGrad)" stroke="#334155" stroke-width="1.5" filter="url(#cardShadow)" />
+    
+    <!-- Section Header -->
+    <rect x="15" y="15" width="210" height="32" rx="6" fill="#1E293B" stroke="#475569" stroke-width="1" />
+    <text x="30" y="36" class="header-text" fill="#38BDF8">Client &amp; Custom DNS</text>
+
+    <!-- User Browser Card -->
+    <g transform="translate(15, 65)">
+      <rect width="210" height="110" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5" />
+      <!-- Browser Icon -->
+      <g transform="translate(15, 15)">
+        <rect width="28" height="22" rx="3" fill="none" stroke="#38BDF8" stroke-width="2" />
+        <line x1="0" y1="6" x2="28" y2="6" stroke="#38BDF8" stroke-width="1.5" />
+        <circle cx="5" cy="3" r="1" fill="#38BDF8" />
+        <circle cx="9" cy="3" r="1" fill="#38BDF8" />
+      </g>
+      <text x="52" y="28" class="header-text">User Web Browser</text>
+      <text x="15" y="55" class="body-text">HTTPS 443 / REST Traffic</text>
+      <text x="15" y="72" class="body-text">Desktop &amp; Mobile Responsive</text>
+      <rect x="15" y="82" width="105" height="18" rx="4" fill="#0369A1" />
+      <text x="22" y="95" class="badge-text" fill="#E0F2FE">End-User Client</text>
+    </g>
+
+    <!-- Custom DNS: Frontend -->
+    <g transform="translate(15, 205)">
+      <rect width="210" height="130" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <!-- DNS Globe Icon -->
+      <g transform="translate(15, 15)">
+        <circle cx="12" cy="12" r="10" fill="none" stroke="#60A5FA" stroke-width="2" />
+        <line x1="2" y1="12" x2="22" y2="12" stroke="#60A5FA" stroke-width="1.5" />
+        <ellipse cx="12" cy="12" rx="5" ry="10" fill="none" stroke="#60A5FA" stroke-width="1.5" />
+      </g>
+      <text x="45" y="24" class="bold-body" fill="#93C5FD">app.yourdomain.com</text>
+      <text x="45" y="38" class="body-text">Frontend CNAME</text>
+      <text x="15" y="65" class="body-text">Points to: *.azurestaticapps.net</text>
+      <text x="15" y="82" class="body-text">DigiCert / Let's Encrypt SSL</text>
+      <rect x="15" y="95" width="125" height="18" rx="4" fill="#14532D" stroke="#16A34A" stroke-width="1" />
+      <text x="22" y="108" class="badge-text" fill="#86EFAC">Free Auto-SSL Active</text>
+    </g>
+
+    <!-- Custom DNS: Backend API -->
+    <g transform="translate(15, 360)">
+      <rect width="210" height="130" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <!-- DNS API Node Icon -->
+      <g transform="translate(15, 15)">
+        <circle cx="12" cy="12" r="10" fill="none" stroke="#818CF8" stroke-width="2" />
+        <path d="M 8 12 L 16 12 M 12 8 L 12 16" stroke="#818CF8" stroke-width="2" />
+      </g>
+      <text x="45" y="24" class="bold-body" fill="#A5B4FC">api.yourdomain.com</text>
+      <text x="45" y="38" class="body-text">Backend API CNAME</text>
+      <text x="15" y="65" class="body-text">Points to: *.azurecontainerapps.io</text>
+      <text x="15" y="82" class="body-text">Managed Environment SSL</text>
+      <rect x="15" y="95" width="125" height="18" rx="4" fill="#14532D" stroke="#16A34A" stroke-width="1" />
+      <text x="22" y="108" class="badge-text" fill="#86EFAC">Free Auto-SSL Active</text>
+    </g>
+
+    <!-- Cost Metric Pill -->
+    <g transform="translate(15, 520)">
+      <rect width="210" height="100" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1" />
+      <text x="15" y="25" class="header-text" fill="#F8FAFC">DNS &amp; TLS Cost</text>
+      <text x="15" y="48" class="title-text" font-size="24" fill="#38BDF8">$0.00 / month</text>
+      <text x="15" y="70" class="body-text">Custom domain bindings and SSL</text>
+      <text x="15" y="85" class="body-text">certificates are 100% free on Azure.</text>
+    </g>
+  </g>
+
+  <!-- =============================================================== -->
+  <!-- 2. GITHUB CI/CD & REGISTRY TIER (Top Center) -->
+  <!-- =============================================================== -->
+  <g transform="translate(320, 100)">
+    <rect width="830" height="135" rx="12" fill="url(#githubGrad)" stroke="#475569" stroke-width="1.5" filter="url(#cardShadow)" />
+    
+    <!-- GitHub Brand Badge -->
+    <g transform="translate(20, 16)">
+      <!-- Octocat Mark -->
+      <path d="M 12 0 C 5.37 0 0 5.37 0 12 C 0 17.31 3.44 21.8 8.21 23.39 C 8.81 23.5 9.03 23.13 9.03 22.81 C 9.03 22.53 9.02 21.6 9.01 20.61 C 5.67 21.34 4.97 19.17 4.97 19.17 C 4.42 17.79 3.63 17.42 3.63 17.42 C 2.54 16.68 3.71 16.7 3.71 16.7 C 4.92 16.78 5.56 17.94 5.56 17.94 C 6.63 19.78 8.37 19.25 9.05 18.94 C 9.16 18.16 9.47 17.63 9.82 17.33 C 7.16 17.03 4.36 15.99 4.36 11.38 C 4.36 10.07 4.83 8.99 5.6 8.14 C 5.48 7.84 5.06 6.61 5.72 4.97 C 5.72 4.97 6.73 4.65 9.03 6.2 C 9.99 5.93 11.01 5.8 12.02 5.8 C 13.03 5.8 14.05 5.93 15.01 6.2 C 17.31 4.65 18.32 4.97 18.32 4.97 C 18.98 6.61 18.56 7.84 18.44 8.14 C 19.21 8.99 19.68 10.07 19.68 11.38 C 19.68 16.01 16.87 17.02 14.2 17.32 C 14.65 17.71 15.05 18.48 15.05 19.65 C 15.05 21.33 15.03 22.68 15.03 22.81 C 15.03 23.13 15.25 23.51 15.86 23.39 C 20.63 21.8 24.07 17.31 24.07 12 C 24.07 5.37 18.7 0 12 0 Z" fill="#F8FAFC" />
+      <text x="34" y="18" class="header-text" fill="#F8FAFC">GitHub Ecosystem — Zero-Cost CI/CD &amp; OCI Registry</text>
+    </g>
+
+    <!-- Git Push Box -->
+    <g transform="translate(20, 50)">
+      <rect width="230" height="65" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+      <text x="15" y="24" class="bold-body" fill="#E2E8F0">GitHub Repository</text>
+      <text x="15" y="42" class="body-text">Branch: main (git push origin)</text>
+      <text x="15" y="56" class="body-text">Triggers automated deployment</text>
+    </g>
+
+    <!-- Arrow 1 -->
+    <path d="M 260 82 L 295 82" stroke="#818CF8" stroke-width="2" marker-end="url(#arrow)" />
+    <polygon points="295,78 303,82 295,86" fill="#818CF8" />
+
+    <!-- GitHub Actions Box -->
+    <g transform="translate(315, 50)">
+      <rect width="230" height="65" rx="6" fill="#0F172A" stroke="#6366F1" stroke-width="1.5" />
+      <text x="15" y="24" class="bold-body" fill="#A5B4FC">GitHub Actions CI/CD</text>
+      <text x="15" y="42" class="body-text">Workflow: deploy-backend.yml</text>
+      <text x="15" y="56" class="body-text">Builds uv Python Docker image</text>
+    </g>
+
+    <!-- Arrow 2 -->
+    <path d="M 555 82 L 590 82" stroke="#818CF8" stroke-width="2" />
+    <polygon points="590,78 598,82 590,86" fill="#818CF8" />
+
+    <!-- GHCR Box -->
+    <g transform="translate(610, 50)">
+      <rect width="200" height="65" rx="6" fill="#0F172A" stroke="#10B981" stroke-width="1.5" />
+      <text x="15" y="24" class="bold-body" fill="#6EE7B7">GHCR (ghcr.io)</text>
+      <text x="15" y="42" class="body-text">Free OCI Package Storage</text>
+      <text x="15" y="56" class="body-text">Saves $5/mo ACR fee</text>
+    </g>
+  </g>
+
+  <!-- =============================================================== -->
+  <!-- 3. AZURE PRODUCTION CLOUD INFRASTRUCTURE (Center & Bottom) -->
+  <!-- =============================================================== -->
+  <g transform="translate(320, 255)">
+    <!-- Azure Container Box -->
+    <rect width="830" height="495" rx="12" fill="url(#azureBoxGrad)" stroke="#0284C7" stroke-width="2" filter="url(#cardShadow)" />
+    
+    <!-- Azure Cloud Header -->
+    <g transform="translate(25, 20)">
+      <path d="M 0,22 L 11,0 L 20,0 L 8,22 Z" fill="#0078D4" />
+      <path d="M 13,22 L 27,5 L 32,13 L 19,22 Z" fill="#50E6FF" />
+      <text x="42" y="16" class="title-text" font-size="16" fill="#F8FAFC">Microsoft Azure Cloud Infrastructure (Resource Group: rg-finnie-ai-prod)</text>
+    </g>
+
+    <!-- SUB-COMPONENT A: Azure Static Web Apps -->
+    <g transform="translate(25, 55)">
+      <rect width="370" height="185" rx="8" fill="#0F172A" stroke="#0284C7" stroke-width="1.5" />
+      
+      <!-- Azure Static Web Apps Vector Symbol -->
+      <g transform="translate(15, 15)">
+        <rect width="32" height="32" rx="6" fill="#0078D4" />
+        <path d="M 8 16 L 13 11 L 13 21 Z" fill="#FFFFFF" />
+        <path d="M 24 16 L 19 11 L 19 21 Z" fill="#FFFFFF" />
+        <line x1="17" y1="9" x2="15" y2="23" stroke="#50E6FF" stroke-width="2" />
+      </g>
+      <text x="56" y="28" class="bold-body" fill="#E2E8F0">Azure Static Web Apps</text>
+      <text x="56" y="43" class="body-text" fill="#38BDF8">Resource: finnie-frontend</text>
+      
+      <text x="15" y="75" class="body-text">• React 19 + TypeScript + Vite Production Build</text>
+      <text x="15" y="93" class="body-text">• Global Azure Edge Anycast CDN</text>
+      <text x="15" y="111" class="body-text">• Built directly from git repository (/frontend/dist)</text>
+      <text x="15" y="129" class="body-text">• Zero Docker container overhead</text>
+
+      <rect x="15" y="145" width="100" height="24" rx="4" fill="#065F46" stroke="#10B981" stroke-width="1" />
+      <text x="25" y="161" class="badge-text" fill="#A7F3D0">$0.00 / month</text>
+    </g>
+
+    <!-- SUB-COMPONENT B: Azure Container Apps -->
+    <g transform="translate(425, 55)">
+      <rect width="380" height="185" rx="8" fill="#0F172A" stroke="#0284C7" stroke-width="1.5" />
+      
+      <!-- Azure Container Apps Vector Symbol -->
+      <g transform="translate(15, 15)">
+        <rect width="32" height="32" rx="6" fill="#0078D4" />
+        <polygon points="16,6 26,11 26,21 16,26 6,21 6,11" fill="none" stroke="#50E6FF" stroke-width="2" />
+        <line x1="16" y1="6" x2="16" y2="26" stroke="#50E6FF" stroke-width="1.5" />
+        <line x1="6" y1="11" x2="26" y2="21" stroke="#50E6FF" stroke-width="1.5" />
+      </g>
+      <text x="56" y="28" class="bold-body" fill="#E2E8F0">Azure Container Apps</text>
+      <text x="56" y="43" class="body-text" fill="#38BDF8">Resource: finnie-backend (finnie-env)</text>
+
+      <text x="15" y="75" class="body-text">• 0.5 vCPU · 1.0 GiB RAM (Consumption Plan)</text>
+      <text x="15" y="93" class="body-text">• Single Replica Invariant (minReplicas=1, maxReplicas=1)</text>
+      <text x="15" y="111" class="body-text">• Gunicorn Multi-Worker + Uvicorn ASGI Server</text>
+      <text x="15" y="129" class="body-text">• Ingress Port 80 · FastAPI + LangGraph Engine</text>
+
+      <rect x="15" y="145" width="135" height="24" rx="4" fill="#1E3A8A" stroke="#3B82F6" stroke-width="1" />
+      <text x="25" y="161" class="badge-text" fill="#BFDBFE">~$5.00 – $12.00 / mo</text>
+    </g>
+
+    <!-- SUB-COMPONENT C: Azure Files Storage Share -->
+    <g transform="translate(25, 260)">
+      <rect width="370" height="210" rx="8" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5" />
+      
+      <!-- Azure Storage Vector Symbol -->
+      <g transform="translate(15, 15)">
+        <rect width="32" height="32" rx="6" fill="#D97706" />
+        <rect x="7" y="9" width="18" height="5" rx="1" fill="#FEF3C7" />
+        <rect x="7" y="16" width="18" height="5" rx="1" fill="#FEF3C7" />
+        <rect x="7" y="23" width="18" height="5" rx="1" fill="#FEF3C7" />
+      </g>
+      <text x="56" y="28" class="bold-body" fill="#FEF3C7">Azure Files Storage Share</text>
+      <text x="56" y="43" class="body-text" fill="#FCD34D">Account: finnieprodstorage / finnie-db-share</text>
+
+      <text x="15" y="75" class="body-text">• Standard LRS SMB Volume Mount (/mnt/data)</text>
+      <text x="15" y="93" class="body-text">• Hosts finnie.db SQLite database file</text>
+      <text x="15" y="111" class="body-text">• Survives container rebuilds and Azure restarts</text>
+      <text x="15" y="129" class="body-text">• Standard journal mode (prevents SMB lock issues)</text>
+
+      <!-- PostgreSQL Reserved Hook Callout -->
+      <rect x="15" y="145" width="340" height="50" rx="6" fill="#1E293B" stroke="#475569" stroke-width="1" />
+      <text x="25" y="163" class="bold-body" font-size="11" fill="#94A3B8">Reserved PostgreSQL Migration Hook:</text>
+      <text x="25" y="180" class="body-text">Swap DATABASE_URL to Azure PostgreSQL Flexible (B1ms)</text>
+    </g>
+
+    <!-- SUB-COMPONENT D: ChromaDB Vector Store & External Integrations -->
+    <g transform="translate(425, 260)">
+      <rect width="380" height="210" rx="8" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.5" />
+      
+      <!-- Chroma Vector Lattice Symbol -->
+      <g transform="translate(15, 15)">
+        <rect width="32" height="32" rx="6" fill="#7C3AED" />
+        <circle cx="11" cy="11" r="3" fill="#EDE9FE" />
+        <circle cx="21" cy="11" r="3" fill="#EDE9FE" />
+        <circle cx="16" cy="21" r="3" fill="#EDE9FE" />
+        <line x1="11" y1="11" x2="21" y2="11" stroke="#EDE9FE" stroke-width="1" />
+        <line x1="11" y1="11" x2="16" y2="21" stroke="#EDE9FE" stroke-width="1" />
+        <line x1="21" y1="11" x2="16" y2="21" stroke="#EDE9FE" stroke-width="1" />
+      </g>
+      <text x="56" y="28" class="bold-body" fill="#EDE9FE">ChromaDB Vector Store &amp; APIs</text>
+      <text x="56" y="43" class="body-text" fill="#C4B5FD">Collections: financial_kb · analytical_kb · goal_rules</text>
+
+      <text x="15" y="75" class="body-text">• OpenAI API: GPT-4o (Strategist) &amp; GPT-4o-mini (Router)</text>
+      <text x="15" y="93" class="body-text">• Yahoo Finance API: Live market quotes &amp; beta ratios</text>
+      <text x="15" y="111" class="body-text">• Alpha Vantage API: Market news &amp; sentiment intel</text>
+      <text x="15" y="129" class="body-text">• Mailgun REST API: Transactional OTP verification</text>
+
+      <rect x="15" y="145" width="350" height="50" rx="6" fill="#1E293B" stroke="#475569" stroke-width="1" />
+      <text x="25" y="163" class="bold-body" font-size="11" fill="#A78BFA">Compliance Guardian Integration ($NFA):</text>
+      <text x="25" y="180" class="body-text">All agent outputs pass regulatory compliance filter node</text>
+    </g>
+  </g>
+
+  <!-- =============================================================== -->
+  <!-- 4. CONNECTING FLOW LINES & PROTOCOL LABELS -->
+  <!-- =============================================================== -->
+
+  <!-- User to Frontend DNS -->
+  <path d="M 225 180 L 290 180 L 290 320 L 335 320" stroke="#38BDF8" stroke-width="2" fill="none" />
+  <polygon points="335,316 345,320 335,324" fill="#38BDF8" />
+  <text x="240" y="250" class="conn-label">HTTPS:443</text>
+
+  <!-- User to Backend DNS -->
+  <path d="M 225 190 L 305 190 L 305 470 L 335 470" stroke="#818CF8" stroke-width="2" fill="none" />
+  <polygon points="335,466 345,470 335,474" fill="#818CF8" />
+  <text x="240" y="430" class="conn-label">REST API</text>
+
+  <!-- GHCR to Container App Pull -->
+  <path d="M 1030 235 L 1030 330 L 815 330" stroke="#10B981" stroke-width="2" stroke-dasharray="6,4" fill="none" />
+  <polygon points="815,326 805,330 815,334" fill="#10B981" />
+  <text x="890" y="322" class="conn-label" fill="#10B981">PAT Secure Image Pull</text>
+
+  <!-- Backend to Azure Files SMB Mount -->
+  <path d="M 615 440 L 615 470 L 405 470" stroke="#F59E0B" stroke-width="2" fill="none" />
+  <polygon points="405,466 395,470 405,474" fill="#F59E0B" />
+  <text x="440" y="464" class="conn-label" fill="#F59E0B">SMB 3.0 /mnt/data</text>
+
+</svg>

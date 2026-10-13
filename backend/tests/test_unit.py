@@ -768,8 +768,201 @@ class TestGoalSecurityAndMultiTenancy(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Statutory Notice", result["messages"][0].content)
 
 
+class TestCashflowAndLiabilityMath(unittest.TestCase):
+    def test_calculate_free_cashflow_solvent(self):
+        from src.utils.simulations import calculate_free_cashflow
+
+        liabilities = [
+            {"type": "AUTO_LOAN", "monthly_payment": 450.0, "current_balance": 15000.0, "interest_rate_apr": 6.0, "remaining_months": 36},
+            {"type": "CREDIT_CARD", "monthly_payment": 200.0, "current_balance": 6000.0, "interest_rate_apr": 24.0, "remaining_months": 36}
+        ]
+        res = calculate_free_cashflow(
+            monthly_take_home=7000.0,
+            fixed_living_costs=3000.0,
+            monthly_discretionary_spend=1500.0,
+            liabilities=liabilities,
+            committed_savings=1000.0
+        )
+        self.assertEqual(res["free_cashflow"], 1850.0)
+        self.assertEqual(res["total_debt_service"], 650.0)
+        self.assertEqual(res["solvency_status"], "SOLVENT")
+        self.assertEqual(res["surplus_after_savings"], 850.0)
+
+    def test_calculate_free_cashflow_deficit(self):
+        from src.utils.simulations import calculate_free_cashflow
+
+        liabilities = [
+            {"type": "AUTO_LOAN", "monthly_payment": 500.0, "current_balance": 20000.0, "interest_rate_apr": 7.0, "remaining_months": 48}
+        ]
+        res = calculate_free_cashflow(
+            monthly_take_home=4000.0,
+            fixed_living_costs=2500.0,
+            monthly_discretionary_spend=1200.0,
+            liabilities=liabilities,
+            committed_savings=1000.0
+        )
+        # 4000 - 2500 - 1200 - 500 = -200
+        self.assertEqual(res["free_cashflow"], -200.0)
+        self.assertEqual(res["solvency_status"], "DEFICIT")
+        self.assertLess(res["surplus_after_savings"], 0.0)
+
+    def test_amortize_liabilities_trajectory(self):
+        from src.utils.simulations import amortize_liabilities
+
+        current_year = datetime.now().year
+        liabilities = [
+            {"type": "AUTO_LOAN", "current_balance": 12000.0, "monthly_payment": 500.0, "interest_rate_apr": 6.0, "remaining_months": 24},
+            {"type": "CREDIT_CARD", "current_balance": 6000.0, "monthly_payment": 500.0, "interest_rate_apr": 20.0, "remaining_months": 12}
+        ]
+        amort = amortize_liabilities(liabilities=liabilities, years=5, current_year=current_year)
+        self.assertIn("debt_amortization_path", amort)
+        self.assertIn("debt_free_year", amort)
+        self.assertIn("freed_cashflow_by_month", amort)
+        self.assertEqual(len(amort["debt_amortization_path"]), 6)  # 5 years -> 6 snapshots (years 0..5)
+        # Total debt at year 0 is 18000
+        self.assertAlmostEqual(amort["debt_amortization_path"][0], 18000.0, places=1)
+        # At year 3 (month 36), both loans should be paid off ($0.0)
+        self.assertEqual(amort["debt_amortization_path"][3], 0.0)
+        self.assertLessEqual(amort["debt_free_year"], current_year + 3)
+
+    def test_cashflow_monte_carlo_with_step_up(self):
+        from src.utils.simulations import run_cashflow_monte_carlo
+
+        liabilities = [
+            {"type": "AUTO_LOAN", "current_balance": 10000.0, "monthly_payment": 500.0, "interest_rate_apr": 6.0, "remaining_months": 24}
+        ]
+        res = run_cashflow_monte_carlo(
+            initial_balance=10000.0,
+            target_amount=100000.0,
+            baseline_monthly_savings=500.0,
+            years=5,
+            expected_return=0.08,
+            volatility=0.15,
+            liabilities=liabilities,
+            auto_step_up=True,
+            num_simulations=500
+        )
+        self.assertIn("confidence_score", res)
+        self.assertIn("median_path", res)
+        self.assertIn("net_worth_median_path", res)
+        self.assertIn("debt_amortization_path", res)
+        self.assertIn("debt_free_year", res)
+        self.assertEqual(len(res["net_worth_median_path"]), 6)
+        # In year 0: Net Worth = Invested Assets (10000) - Debt (10000) = 0
+        self.assertAlmostEqual(res["net_worth_median_path"][0], 0.0, delta=100.0)
+        # In final year: Debt is 0, so Net Worth equals Gross Assets
+        self.assertAlmostEqual(res["net_worth_median_path"][-1], res["median_path"][-1], places=1)
+
+    def test_fetch_user_portfolio_valuation_scoped_to_country(self):
+        from src.tools.goal_tools import fetch_user_portfolio_valuation
+        from src.database import SessionLocal
+        from src.models.portfolio import Holding
+
+        db = SessionLocal()
+        test_uid = "test_user_country_scoping_001"
+        try:
+            # Clean up any existing holdings for this test user
+            db.query(Holding).filter(Holding.user_id == test_uid).delete()
+            # Add 1 US holding and 1 Indian holding
+            us_h = Holding(user_id=test_uid, ticker="AAPL", shares=10.0, country="US", exchange="NASDAQ")
+            in_h = Holding(user_id=test_uid, ticker="RELIANCE.NS", shares=50.0, country="IN", exchange="NSE")
+            db.add_all([us_h, in_h])
+            db.commit()
+
+            # 1. Scope to USA
+            us_val = fetch_user_portfolio_valuation.invoke({"user_id": test_uid, "country": "USA"})
+            self.assertEqual(us_val["asset_count"], 1)
+            self.assertEqual(us_val["holdings"][0]["ticker"], "AAPL")
+            self.assertAlmostEqual(us_val["total_valuation"], 2000.0)
+
+            # 2. Scope to INDIA
+            in_val = fetch_user_portfolio_valuation.invoke({"user_id": test_uid, "country": "INDIA"})
+            self.assertEqual(in_val["asset_count"], 1)
+            self.assertEqual(in_val["holdings"][0]["ticker"], "RELIANCE.NS")
+            self.assertAlmostEqual(in_val["total_valuation"], 125000.0)
+        finally:
+            db.query(Holding).filter(Holding.user_id == test_uid).delete()
+            db.commit()
+            db.close()
+
+    def test_goal_auditor_flags_toxic_debt_drag(self):
+        from src.agents.goal_auditor import goal_auditor_node
+        from langchain_core.messages import AIMessage
+
+        # User has a 24% APR credit card, but Strategist generated a naive equity plan ignoring debt
+        state = {
+            "goal_configuration": {
+                "goal_name": "Retirement",
+                "monthly_savings": 1000.0,
+                "country": "USA",
+                "liabilities": [
+                    {"liability_type": "CREDIT_CARD", "current_balance": 8000.0, "interest_rate_apr": 24.0, "monthly_payment": 250.0}
+                ]
+            },
+            "messages": [AIMessage(content="Invest $1000 into S&P 500 index funds.")],
+            "critic_retry_count": 0,
+            "critic_feedback": None
+        }
+        result = goal_auditor_node(state)
+        self.assertIsNotNone(result.get("critic_feedback"))
+        self.assertIn("24.0%", result["critic_feedback"])
+        self.assertIn("Toxic Debt", result["critic_feedback"])
+
+    def test_liability_and_cashflow_endpoints(self):
+        from main import create_user_liability, get_user_liabilities, delete_user_liability, get_user_cashflow, update_user_cashflow
+        from src.models.liability import LiabilityCreate, Liability
+        from src.models.cashflow import CashflowProfileCreate, UserCashflowProfile
+        from src.models.user import User
+        from src.database import SessionLocal
+
+        db = SessionLocal()
+        mock_user = User(id="test_user_api_crud_001", email="crud@finnie.ai")
+        try:
+            # 1. Create liability
+            l_req = LiabilityCreate(
+                liability_type="CREDIT_CARD",
+                lender_name="Test Card",
+                current_balance=5000.0,
+                interest_rate_apr=22.0,
+                monthly_payment=200.0,
+                remaining_months=24,
+                country="USA"
+            )
+            created_l = create_user_liability(req=l_req, current_user=mock_user, db=db)
+            self.assertEqual(created_l.user_id, "test_user_api_crud_001")
+            self.assertEqual(created_l.current_balance, 5000.0)
+
+            # 2. Get liabilities
+            liabs = get_user_liabilities(current_user=mock_user, db=db)
+            self.assertGreaterEqual(len(liabs), 1)
+
+            # 3. Update cashflow
+            cf_req = CashflowProfileCreate(
+                monthly_take_home=6500.0,
+                fixed_living_costs=2800.0,
+                monthly_discretionary_spend=1200.0,
+                country="USA"
+            )
+            cf = update_user_cashflow(req=cf_req, current_user=mock_user, db=db)
+            self.assertEqual(cf.monthly_take_home, 6500.0)
+
+            # 4. Get cashflow
+            fetched_cf = get_user_cashflow(current_user=mock_user, db=db)
+            self.assertEqual(fetched_cf.monthly_take_home, 6500.0)
+
+            # 5. Delete liability
+            del_res = delete_user_liability(liability_id=created_l.id, current_user=mock_user, db=db)
+            self.assertEqual(del_res["status"], "deleted")
+        finally:
+            db.query(Liability).filter(Liability.user_id == mock_user.id).delete()
+            db.query(UserCashflowProfile).filter(UserCashflowProfile.user_id == mock_user.id).delete()
+            db.commit()
+            db.close()
+
+
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

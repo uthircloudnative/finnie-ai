@@ -58,6 +58,8 @@ def init_db() -> None:
     from src.models.market_metadata import MarketExchange # noqa: F401
     from src.models.market_cache import MarketCache       # noqa: F401
     from src.models.goal import FinancialGoal             # noqa: F401
+    from src.models.liability import Liability            # noqa: F401
+    from src.models.cashflow import UserCashflowProfile   # noqa: F401
     Base.metadata.create_all(bind=engine)
 
     # Automatic schema migration for new columns on existing tables

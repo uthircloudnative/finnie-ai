@@ -13,9 +13,9 @@ Finnie AI delivers an institutional-grade, dark-mode financial experience combin
    - Primary Brand Accent: Electric Cyan (`#00f3ff` / `var(--accent-cyan)`).
    - Card Surfaces: Deep charcoal frosted glass (`rgba(15, 23, 42, 0.65)`) with a subtle 1px border (`rgba(255, 255, 255, 0.08)`).
    - Semantic Status Badges:
-     - 🟢 **Success / On Track**: `rgba(34, 197, 94, 0.15)` bg with `#4ade80` text.
-     - 🟡 **Warning / Caution**: `rgba(234, 179, 8, 0.15)` bg with `#facc15` text.
-     - 🔴 **Danger / At Risk**: `rgba(239, 68, 68, 0.15)` bg with `#f87171` text.
+     -  **Success / On Track**: `rgba(34, 197, 94, 0.15)` bg with `#4ade80` text.
+     -  **Warning / Caution**: `rgba(234, 179, 8, 0.15)` bg with `#facc15` text.
+     -  **Danger / At Risk**: `rgba(239, 68, 68, 0.15)` bg with `#f87171` text.
 2. **Typography**:
    - Modern monospace and geometric sans-serif fonts from Google Fonts (Space Grotesk, Inter, Outfit).
    - Bold numerical metrics with clear units (`$`, `%`, `x`).
@@ -30,19 +30,19 @@ Every analytical view, card, and interactive widget MUST handle the full compone
 ### A. Loading States
 - Long-running LLM workflows (Chat, Goal Generation, Portfolio Analysis) MUST display visual feedback:
   - Pulsing agent orb or glowing `ThinkingIndicator`.
-  - Button text transitioning to an active state (e.g. `🧠 Calculating 10,000 Scenarios...`).
+  - Button text transitioning to an active state (e.g. ` Calculating 10,000 Scenarios...`).
   - Skeleton cards or shimmer effects for data loading.
 
 ### B. Empty States
 - When a user has zero holdings or has not yet configured a goal:
   - Never render an empty white/black void.
-  - Display an illustrative icon (`📈`, `💼`, `🎯`).
+  - Display an illustrative icon (``, ``, ``).
   - Include friendly, explanatory copy and a direct Call-To-Action (CTA) button guiding the user to take action.
 
 ### C. Error & Fallback States
 - If external financial APIs (yfinance, Alpha Vantage) fail or rate-limit:
   - Do NOT crash the entire page or show a generic 500 alert.
-  - Display an interactive retry button on the affected card (e.g., `"📊 Get Diversification Score"` on the diversification tile).
+  - Display an interactive retry button on the affected card (e.g., `" Get Diversification Score"` on the diversification tile).
 
 ---
 

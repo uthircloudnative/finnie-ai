@@ -1,6 +1,6 @@
 # Feature Spec: SPEC-10 — Autonomous Financial GPS & Multi-Agent Goal Strategist
 
-> **Status**: 🟡 **READY FOR IMPLEMENTATION**  
+> **Status**:  **BASELINE / PRODUCTION VERIFIED**  
 > **Author**: Antigravity & Lead Engineer  
 > **Scope**: Backend, LangGraph, Tools, Checkpointing, Frontend Streaming, HITL, Security, Data Modeling  
 > **Target Release**: v0.8.0 (Phase 8)  
@@ -9,7 +9,7 @@
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 
 ### Problem Statement
 The current Goal Strategist implementation ([goal_strategist.py](file:///Users/prajosh/Development/finnie-ai/backend/src/agents/goal_strategist.py)) operates as a **single-shot, deterministic script**. The Python backend runs the Monte Carlo engine and ChromaDB queries before the LLM is invoked, passing raw text into a static prompt.
@@ -46,11 +46,11 @@ This presents critical product and architectural limitations:
 #### 5. Country Profile & Multi-Jurisdiction Engine
 - **Default Country from User Profile**: The Goal Planner initializes with the user's registered `base_currency` and country (e.g. `INR` $\rightarrow$ `India`, `USD` $\rightarrow$ `USA`, `GBP` $\rightarrow$ `UK`).
 - **Dynamic Statutory Ceilings in Critic (`goal_auditor_node`)**: The Critic dynamically evaluates savings advice against jurisdiction-specific statutory limits:
-  * **🇺🇸 USA**: Standard 401(k) ($23,500/yr) + IRA ($7,000/yr) = $30,500/yr ceiling. ($7,500 catch-up if age $\ge 50$).
-  * **🇮🇳 India**: Section 80C (₹1,50,000/yr) + Section 80CCD(1B) NPS (₹50,000/yr) = ₹2,00,000/yr ceiling. LTCG ₹1.25 Lakh tax-exempt threshold.
-  * **🇬🇧 UK**: ISA (£20,000/yr) + Pension Annual Allowance (£60,000/yr). Lifetime ISA £4,000/yr bonus.
-  * **🇨🇦 Canada**: RRSP (18% earned income up to ~$31,560) + TFSA (~$7,000/yr).
-  * **🇩🇪 Germany**: Basisrente (€27,566/yr) + Sparer-Pauschbetrag (€1,000/yr).
+  * **[US] USA**: Standard 401(k) ($23,500/yr) + IRA ($7,000/yr) = $30,500/yr ceiling. ($7,500 catch-up if age $\ge 50$).
+  * **[IN] India**: Section 80C (₹1,50,000/yr) + Section 80CCD(1B) NPS (₹50,000/yr) = ₹2,00,000/yr ceiling. LTCG ₹1.25 Lakh tax-exempt threshold.
+  * **[UK] UK**: ISA (£20,000/yr) + Pension Annual Allowance (£60,000/yr). Lifetime ISA £4,000/yr bonus.
+  * **[CA] Canada**: RRSP (18% earned income up to ~$31,560) + TFSA (~$7,000/yr).
+  * **[DE] Germany**: Basisrente (€27,566/yr) + Sparer-Pauschbetrag (€1,000/yr).
 - **Dynamic Country-Switching in Multi-Turn Chat**: If a user asks *"What if I relocate to India in 2028?"*, the agent updates `country="India"`, triggers `lookup_tax_and_contribution_limits(country="India")`, and the Critic automatically switches its validation rules to Indian tax statutes.
 
 #### 6. Unified Dual-Mode Checkpointer Storage (`finnie.db`)
@@ -62,7 +62,7 @@ This presents critical product and architectural limitations:
 
 ---
 
-## 2. 🔌 Technical Contracts & Architecture
+## 2. Technical Contracts & Architecture
 
 ### A. Modular Tool Manifest (`backend/src/tools/goal_tools.py`)
 Modular `@tool` definitions registered with LangChain schemas:
@@ -118,7 +118,7 @@ graph TD
 2. **`goal_auditor_node` (Reflection / Critic)**:
    - Evaluates proposed savings against `goal_configuration["country"]` statutory ceilings.
    - If limits are violated: sets `state["critic_feedback"]` with specific statutory reasons and loops back to `goal_strategist_node` (capped at 2 retries).
-   - On 3rd failure (critic exhaustion): appends `⚠️ Statutory Caution` callout and routes to compliance rather than crashing.
+   - On 3rd failure (critic exhaustion): appends `[WARN] Statutory Caution` callout and routes to compliance rather than crashing.
 3. **`hitl_approval_node` (Human-in-the-Loop)**:
    - Invokes LangGraph `interrupt()` only when action is `LOCK_IN_GOAL`:
      ```python
@@ -216,7 +216,7 @@ class FinnieState(TypedDict):
 
 ---
 
-## 3. 🗄️ Data Modeling & Database Changes
+## 3.  Data Modeling & Database Changes
 
 > [!IMPORTANT]
 > The complete database architecture, annotated Mermaid ER diagram, and table-by-table Data Dictionary for all 7 application tables are documented canonically in [docs/DATA_MODEL.md](../../docs/DATA_MODEL.md).
@@ -255,7 +255,7 @@ To ensure backward compatibility without dropping tables, `init_db()` in `databa
 
 ---
 
-## 4. 🖥️ Frontend Presentation & State
+## 4.  Frontend Presentation & State
 
 ### A. Route Configuration (`frontend/src/config.ts`)
 ```typescript
@@ -274,7 +274,7 @@ GOALS_LOCK_IN: `${API_BASE}/goals/lock-in`,
 
 ### C. Component Presentation (`src/components/Goals/`)
 1. **Live Thought Badges (`ThoughtStream.tsx`)**:
-   - Displays real-time progress chips (e.g. `🔍 Fetching Holdings` ➔ `🎲 Running Monte Carlo` ➔ `⚖️ Auditing Limits`).
+   - Displays real-time progress chips (e.g. ` Fetching Holdings` -> ` Running Monte Carlo` -> ` Auditing Limits`).
 2. **Refine Roadmap Micro-Chat (`GoalChatRefinement.tsx`)**:
    - Compact glassmorphic chat interface positioned directly below the Strategic Roadmap report.
 3. **Strategy Lock-In Modal (`StrategyLockInModal.tsx`)**:
@@ -286,7 +286,7 @@ GOALS_LOCK_IN: `${API_BASE}/goals/lock-in`,
 
 ---
 
-## 5. 🛡️ Defensive Failure Modes & Complete Edge Case Matrix
+## 5.  Defensive Failure Modes & Complete Edge Case Matrix
 
 | # | Edge Case Scenario | Defensive Behavior & Architectural Solution |
 | :--- | :--- | :--- |
@@ -294,7 +294,7 @@ GOALS_LOCK_IN: `${API_BASE}/goals/lock-in`,
 | **EC-2** | **Target Already Achieved** (Current balance $\ge$ Target amount) | Agent detects `initial_balance >= target_amount`, outputs an immediate celebration milestone (`Status: ACHIEVED`), and skips unnecessary savings recommendations. |
 | **EC-3** | **Past or Impossibly Short Target Year** (Target Year $\le$ current year) | UI form validation blocks years $\le \text{current\_year}$. Backend defensively clamps `years = max(1, target_year - current_year)`. |
 | **EC-4** | **Negative or Out-of-Bounds Savings** | Pydantic schema validation rejects `monthly_savings < 0` with `422 Unprocessable Entity`. Clamps savings to sensible positive bounds. |
-| **EC-5** | **Critic Exhaustion Fallback (3 consecutive failures)** | If LLM repeatedly proposes unfeasible advice and exhausts its 2 retry attempts, the Critic appends a prominent `⚠️ Statutory Caution: Advice exceeds standard tax ceilings` callout and proceeds to compliance without crashing. |
+| **EC-5** | **Critic Exhaustion Fallback (3 consecutive failures)** | If LLM repeatedly proposes unfeasible advice and exhausts its 2 retry attempts, the Critic appends a prominent `[WARN] Statutory Caution: Advice exceeds standard tax ceilings` callout and proceeds to compliance without crashing. |
 | **EC-6** | **ChromaDB / Tax Rules Offline** | If ChromaDB `goal_rules` collection fails or disconnects, the tool returns standard default statutory limits without terminating graph execution. |
 | **EC-7** | **Recharts Payload Optimization** | 10,000 Monte Carlo paths are aggregated into **5 smooth percentile lines** (10th, 25th, median, 75th, 90th percentile) so the SSE streaming payload stays under 25KB. |
 | **EC-8** | **Stale or Abandoned HITL Lock-In State** | If user opens the confirmation modal and closes the tab, the state remains safe in SQLite. When returning, user can re-trigger or start fresh without orphaned locks. |
@@ -303,14 +303,14 @@ GOALS_LOCK_IN: `${API_BASE}/goals/lock-in`,
 
 ---
 
-## 6. ✅ Acceptance Criteria & Test Plan
+## 6. [PASS] Acceptance Criteria & Test Plan
 
 ### A. Automated Backend Unit Tests (`backend/tests/test_unit.py`)
 - [ ] **AC-1 (Tools Math)**: `run_monte_carlo_engine` returns confidence score, median, and 5 percentile trajectory curves with valid bounds.
 - [ ] **AC-2 (Tool Binding)**: `goal_strategist_node` successfully generates tool calls when exploring what-if scenarios.
 - [ ] **AC-3 (Critic / Reflection - USA)**: `goal_auditor_node` rejects roadmaps proposing savings $> \$30,500$ for US goals and decrements retry budget.
 - [ ] **AC-4 (Critic / Reflection - India)**: `goal_auditor_node` evaluates against ₹2.0 Lakh statutory ceiling for Indian goals.
-- [ ] **AC-5 (Critic Exhaustion)**: On 3rd consecutive critic rejection, graph gracefully appends `⚠️ Statutory Caution` and routes to compliance without crashing.
+- [ ] **AC-5 (Critic Exhaustion)**: On 3rd consecutive critic rejection, graph gracefully appends `[WARN] Statutory Caution` and routes to compliance without crashing.
 - [ ] **AC-6 (Multi-Tenant Thread Isolation)**: Submitting request with mismatched `thread_id` prefix returns `403 Forbidden`.
 - [ ] **AC-7 (In-Session Memory)**: Re-invoking graph with identical `thread_id` and query *"Now change target year to 2040"* retains prior initial balance and goal name without re-prompting.
 - [ ] **AC-8 (Selective HITL Interruption)**: Graph executes freely on calculation/refinement; pauses at `hitl_approval_node` only when `is_save_intent=True`.

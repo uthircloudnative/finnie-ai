@@ -9,7 +9,7 @@ This skill governs how technical and functional documentation is maintained acro
 
 ---
 
-## 🛑 The Execution Gate (Strict Developer Handshake)
+## The Execution Gate (Strict Developer Handshake)
 
 To prevent unwanted file churn during active development, follow this **Human-in-the-Loop Protocol**:
 
@@ -22,12 +22,12 @@ To prevent unwanted file churn during active development, follow this **Human-in
    When the above are green, you MUST pause, summarize what changed, and ask the developer for permission using this exact template:
 
 ```markdown
-### 📋 Feature Verified & Complete: [Feature Name]
+### Feature Verified & Complete: [Feature Name]
 All code changes are implemented and verified:
 - Backend: 14/14 unit tests passing
 - Frontend: 0 errors / 0 warnings on production build
 
-### 📚 Proposed Documentation Updates
+### Proposed Documentation Updates
 Based on these changes, the following documents should be synchronized:
 1. **[Technical]** `README.md` — [Specify: e.g., Update endpoint table with POST /new-route]
 2. **[Technical]** `docs/DESIGN.md` — [Specify: e.g., Add sequence diagram for new agent node]
@@ -41,13 +41,13 @@ Would you like me to proceed with updating these documents?
 
 ---
 
-## 🗺️ Change-to-Document Mapping Matrix
+##  Change-to-Document Mapping Matrix
 
 Once approved by the developer, inspect what changed in the codebase and update the corresponding documents:
 
 | Component Changed in Code | Technical Documentation Target | Functional Documentation Target |
 |---|---|---|
-| **New Feature / Capability** | Promote `specs/upcoming/SPEC-XX.md` ➔ `specs/baseline/` | `docs/FEATURES_AND_AGENTS.md`, `README.md` |
+| **New Feature / Capability** | Promote `specs/upcoming/SPEC-XX.md` -> `specs/baseline/` | `docs/FEATURES_AND_AGENTS.md`, `README.md` |
 | **API Endpoints / Schemas** (`main.py`, `models/`) | `README.md` (Endpoint Table), `docs/FEATURES_AND_AGENTS.md` | `specs/baseline/SPEC-XX.md` (Contract & ACs) |
 | **Agent Nodes / Graph Flow** (`graph.py`, `agents/`) | `docs/ARCHITECTURE.md`, `docs/FEATURES_AND_AGENTS.md` | User-facing workflow & compliance disclaimers |
 | **Financial Math / Scrapers** (`simulation.py`, `portfolio_analyst.py`) | `docs/FEATURES_AND_AGENTS.md` (Formulas, Retries) | `specs/baseline/SPEC-02/03.md` (Domain rules) |
@@ -57,7 +57,7 @@ Once approved by the developer, inspect what changed in the codebase and update 
 
 ---
 
-## ✍️ Dual-Perspective Writing Guidelines
+##  Dual-Perspective Writing Guidelines
 
 ### 1. Technical Documentation Standards (For Engineers & AI Agents)
 - **Precision & Code Links**: Always cite exact file paths using markdown links (e.g. [`main.py`](file:///Users/prajosh/Development/finnie-ai/backend/main.py)).
@@ -77,7 +77,7 @@ Once approved by the developer, inspect what changed in the codebase and update 
 
 ---
 
-## 🧪 Documentation Quality Checklist
+## Documentation Quality Checklist
 Before concluding documentation updates:
 - [ ] No broken internal markdown links.
 - [ ] Mermaid diagrams render cleanly without syntax errors.

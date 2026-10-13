@@ -4,7 +4,7 @@ Welcome, Agent! This document is the single source of truth for all AI coding as
 
 ---
 
-## 🏛️ Project Architecture & Tech Stack
+##  Project Architecture & Tech Stack
 
 Finnie AI is a multi-agent financial guidance platform designed around a **"Dashboard-First, Agent-Assisted"** user experience.
 
@@ -15,7 +15,7 @@ Finnie AI is a multi-agent financial guidance platform designed around a **"Dash
 
 ---
 
-## 📂 Repository Directory Layout
+## Repository Directory Layout
 
 ```text
 finnie-ai/
@@ -57,7 +57,7 @@ finnie-ai/
 
 ---
 
-## ⚡ Mandatory Golden Rules for Agents
+## Mandatory Golden Rules for Agents
 
 1. **Multi-Tenant Isolation (Non-Negotiable)**:
    - NEVER accept raw user IDs from request bodies or URLs for authorization.
@@ -97,7 +97,7 @@ finnie-ai/
 
 ---
 
-## 📚 Skill References
+## Skill References
 
 When performing specific workflows, activate the specialized skills in `.agents/skills/`:
 - **Code Review**: Read [`.agents/skills/fullstack-code-review/SKILL.md`](file:///.agents/skills/fullstack-code-review/SKILL.md)

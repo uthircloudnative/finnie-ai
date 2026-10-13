@@ -177,17 +177,18 @@
 }
 
 .pulse-content {
-  line-height: 1.8;
-  font-size: 1.1rem;
-  color: var(--text-main);
+  line-height: var(--chat-line-height-body);
+  font-size: var(--chat-font-size-body);
+  color: #cbd5e1;
 }
 
-.markdown-body p {
-  margin-bottom: 1.5rem;
+.pulse-content p {
+  margin-bottom: 0.75rem;
 }
 
-.markdown-body strong {
-  color: var(--accent-emerald, #34d399);
+.pulse-content strong {
+  color: var(--text-bright, #ffffff);
+  font-weight: 600;
 }
 
 

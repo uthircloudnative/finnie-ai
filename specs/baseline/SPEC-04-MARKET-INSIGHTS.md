@@ -1,23 +1,23 @@
 # Baseline Spec: SPEC-04 — Market Insights & Real-Time Sentiment
 
-> **Status**: 🟢 **VERIFIED & IN PRODUCTION**  
+> **Status**:  **VERIFIED & IN PRODUCTION**  
 > **Scope**: Real-Time Financial News, Sentiment Analysis, Rate-Limit Caching, LangGraph Agent
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 - **Problem**: Retail investors face constant market noise across financial media. They require a concise, synthesized daily market pulse that correlates breaking global headlines directly to their individual portfolio holdings.
 - **Sentiment Classification**: Raw news sentiment scores must be distilled into actionable, intuitive signals:
-  - 📈 **Bullish**: Positive sentiment score ($\ge +0.15$)
-  - 📉 **Bearish**: Negative sentiment score ($\le -0.15$)
-  - ➡️ **Neutral**: Neutral range ($-0.15 < \text{score} < +0.15$)
+  - **Bullish**: Positive sentiment score ($\ge +0.15$)
+  - **Bearish**: Negative sentiment score ($\le -0.15$)
+  - -> **Neutral**: Neutral range ($-0.15 < \text{score} < +0.15$)
 - **Exchange Ticker Normalization**: Holdings across global exchanges must be properly mapped to external provider format (e.g. Indian NSE tickers mapped to `.NS` suffix).
 - **API Rate-Limit Protection**: External financial API calls (Alpha Vantage) are constrained by tight query limits. The agent must enforce a **30-minute persistent caching layer** in SQLite to avoid rate-limiting errors and latency spikes.
 - **Compliance Enforcement**: Every market sentiment summary must conclude with the mandatory `$NFA` disclaimer.
 
 ---
 
-## 2. 🔌 Technical Contracts & Endpoints
+## 2. Technical Contracts & Endpoints
 
 ### A. API Endpoints
 - `GET /market/news`: Fetches or generates a consolidated market pulse based on the user's holdings.
@@ -66,11 +66,11 @@ class MarketCache(Base):
   4. Synthesize overall portfolio sentiment pulse via LLM.
   5. Save new result to `market_cache`.
   6. Route to `compliance_guardian_node`.
-- **Graph Path**: `supervisor_node` ➔ `market_insights_node` ➔ `compliance_guardian_node` ➔ `END`.
+- **Graph Path**: `supervisor_node` -> `market_insights_node` -> `compliance_guardian_node` -> `END`.
 
 ---
 
-## 3. 🖥️ Frontend Architecture & Presentation
+## 3.  Frontend Architecture & Presentation
 - **Hook**: `useMarketInsights.ts`:
   - Fetches and manages market pulse news, handles refresh actions, and tracks loading/error states.
 - **Component**: `MarketInsights.tsx`:
@@ -80,7 +80,7 @@ class MarketCache(Base):
 
 ---
 
-## 4. ✅ Verified Acceptance Criteria (Regression Baseline)
+## 4. [PASS] Verified Acceptance Criteria (Regression Baseline)
 - [x] **AC-1**: Requesting `/market/news` within 30 minutes of a previous fetch returns cached results with `cached: true` without hitting Alpha Vantage.
 - [x] **AC-2**: `MarketCache.is_expired()` correctly computes expiration against UTC without raising `TypeError: can't subtract offset-naive and offset-aware datetimes`.
 - [x] **AC-3**: External API rate limit errors degrade gracefully into a cached or informative fallback summary rather than raising a 500 error.

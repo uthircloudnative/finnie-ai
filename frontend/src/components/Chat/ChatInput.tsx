@@ -36,9 +36,10 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
           autoFocus
         />
         <button
-          className="btn-cyan send-btn"
+          className="chat-send-btn"
           onClick={handleSend}
           disabled={isLoading || !value.trim()}
+          title="Send prompt"
         >
           {isLoading ? '…' : '→'}
         </button>

@@ -4,7 +4,7 @@ This document is the visual and technical specification for Finnie AI's **Glass-
 
 ---
 
-## 1. 🎯 Business Context & UX Philosophy
+## 1. Business Context & UX Philosophy
 
 - **Target Persona**: Beginner and intermediate investors seeking clarity, institutional trust, and modern financial guidance without overwhelming Wall Street terminal clutter.
 - **Design Philosophy**:
@@ -14,20 +14,20 @@ This document is the visual and technical specification for Finnie AI's **Glass-
 
 ---
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 graph TD
-    subgraph DesignTokens["🎨 Tokens Layer (src/styles/)"]
+    subgraph DesignTokens["Tokens Layer (src/styles/)"]
         Tokens[tokens.css · Colors, Blur, Radii] --> Global[global.css · Resets, Scrollbars]
     end
 
-    subgraph StateLogic["⚙️ State & Hook Layer (src/hooks/)"]
+    subgraph StateLogic["State & Hook Layer (src/hooks/)"]
         Global --> Auth[AuthContext · Bearer Headers]
         Auth --> Hooks[useDashboard · useCountryPortfolio · useGoalStrategist]
     end
 
-    subgraph ComponentLayer["🖥️ Presentation Layer (src/components/)"]
+    subgraph ComponentLayer["Presentation Layer (src/components/)"]
         Hooks --> Shell[App.tsx · Persistent Shell & Sidebar]
         Shell --> Views[Dashboard · PortfolioAnalyst · GoalPlanner · MarketInsights]
         Views --> Sub[RoadmapRenderer · AuthModal · ThinkingIndicator]
@@ -36,7 +36,7 @@ graph TD
 
 ---
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 
 ### A. Design Tokens (`frontend/src/styles/tokens.css`)
 
@@ -57,22 +57,32 @@ Used across Goal Strategist and Portfolio Analyst:
 
 ### C. The Structured Markdown Engine (`RoadmapRenderer.tsx`)
 Parses LLM markdown reports into native, accessible React elements:
-- Headers (`###`, `####`) ➔ Cyan `<h3>` and Indigo `<h4>` headings.
-- Bullet points (`- `) ➔ `.roadmap-list` bulleted items.
-- Status keywords ➔ Styled `.roadmap-status-badge` pills.
-- Compliance text (`$NFA`) ➔ Styled callout box with `⚖️ Compliance Note` badge.
-- Inline Markdown (`renderFormattedContent`) ➔ Converts `**bold**`, `*italic*`, and code tokens into styled typography across all chat message bubbles without raw asterisks.
+- Headers (`###`, `####`) -> Cyan `<h3>` and Indigo `<h4>` headings.
+- Bullet points (`- `) -> `.roadmap-list` bulleted items.
+- Status keywords -> Styled `.roadmap-status-badge` pills.
+- Compliance text (`$NFA`) -> Styled callout box with `Compliance Note` badge.
+- Inline Markdown (`renderFormattedContent`) -> Converts `**bold**`, `*italic*`, and code tokens into styled typography across all chat message bubbles without raw asterisks.
 
 ### D. Universal Copilot Drawer (`CopilotDrawer.tsx` & `CopilotDrawer.css`)
 Provides a consistent, reusable side-panel interaction pattern across all multi-turn workspaces:
 - **Left Edge Drag Handle**: Smooth horizontal dragging with dynamic boundaries (320px to 720px).
 - **Expand/Compact Toggle**: Instant toggle between standard (380px) and wide analysis (580px).
-- **Single Close Button**: Top-right corner `✕ Close` button (`.copilot-close-btn`), with parent header triggers automatically hiding when open.
+- **Single Close Button**: Top-right corner `Close` button (`.copilot-close-btn`), with parent header triggers automatically hiding when open.
 - **Optional Questionnaire Section**: `suggestionChips?: string[]` renders prompt chips only when provided; completely hidden when omitted (e.g. Portfolio Analyst and Market Insights).
+
+### E. Goal Planner Dynamic Layout & Twin Synchronized Charts (`GoalPlanner.tsx`)
+Provides an expansive, responsive workspace for holistic balance sheet planning:
+- **Dynamic Horizontal Expansion**: The Goal Targets configurator includes an expand/collapse toggle (`btn-expand-form`) that widens the form to `50%` of the viewport for comfortable multi-loan entry. When the Ask Finnie Strategy Drawer is activated, the configurator auto-contracts to `380px` (`30%`) to eliminate layout collisions.
+- **Twin Synchronized Charts (`syncId="finnie-goal-charts"`)**:
+  - **Chart 1**: Projected Investment Growth (Median outcome with shaded market volatility range).
+  - **Chart 2**: Real Net Worth & Loan Payoff Progress (Real Net Worth vs Remaining Loan Amortization).
+  - Crosshair cursor and timeline hovering synchronously track across both upper and lower charts.
+- **Upfront Action Levers**: High-impact scenario cards for Debt Avalanche (tackling debt >10% APR first) and Post-Loan Step-Up (reinvesting former monthly debt payments).
+- **Strict Professional Iconography**: Zero informal unicode emojis; all badges and headers utilize pure SVG vector icons, pulse status dots, and clean Glassmorphism typography.
 
 ---
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 
 - **Accessibility (WCAG 2.1 AA)**: Minimum 4.5:1 text-to-background contrast ratio; 8px custom high-visibility scrollbars; visible focus rings on inputs and buttons.
 - **Production Build Verification**:
@@ -84,7 +94,7 @@ Provides a consistent, reusable side-panel interaction pattern across all multi-
 
 ---
 
-## 5. 🖼️ Visual Preview Gallery
+## 5.  Visual Preview Gallery
 
 For full high-fidelity screenshots, visual walkthroughs, and component snapshots of all 6 workspace interfaces, see [**`docs/UI_PREVIEW.md`**](./UI_PREVIEW.md).
 

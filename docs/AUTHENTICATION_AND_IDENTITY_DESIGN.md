@@ -4,7 +4,7 @@ This document describes the high-level security architecture, data flows, and de
 
 ---
 
-## 🏛️ 1. Core Security Principles
+##  1. Core Security Principles
 
 Finnie AI follows defense-in-depth principles aligned with fintech industry standards (NIST SP 800-63B, OWASP ASVS, and FINRA data protection guidelines):
 
@@ -25,7 +25,7 @@ Finnie AI follows defense-in-depth principles aligned with fintech industry stan
 
 ---
 
-## 📝 2. User Registration Design
+## 2. User Registration Design
 
 ```text
 [ Client (Browser) ]                          [ FastAPI Backend ]               [ Database (SQL) ]
@@ -51,7 +51,7 @@ Finnie AI follows defense-in-depth principles aligned with fintech industry stan
 
 ---
 
-## 🔑 3. User Sign-In & Session Lifecycle
+## 3. User Sign-In & Session Lifecycle
 
 ```text
 [ Client (Browser) ]                          [ FastAPI Backend ]               [ Database (SQL) ]
@@ -69,12 +69,12 @@ Finnie AI follows defense-in-depth principles aligned with fintech industry stan
 
 ### Session Protection & Termination Flow
 1. **Login Gate Mode**: Unauthenticated users are presented with a focused, backdrop-blurred authentication gate that completely hides private views.
-2. **Explicit Sign Out**: Clicking "Sign Out" purges all active session keys from client storage and transitions to an exit confirmation screen (*"See you soon! 👋"*), confirming that financial data is securely protected.
+2. **Explicit Sign Out**: Clicking "Sign Out" purges all active session keys from client storage and transitions to an exit confirmation screen (*"See you soon! "*), confirming that financial data is securely protected.
 3. **Session Rehydration**: On active page reloads within the same tab, the frontend validates the session token against `/auth/me` to refresh the user profile.
 
 ---
 
-## 🔒 4. Password Recovery & Security Audit Design
+## 4. Password Recovery & Security Audit Design
 
 The password recovery mechanism uses a **6-digit cryptographic One-Time Passcode (OTP)** paired with an **immutable security audit trail**.
 
@@ -116,12 +116,12 @@ The `password_reset_audits` entity records comprehensive forensics for account m
 | **Origin Telemetry (`request_ip`, `request_location`)** | Records where the reset request originated. |
 | **Completion Telemetry (`completed_ip`, `completed_location`)** | Records where the password was finalized (flags geographic anomalies). |
 | **Attempt Tracking (`attempts`)** | Captures incorrect guess counts; automatically locks the code after 3 consecutive failures. |
-| **Status State Machine (`status`)** | Implements transitions: `PENDING` ➔ `COMPLETED` / `EXPIRED` / `FAILED`. |
+| **Status State Machine (`status`)** | Implements transitions: `PENDING` -> `COMPLETED` / `EXPIRED` / `FAILED`. |
 | **Session Invalidation (`token_version`)** | Ensures that any device holding an active session is immediately logged out upon password reset. |
 
 ---
 
-## 🛡️ 5. Non-Functional & Operational Guarantees
+##  5. Non-Functional & Operational Guarantees
 
 - **Dual-Environment Dispatch**:
   - In local development and automated testing suites, codes are emitted to application dev logs to maintain 100% offline autonomy.

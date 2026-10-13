@@ -37,29 +37,90 @@ export function renderInline(text: string): React.ReactNode[] {
 }
 
 /**
- * Parses multiline chat message strings with bold, italics, bullets, and linebreaks.
+ * Parses multiline chat message strings with bold, italics, bullets, headings, and disclaimer boxes.
  */
-export function renderFormattedContent(text: string): React.ReactNode {
+export function renderFormattedContent(text: string | null | undefined): React.ReactNode {
   if (!text) return null
   const lines = text.split('\n')
   return lines.map((line, idx) => {
     const trimmed = line.trim()
     if (!trimmed) {
-      return <span key={idx} style={{ display: 'block', height: '0.45rem' }} />
+      return <span key={idx} style={{ display: 'block', height: '0.35rem' }} />
     }
+
+    // Horizontal divider
+    if (trimmed === '---' || trimmed === '***') {
+      // Check if subsequent non-empty line is a disclaimer, if so, omit redundant divider
+      const nextNonEmpty = lines.slice(idx + 1).find(l => l.trim().length > 0)?.trim() || ''
+      if (
+        nextNonEmpty.startsWith('**Disclaimer:**') ||
+        nextNonEmpty.startsWith('Disclaimer:') ||
+        nextNonEmpty.startsWith('$NFA') ||
+        nextNonEmpty.startsWith('NFA:')
+      ) {
+        return null
+      }
+      return <hr key={idx} className="chat-divider" />
+    }
+
+    // Headings
+    if (trimmed.startsWith('### ')) {
+      return (
+        <h4 key={idx} className="chat-h4">
+          {renderInline(trimmed.replace(/^###\s+/, ''))}
+        </h4>
+      )
+    }
+
+    if (trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
+      return (
+        <h3 key={idx} className="chat-h3">
+          {renderInline(trimmed.replace(/^#+\s+/, ''))}
+        </h3>
+      )
+    }
+
+    // Compliance / Disclaimer callout
+    if (
+      trimmed.startsWith('**Disclaimer:**') ||
+      trimmed.startsWith('Disclaimer:') ||
+      trimmed.startsWith('$NFA') ||
+      trimmed.startsWith('NFA:')
+    ) {
+      return (
+        <div key={idx} className="chat-compliance-disclaimer">
+          <span className="chat-compliance-badge">
+            <svg
+              className="chat-compliance-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Statutory Compliance Note ($NFA)
+          </span>
+          <p className="chat-compliance-text">{renderInline(trimmed)}</p>
+        </div>
+      )
+    }
+
+    // Bullet points
     if (trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) {
       const bulletContent = trimmed.replace(/^[-•*]\s+/, '')
       return (
-        <div key={idx} style={{ display: 'flex', gap: '0.45rem', marginTop: '0.2rem', marginBottom: '0.2rem' }}>
-          <span style={{ color: 'var(--accent-cyan)', flexShrink: 0 }}>•</span>
+        <div key={idx} className="chat-bullet">
+          <span className="chat-bullet-dot">•</span>
           <div>{renderInline(bulletContent)}</div>
         </div>
       )
     }
+
     return (
-      <span key={idx} style={{ display: 'block', marginBottom: idx === lines.length - 1 ? 0 : '0.35rem' }}>
+      <p key={idx} className="chat-paragraph">
         {renderInline(line)}
-      </span>
+      </p>
     )
   })
 }
@@ -190,7 +251,12 @@ export default function RoadmapRenderer({ markdown }: RoadmapRendererProps) {
     }
 
     // Compliance / Disclaimer callout
-    if (trimmed.startsWith('$NFA') || trimmed.startsWith('NFA:')) {
+    if (
+      trimmed.startsWith('$NFA') ||
+      trimmed.startsWith('NFA:') ||
+      trimmed.startsWith('**Disclaimer:**') ||
+      trimmed.startsWith('Disclaimer:')
+    ) {
       flushList()
       elements.push(
         <div key={`nfa-${i}`} className="roadmap-disclaimer">

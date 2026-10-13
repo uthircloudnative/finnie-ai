@@ -1,6 +1,6 @@
-# Feature Spec: SPEC-11 — Cross-Session Long-Term Episodic Memory & Knowledge Graph
+# Feature Spec: SPEC-12 — Cross-Session Long-Term Episodic Memory & Knowledge Graph
 
-> **Status**: ⚪ **PROPOSED / FUTURE ROADMAP (PHASE 9)**  
+> **Status**:  **PROPOSED / FUTURE ROADMAP (PHASE 9)**  
 > **Author**: Antigravity & Lead Engineer  
 > **Scope**: Backend, Mem0, LangGraph Store, Knowledge Graph, Multi-Tenancy, Azure Cloud  
 > **Target Release**: v0.9.0 (Phase 9)  
@@ -8,7 +8,7 @@
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 
 ### Problem Statement
 Currently, each user interaction with Finnie AI is confined to its active session. While **SPEC-10** provides in-session thread continuity for the Goal Strategist, the agent still suffers from **cross-session and cross-tab amnesia**:
@@ -27,7 +27,7 @@ Currently, each user interaction with Finnie AI is confined to its active sessio
 
 ---
 
-## 2. 🔌 Technical Contracts & Architecture
+## 2. Technical Contracts & Architecture
 
 ### A. Memory Engine Selection: Mem0 (Embedded Mode with Graph Memory)
 - **Engine**: `mem0ai` running in-process inside FastAPI.
@@ -55,14 +55,14 @@ user_memories = memory_service.get_user_profile(user_id=effective_id)
 
 ---
 
-## 3. ☁️ Production Azure Deployment Readiness
+## 3.  Production Azure Deployment Readiness
 - Runs in-process within the FastAPI container without requiring an external microservice cluster.
 - Reuses the existing PostgreSQL connection pool in Azure.
 - Zero extra monthly hosting cost compared to dedicated memory services.
 
 ---
 
-## 4. ✅ Acceptance Criteria & Test Plan
+## 4. [PASS] Acceptance Criteria & Test Plan
 - [ ] **AC-1**: Stating an investment preference in Chat updates the user's memory store.
 - [ ] **AC-2**: Starting a new Goal Planner session weeks later automatically incorporates that preference into recommendations.
 - [ ] **AC-3**: Updating a conflicting fact (e.g. new target year) resolves the conflict in favor of the newer statement.

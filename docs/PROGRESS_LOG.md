@@ -1,13 +1,13 @@
 # Finnie AI: Progress Log & Next Steps
 
 **Date**: 2026-09-27
-**Current Status**: 🟡 Phase 8: Autonomous Financial GPS & Production In-Session Memory (SPEC-10) — SPEC FINALIZED / READY FOR IMPLEMENTATION
+**Current Status**:  Phase 8: Autonomous Financial GPS & Production In-Session Memory (SPEC-10) — SPEC FINALIZED / READY FOR IMPLEMENTATION
 
 ---
 
-## ✅ What We Accomplished Today (September 27, 2026)
+## [PASS] What We Accomplished Today (September 27, 2026)
 
-### 🧠 Architectural Convergence: In-Session Memory (SPEC-10) vs. Long-Term Memory (SPEC-11)
+### Architectural Convergence: In-Session Memory (SPEC-10) vs. Long-Term Memory (SPEC-11)
 1. **Pillar 1: Production In-Session Thread Memory (SPEC-10 Finalized)**:
    - **Primary Objective**: Focus Phase 8 exclusively on achieving complete production-grade **In-Session Working Memory** for the Goal Strategist.
    - **Hybrid Bootstrap Engine**: Deterministic baseline Monte Carlo run upfront (rock-solid Recharts data) + dynamic tool-calling loop for tax validation and proactive what-if exploration.
@@ -29,9 +29,9 @@
 
 ---
 
-## ✅ Previous Accomplishments (September 20, 2026)
+## [PASS] Previous Accomplishments (September 20, 2026)
 
-### 🔐 SPEC-08: Password Reset via One-Time Verification Code (OTP) & Security Audit Trail
+### SPEC-08: Password Reset via One-Time Verification Code (OTP) & Security Audit Trail
 1. **Cryptographic OTP & 3-Attempt Lockout**:
    - Implemented CSPRNG 6-digit verification code generation (`secrets.randbelow(900000) + 100000`) with salted one-way hashing (`bcrypt`).
    - Enforced strict 3-attempt capping: on the 3rd consecutive incorrect OTP submission, the record is immediately invalidated (`status = "FAILED"`).
@@ -48,7 +48,7 @@
    - Glassmorphic recovery views (`request_code`, `verify_and_reset`, `success`).
    - 60-second cooldown timer for resending OTPs, client-side input validations, and test harness integration.
 
-### 📧 SPEC-09: Reusable Email Notification Engine & Mailgun Dispatch Architecture
+### SPEC-09: Reusable Email Notification Engine & Mailgun Dispatch Architecture
 6. **Provider-Agnostic Notification Transport (`email_service.py`)**:
    - Abstract `BaseEmailProvider` with concrete `MailgunEmailProvider` and zero-setup `ConsoleEmailProvider` fallback.
    - Decoupled `EmailService` utility with `send_otp_reset_email()` and `send_custom_email()` ready for future notifications.
@@ -67,10 +67,10 @@
 
 ---
 
-## ✅ Previous Accomplishments (September 13, 2026)
+## [PASS] Previous Accomplishments (September 13, 2026)
 
 
-### 🛡️ Quality & Correctness Quick Hits (Option A)
+###  Quality & Correctness Quick Hits (Option A)
 1. **Holding Model Integrity (`backend/src/models/portfolio.py` & `main.py`)**:
    - Added `UniqueConstraint("user_id", "ticker", "exchange", name="uq_user_ticker_exchange")` to `Holding`.
    - Hardened `POST /portfolio/save` to defensively consolidate duplicate tickers and sum share quantities prior to DB insertion.
@@ -86,7 +86,7 @@
 5. **Unit Test Expansion (`backend/tests/test_unit.py`)**:
    - Added tests for `Holding` unique constraints, `MarketCache` timezone expiration (aware and naive), and `FinancialGoal` timezone awareness (14/14 tests passing).
 
-### 🏛️ Universal Agent Constitution & Coding Standards
+###  Universal Agent Constitution & Coding Standards
 6. **Universal Constitution (`AGENTS.md`)**:
    - Codified 11 Golden Rules (Multi-tenant isolation, LangGraph async uniformity, UTC datetimes, centralized config, decoupled hooks, 4-space Python/2-space TS indentation, Spec-Driven Development, and Human-in-the-Loop Doc Gate).
 7. **Modular Rules (`.agents/rules/`)**:
@@ -94,12 +94,12 @@
 8. **Specialized Agent Skills (`.agents/skills/`)**:
    - Created executable skills: `fullstack-code-review`, `fastapi-langgraph-architect`, `react-glass-ui`, `finnie-domain-guardian`, `spec-driven-dev`, and `doc-architect`.
 
-### 📂 Standardized Documentation Consolidation (15 Files ➔ 7 Cohesive Docs)
+### Standardized Documentation Consolidation (15 Files -> 7 Cohesive Docs)
 9. **Unified 4-Tier Document Template**:
    - Consolidated technical & functional guides into: `docs/FEATURES_AND_AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/KNOWLEDGE_BASE_AND_RAG.md`, `docs/UI_DESIGN_SYSTEM.md`, and `docs/DEPLOYMENT.md`.
    - Safely retired 10 obsolete/fragmented markdown documents.
 
-### 🧭 Spec-Driven Development (SDD) Foundation
+### Spec-Driven Development (SDD) Foundation
 10. **Baseline Feature Specifications (`specs/baseline/`)**:
     - Authored baseline regression specifications: `SPEC-01-AUTH-MULTI-TENANCY.md`, `SPEC-02-PORTFOLIO-ANALYST.md`, `SPEC-03-GOAL-STRATEGIST.md`, `SPEC-04-MARKET-INSIGHTS.md`, and `SPEC-05-EXECUTIVE-DASHBOARD.md`.
 11. **Upcoming Specification Template (`specs/upcoming/SPEC_TEMPLATE.md`)**:
@@ -109,32 +109,32 @@
 
 ---
 
-## ✅ What We Accomplished (September 07, 2026)
+## [PASS] What We Accomplished (September 07, 2026)
 
-### 🔑 Phase 6: Multi-Tenancy & JWT User Authentication (Phases 1, 2, 3 Complete)
+### Phase 6: Multi-Tenancy & JWT User Authentication (Phases 1, 2, 3 Complete)
 1. **User Database Model (`backend/src/models/user.py`)**: Designed `User` table (UUID primary key, email, bcrypt hashed password, full_name, base_currency) via SQLAlchemy ORM.
 2. **Stateless JWT Core (`backend/src/auth/jwt.py`)**: Direct `bcrypt` password hashing engine (Python 3.13 compatible) and `create_access_token` / `get_current_user` FastAPI security dependency with dev fallback.
 3. **Auth API Endpoints (`backend/main.py`)**: Implemented `/auth/register`, `/auth/login`, and `/auth/me`.
 4. **Protected Endpoints & Tenant Isolation**: Protected all data endpoints (`/portfolio`, `/dashboard`, `/chat`, `/portfolio/analysis`, `/market/news`, `/goals`) using `get_current_user`, enforcing 100% data separation across accounts.
 5. **Frontend Auth System (`frontend/src/context/AuthContext.tsx`)**: Created `AuthProvider` & `useAuth` hook providing token persistence in `localStorage` and `getAuthHeaders()`.
 6. **Glass-Finance Auth Modal (`frontend/src/components/Auth/AuthModal.tsx`)**: Modern glassmorphic modal supporting user Sign In and Account Registration.
-7. **Sidebar User Badge & Header (`Sidebar.tsx`)**: Added profile indicator (`👤 Full Name`) and `Sign Out` / `🔑 Sign In` button.
+7. **Sidebar User Badge & Header (`Sidebar.tsx`)**: Added profile indicator (` Full Name`) and `Sign Out` / ` Sign In` button.
 8. **Authorized Custom Hooks**: Injected `Authorization: Bearer <token>` into `usePortfolio.ts`, `useCountryPortfolio.ts`, `useMarketInsights.ts`, `useGoalStrategist.ts`, and `useChat.ts`.
 
-### 🎯 Diversification Score Retry Engine
+### Diversification Score Retry Engine
 9. **3-Attempt Exponential Backoff Retry**: Updated `compute_hhi_diversification` in `portfolio_analyst.py` to execute a 3-attempt retry loop for yfinance sector metadata lookups.
-10. **Interactive UI Tile Retry**: Updated `GET /portfolio/diversification` and `useCountryPortfolio.ts` to return `diversification_score = null` on retry failure, rendering a `"📊 Get Diversification Score"` interactive button on the tile card.
+10. **Interactive UI Tile Retry**: Updated `GET /portfolio/diversification` and `useCountryPortfolio.ts` to return `diversification_score = null` on retry failure, rendering a `" Get Diversification Score"` interactive button on the tile card.
 
 ---
 
-### 🌍 Multi-Market Portfolio Analyst & UX Overhaul
+### Multi-Market Portfolio Analyst & UX Overhaul
 1. **Country-Aware Benchmark Routing**: Extended `portfolio_analyst_node` with benchmark mapping per country (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, `^GSPTSE` for CA, `^GDAXI` for DE).
 2. **All-Markets Combined View**: Added `analysis_country="ALL"` support in state and backend API (`GET /portfolio/analysis/{user_id}?country=ALL`) to compute combined multi-market portfolio health.
-3. **Session-Level Client Caching**: Implemented session caching in `useCountryPortfolio` so switching country tabs (`🌍 All Markets`, `🇺🇸 US`, `🇮🇳 India`, etc.) is instant without triggering duplicate backend LLM calls.
-4. **Token-Saving Manual Refresh**: Added a prominent **"🔄 Refresh Analysis"** button in the Portfolio Analyst header to give users control over initiating new LLM runs.
-5. **Formatted Finnie Insight Cards**: Upgraded LLM insight parsing to format raw text into three distinct visual section cards: 📈 **Risk Profile**, 🎯 **Diversification & Balance**, and 💡 **Action Plan & Strategic Advice**.
+3. **Session-Level Client Caching**: Implemented session caching in `useCountryPortfolio` so switching country tabs (` All Markets`, `[US] US`, `[IN] India`, etc.) is instant without triggering duplicate backend LLM calls.
+4. **Token-Saving Manual Refresh**: Added a prominent **" Refresh Analysis"** button in the Portfolio Analyst header to give users control over initiating new LLM runs.
+5. **Formatted Finnie Insight Cards**: Upgraded LLM insight parsing to format raw text into three distinct visual section cards:  **Risk Profile**,  **Diversification & Balance**, and **Action Plan & Strategic Advice**.
 
-### ☁️ Azure Deployment & Docker Hardening
+###  Azure Deployment & Docker Hardening
 6. **Dynamic CORS Configuration**: Refactored `main.py` CORS middleware to read `ALLOWED_ORIGINS` from environment variables, defaulting to local Vite dev ports.
 7. **Gunicorn Multi-Worker Container**: Updated `Dockerfile` to launch Gunicorn with Uvicorn worker class, reading worker count from `WORKERS` env var (defaulting to 2 workers with 120s timeout for long LLM runs).
 8. **Lean Container Packaging**: Created `.dockerignore` to exclude `.venv`, local Chroma directories, and SQLite databases from build contexts, drastically shrinking image size.
@@ -142,26 +142,26 @@
 
 ---
 
-## ✅ What We Accomplished (March 29, 2026)
+## [PASS] What We Accomplished (March 29, 2026)
 
-### 📈 Portfolio Analyst (End-to-End)
+### Portfolio Analyst (End-to-End)
 1. **Math Engine Integration**: Wired `yfinance` to the `portfolio_analyst_node` to calculate live **Market Beta** and **Annualized Volatility**.
 2. **Global Ticker Fix**: Implemented automatic exchange-based suffix mapping (e.g., RELIANCE -> `.NS`).
 3. **Robust Data Handling**: Fixed `^GSPC` benchmark access and delisted ticker crashes.
 4. **Analysis Context Sharing**: Updated `ChatRequest` and `/chat` to support context-aware follow-ups.
 
-### 🌐 Market Insights (Live Intelligence)
+### Market Insights (Live Intelligence)
 5. **Alpha Vantage Integration**: Connected live news & sentiment for global tickers.
 6. **30-Minute Persistence Cache**: Built a SQLite-based cache to optimize API credits and performance.
 7. **Sentiment Labeling**: Translates raw market data into clear Bearish/Bullish/Neutral signals.
 
-### 🎨 Workspace UI 2.0 (UX Revolution)
+### Workspace UI 2.0 (UX Revolution)
 8. **Toggleable Assistant**: Moved the "Ask Finnie" expert sidebar to an on-demand toggle in the header.
 9. **Immersive Reports**: Full-width dashboard layout for maximum readability.
 10. **High-Visibility Scrollbars**: Upgraded 8px scrollbars with unified styling across all pages.
 11. **Smooth Transitions**: Implemented CSS grid expansion/contraction for seamless sidebar usage.
 
-### 🧭 Goal Strategist (The Financial GPS)
+### Goal Strategist (The Financial GPS)
 12. **Monte Carlo Engine**: Vectorized `numpy` engine running 10,000 projections based on real portfolio risk (Beta/Vol).
 13. **Country-Aware RAG**: Uses the user's residence (USA, India, etc.) to query a new `goal_rules` ChromaDB collection holding actual **2026 tax rules** (401k/80C/LTCG).
 14. **Strategic Configurator**: A premium, form-driven UI replacing the chat-first model for high-fidelity goal planning.
@@ -169,14 +169,14 @@
 16. **Dynamic LLM Synthesis**: Integrated `GPT-4o` to ingest the Monte Carlo outputs and 2026 RAG rules, dynamically generating personalized, legally-accurate roadmap reports.
 
 
-### 🔧 Stability & Infrastructure
+### Stability & Infrastructure
 7. **Graph Routing Recovery**: Resolved a critical `ValueError` in the LangGraph orchestration by switching to explicit string-based routing for node transitions.
 8. **CORS Optimization**: Expanded `CORSMiddleware` to support dynamic dev ports (5173/5174), unblocking the React-FastAPI connection.
 9. **Documentation Alignment**: Fully updated `ANALYTICAL_AGENT.md` and project guides to match the production implementation.
 
 ---
 
-## ✅ What We Accomplished (March 28)
+## [PASS] What We Accomplished (March 28)
 
 ### Backend — FastAPI REST Layer
 1. **`POST /chat` Endpoint**: Wired the LangGraph `finnie_app` to HTTP — accepts `{"message": "..."}`, returns `{"reply": "..."}`.
@@ -189,7 +189,7 @@
 ### Frontend — React/Vite Glass-Finance UI (All 4 Milestones)
 7. **Design System**: `tokens.css` + `global.css` — single source of truth for all Glass-Finance design tokens (colors, blur, radius, typography).
 8. **App Shell**: `App.tsx` + `Sidebar.tsx` — persistent left sidebar with 5 tabs, active highlight, system status badge.
-9. **Live Chat Tab** ⭐: `useChat.ts` hook calls `POST /chat` in real-time. `ChatWindow`, `ChatInput`, `ThinkingIndicator` components wired end-to-end. `$NFA` compliance disclaimer footer included.
+9. **Live Chat Tab**: `useChat.ts` hook calls `POST /chat` in real-time. `ChatWindow`, `ChatInput`, `ThinkingIndicator` components wired end-to-end. `$NFA` compliance disclaimer footer included.
 10. **Static Tab Shells**: Dashboard (portfolio value + Supervisor intel card), Portfolio Analyst (score + key ratios), Market Insights (asset cards), Goal Planner (confidence gauge + Monte Carlo placeholder + what-if sliders).
 11. **Live Verified**: Opened `http://localhost:5173`, typed real questions ("What is Stock", "What is a mutual fund"), received RAG-grounded answers from Chroma Cloud through the UI.
 
@@ -199,7 +199,7 @@
 
 ---
 
-## ✅ What We Accomplished (March 23)
+## [PASS] What We Accomplished (March 23)
 1. **LangGraph Foundation**: Initialized the `FinnieState` POJO using `add_messages` for persistent conversation history.
 2. **Supervisor Agent**: GPT-4o router using `with_structured_output` (`RoutingDecision`).
 3. **LLM Factory Pattern**: Adopted `init_chat_model` for vendor/model agility.
@@ -209,7 +209,7 @@
 
 ---
 
-## ✅ Previous Accomplishments (March 10)
+## [PASS] Previous Accomplishments (March 10)
 1. **RAG Architectural Deep-Dive**: "One DB, Five Collections" structure confirmed.
 2. **Internationalization (i18n)**: Metadata Filtering strategy for multi-country support.
 3. **Data Sourcing Blueprint**: Sources mapped (Investor.gov, IRS, SEC, Vanguard, Alpha Vantage).
@@ -219,7 +219,7 @@
 
 ---
 
-## ✅ Previous Accomplishments (March 09)
+## [PASS] Previous Accomplishments (March 09)
 - Production-grade planning (`PROJECT_PLAN.md`).
 - Multi-agent orchestrator design (`DESIGN.md`).
 - Engineering standards (`STANDARDS.md`).
@@ -227,48 +227,43 @@
 
 ---
 
-## 🚀 Plan of Action (Next Session — Phase 8: Autonomous Financial GPS & Production In-Session Memory)
+---
 
-Our primary focus is implementing complete, production-grade **In-Session Memory (SPEC-10)**, designed to be cloud-ready for Azure and cleanly extendable to **Long-Term Episodic Memory (SPEC-11)**:
+## [PASS] Accomplishments (October 12, 2026 — SPEC-10 & SPEC-11 Completed & Verified)
 
-### Phase 8: Autonomous Agentic Evolution & In-Session Memory (SPEC-10)
-- [ ] **Step 1: Tool Manifest & Dynamic Tool Invocation (`src/tools/goal_tools.py`)**:
-  - Modular `@tool` functions: `fetch_user_portfolio_valuation`, `run_monte_carlo_engine`, `lookup_tax_and_contribution_limits`.
-  - Dynamic tool binding via `.bind_tools()` with LangGraph `ToolNode` execution loop.
-- [ ] **Step 2: Dual-Mode Checkpointing & In-Session Memory**:
-  - Cloud-ready checkpointer factory (`SqliteSaver` for local dev in `finnie.db`, `PostgresSaver` for Azure production).
-  - Thread persistence keyed by `thread_id=f"goal_{user_id}_{goal_id}"` eliminating single-turn amnesia.
-  - Reserved state fields (`memory_context`, `user_profile`) for SPEC-11 forward compatibility.
-- [ ] **Step 3: Multi-Turn Micro-Chat UX (`GoalChatRefinement.tsx`)**:
-  - Implement "Refine Roadmap with Finnie" micro-chat prompt below the Strategic Roadmap report in `GoalPlanner.tsx`.
-  - Wire custom hook `useGoalStrategist.ts` to submit follow-up prompts against the persistent goal thread.
-- [ ] **Step 4: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**:
-  - Add `goal_auditor_node` verifying LLM savings advice against statutory contribution limits (IRS 401(k), Section 80C).
-  - Self-correcting critique loop routing back to the strategist if limits are breached (capped at 2 retries).
-- [ ] **Step 5: Selective HITL Strategy Approval on Lock-In ("On Save")**:
-  - Insert LangGraph `interrupt()` breakpoint triggering **only when user clicks "Lock In & Save Goal"**.
-  - Interactive confirmation modal (`[Confirm & Commit]` vs `[Cancel / Tweak]`) before writing to `financial_goals`.
-- [ ] **Step 6: Real-Time Event & Token Streaming (SSE)**:
-  - Implement `POST /goals/calculate/stream` Server-Sent Events endpoint using `astream_events`.
-  - Stream live thought telemetry badges (`🔍 Fetching Holdings` ➔ `🎲 Simulating 10,000 Paths` ➔ `⚖️ Auditing Limits`) to `ThoughtStream.tsx`.
+### 1. SPEC-10: Autonomous Financial GPS & Multi-Agent Goal Strategist
+- **Hybrid Bootstrap Pattern**: Upfront deterministic 10,000-scenario Monte Carlo simulation and vector statutory tax limit retrieval (401k/IRA, Section 80C) executed with 0 LLM token overhead prior to synthesis.
+- **LangGraph Checkpointer & In-Session Memory**: Cloud-ready `SqliteSaver`/`PostgresSaver` session thread continuity (`thread_id=f"goal_{user_id}_{goal_id}"`) eliminating single-turn amnesia in what-if strategy exploration.
+- **Feasibility & Statutory Auditor Node (`goal_auditor_node`)**: Deterministic critic reflection loop ensuring financial projections strictly conform to regional statutory ceilings.
+- **Human-in-the-Loop Strategy Lock-in (`hitl_gatekeeper_node`)**: Interactive sign-off modal (`StrategyLockInModal.tsx`) confirming key targets before database persistence.
 
-### Phase 9: Future Cross-Session Long-Term Episodic Memory (SPEC-11)
-- [ ] Integrate **Mem0 (Embedded Mode with Graph Memory)** into FastAPI backend.
-- [ ] Implement autonomous memory extraction (`save_user_memory` tool) capturing user preferences, risk tolerance, life events, and family context.
-- [ ] Inject persistent memory profile on session boot across all agents (Chat, Portfolio, Goals, Market).
+### 2. SPEC-11: Cash-Flow & Liability-Aware Financial GPS
+- **Multi-Country Jurisdiction Scoping**: Upfront country selector (USA, INDIA, UK, CANADA, GERMANY) dynamically scopes market holdings by regional exchange map (`COUNTRY_EXCHANGE_MAP`) and adjusts local currency symbols.
+- **Live Cash Flow Solvency Meter**: Compares take-home pay, living expenses, discretionary spend, and total debt service to calculate free cash flow and net solvency margin.
+- **Multi-Loan Dynamic Amortization & Step-Up Compounding**: Month-by-month loan principal reduction simulating the exact Debt-Free Year and auto-redirecting freed-up loan payments directly into investment compounding.
+- **Upfront Action Levers**: High-impact strategy toggles for Debt Avalanche (tackling liabilities >10% APR first) and Post-Loan Step-Up.
+- **3 Debt Elimination Pathways**: Strategic Roadmap outputs concrete options: Mathematical Avalanche, Discretionary Trimming, and Rollover Reinvestment.
+- **Enterprise Typography & Responsive Layout**: Horizontal form expansion (50% wide mode auto-adjusting to 30% when Ask Finnie opens), twin synchronized charts (`syncId="finnie-goal-charts"`), and zero unicode emojis (pure SVG vector icons).
+
+### Verification Metrics (100% Passing)
+- **Backend Test Suite**: `uv run python -m unittest discover -s tests` → 47/47 passing (OK)
+- **Frontend Integration Test Suite**: `npm test -- --run` → 29/29 tests passing across 9 test suites (OK)
+- **Frontend Production Bundle Build**: `npm run build` → 0 errors, 0 warnings (built in 1.33s)
 
 ---
 
-## 📂 Key Files to Review Upon Resume
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md) — Phase 8, 9, 10 roadmap
-- [specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md](../specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) — Production specification
-- [backend/src/models/state.py](../backend/src/models/state.py) — Extended state definitions
-- [backend/src/tools/goal_tools.py](../backend/src/tools/goal_tools.py) — Target tool manifest
-- [backend/src/graph.py](../backend/src/graph.py) — Graph topology & checkpointer factory
-- [backend/src/agents/goal_strategist.py](../backend/src/agents/goal_strategist.py) — Target agent node
-- [frontend/src/components/Goals/GoalPlanner.tsx](../frontend/src/components/Goals/GoalPlanner.tsx) — Target UI view
+## Plan of Action (Next Phase — SPEC-12: Long-Term Episodic Memory & Mem0 Integration)
 
-
+Our primary focus transitions to **SPEC-12 (Long-Term Episodic Memory)**:
+1. **Mem0 Architecture**: Integrate embedded Mem0 graph memory into FastAPI backend.
+2. **Autonomous Memory Extraction**: Implement `save_user_memory` tool capturing user preferences, risk tolerance, life events, and family constraints across sessions.
+3. **Omni-Agent Context Injection**: Inject persistent episodic memory profile on session boot across all agents (Supervisor, Deep Q&A, Portfolio Analyst, Market Insights, and Goal Strategist).
 
 ---
 
+## Key Files to Review Upon Resume
+- [`specs/baseline/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md`](../specs/baseline/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) — Production baseline spec
+- [`specs/baseline/SPEC-11-LIABILITY-AWARE-GOAL-PLANNING.md`](../specs/baseline/SPEC-11-LIABILITY-AWARE-GOAL-PLANNING.md) — Production baseline spec
+- [`specs/upcoming/SPEC-12-LONG-TERM-EPISODIC-MEMORY.md`](../specs/upcoming/SPEC-12-LONG-TERM-EPISODIC-MEMORY.md) — Next target feature spec
+- [`docs/DATA_MODEL.md`](./DATA_MODEL.md) — Data schema single source of truth
+- [`docs/FEATURES_AND_AGENTS.md`](./FEATURES_AND_AGENTS.md) — Feature architecture guide

@@ -1,13 +1,13 @@
 # Feature Spec: SPEC-08 — Password Reset via One-Time Verification Code (OTP) & Security Audit Trail
 
-> **Status**: 🟢 **PROD-VERIFIED**  
+> **Status**:  **PROD-VERIFIED**  
 > **Author**: Antigravity AI  
 > **Scope**: Full-Stack (`backend/src/models/`, `backend/main.py`, `frontend/src/components/Auth/`, `frontend/src/context/`)  
 > **Target Release**: v0.2.2  
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 
 ### Problem Statement
 Users who forget their credentials currently have no recovery path and are permanently locked out of their financial portfolios, goal trajectories, and chat histories. Finnie AI requires a secure, non-intrusive password recovery flow that complies with fintech security standards (NIST SP 800-63B, SOC 2, FINRA) without requiring external OAuth dependencies or forcing users to leave the application window.
@@ -37,12 +37,12 @@ Users who forget their credentials currently have no recovery path and are perma
     - New passwords must be at least **8 characters** long and cannot match the user's current password.
 11. **Dual-Environment Dispatch Architecture**:
     - **Local / Dev / Test**: When no external email provider is configured, the backend logs the code to stdout:
-      `[AUTH] 📧 Verification code for <email>: <OTP>`
+      `[AUTH]  Verification code for <email>: <OTP>`
     - **Cloud / Production**: Dispatches via SMTP/SendGrid/SES when environment variables are supplied.
 
 ---
 
-## 2. 🔌 Technical Contracts & Architecture
+## 2. Technical Contracts & Architecture
 
 ### A. Database Schema
 
@@ -130,7 +130,7 @@ class PasswordResetAudit(Base):
 
 ---
 
-## 3. 🖥️ Frontend Presentation & State Machine
+## 3.  Frontend Presentation & State Machine
 
 ### A. State Machine in `AuthModal.tsx`
 ```typescript
@@ -146,12 +146,12 @@ type ForgotStep = 'request_code' | 'verify_and_reset' | 'success'
    - 60-second cooldown on `"Resend Code"`.
    - Client-side validation: Mismatched passwords and <8 chars blocked before API call.
 3. **`success`**:
-   - Green success badge: `"Password Reset Complete! 🎉"`.
-   - Primary CTA: **`[ 🔑 Proceed to Sign In ]`** transitions smoothly back to `mode: 'login'` with email pre-filled.
+   - Green success badge: `"Password Reset Complete! "`.
+   - Primary CTA: **`[  Proceed to Sign In ]`** transitions smoothly back to `mode: 'login'` with email pre-filled.
 
 ---
 
-## 4. 🛡️ Comprehensive Edge Cases & Failure Modes
+## 4.  Comprehensive Edge Cases & Failure Modes
 
 | # | Edge Case | Trigger / Condition | Expected Defensive Behavior |
 | :--- | :--- | :--- | :--- |
@@ -171,7 +171,7 @@ type ForgotStep = 'request_code' | 'verify_and_reset' | 'success'
 
 ---
 
-## 5. ✅ Acceptance Criteria & Test Plan
+## 5. [PASS] Acceptance Criteria & Test Plan
 
 ### A. Backend Unit Tests (`backend/tests/test_unit.py`)
 - [x] **AC-1 (Request Code Success)**: `POST /auth/forgot-password` with registered email creates hashed record in `password_reset_audits` with 15m expiry, records `request_ip`, and returns generic HTTP 200.

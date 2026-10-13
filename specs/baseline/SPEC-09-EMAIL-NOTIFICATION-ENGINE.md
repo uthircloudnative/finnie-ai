@@ -1,13 +1,13 @@
 # Feature Spec: SPEC-09 — Reusable Email Notification Engine & Mailgun Dispatch Architecture
 
-> **Status**: 🟢 **PROD-VERIFIED**  
+> **Status**:  **PROD-VERIFIED**  
 > **Author**: Antigravity AI  
 > **Scope**: Backend Core (`backend/src/utils/`, `backend/src/templates/`, `backend/main.py`, `backend/tests/`)  
 > **Target Release**: v0.2.3  
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 
 ### Problem Statement
 Finnie AI requires a robust, extensible, and professional notification engine to deliver transactional emails to users. The initial critical use case is the delivery of One-Time Verification Codes (OTPs) for password recovery ([SPEC-08](file:///Users/prajosh/Development/finnie-ai/specs/baseline/SPEC-08-FORGOT-PASSWORD-FLOW.md)). The system must also be designed as a general-purpose email utility supporting future notifications (e.g., account registration welcomes, portfolio rebalancing alerts, security anomalies, and market digest reports) without rewriting transport logic.
@@ -36,7 +36,7 @@ Finnie AI requires a robust, extensible, and professional notification engine to
 
 ---
 
-## 2. 🔌 Technical Contracts & Architecture
+## 2. Technical Contracts & Architecture
 
 ### A. Modular Component Architecture
 
@@ -135,11 +135,11 @@ MAILGUN_FROM_EMAIL="Finnie AI Security <postmaster@sandboxxxxxxxxxxxxxxxxxxxxxxx
 
 ---
 
-## 3. 🎨 Professional Email Template Design
+## 3. Professional Email Template Design
 
 ### A. Visual Tokens & Structure
 - **Container**: Max width 560px, center-aligned, background `#0b0f19`, border `1px solid #1e293b`, radius `16px`.
-- **Branding Badge**: Cyan accent badge (`#00f5ff`) with `"🤖 FINNIE AI SECURITY"`.
+- **Branding Badge**: Cyan accent badge (`#00f5ff`) with `" FINNIE AI SECURITY"`.
 - **Hero Title**: Pure white `#ffffff`, 22px bold: `"Password Reset Verification Code"`.
 - **Salutation**: `"Hello Investor,"` or personalized name if available.
 - **OTP Presentation Box**:
@@ -150,7 +150,7 @@ MAILGUN_FROM_EMAIL="Finnie AI Security <postmaster@sandboxxxxxxxxxxxxxxxxxxxxxxx
   - Displays: `"Request Origin: {request_location}"`.
   - Advisory: `"If you did not request this password reset, please change your credentials immediately or contact support."`
 - **Compliance Footer**:
-  - `"🔒 256-Bit TLS Encryption · Not Financial Advice ($NFA)"`.
+  - `" 256-Bit TLS Encryption · Not Financial Advice ($NFA)"`.
   - Copyright and automated dispatch notice.
 
 ### B. Plain-Text Fallback
@@ -158,7 +158,7 @@ Formatted clean ASCII layout ensuring identical information accessibility on leg
 
 ---
 
-## 4. 🛡️ Edge Cases, Failure Modes & Resilience
+## 4.  Edge Cases, Failure Modes & Resilience
 
 | Edge Case ID | Scenario | System Behavior |
 | :--- | :--- | :--- |
@@ -170,7 +170,7 @@ Formatted clean ASCII layout ensuring identical information accessibility on leg
 
 ---
 
-## 5. ✅ Acceptance Criteria & Test Plan
+## 5. [PASS] Acceptance Criteria & Test Plan
 
 ### A. Automated Unit Tests (`backend/tests/test_unit.py`)
 - [x] **AC-1 (Provider Initialization)**: `EmailService.get_provider()` selects `MailgunEmailProvider` when credentials exist and `ConsoleEmailProvider` when absent.

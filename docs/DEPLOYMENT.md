@@ -4,7 +4,7 @@ This document is the authoritative guide for containerizing, configuring, and de
 
 ---
 
-## 1. 🎯 Business Context & Operational Rules
+## 1. Business Context & Operational Rules
 
 - **12-Factor App & Cloud-Native Philosophy**:
   - The application is vendor-agnostic and fully containerized using Docker.
@@ -16,18 +16,18 @@ This document is the authoritative guide for containerizing, configuring, and de
 
 ---
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 graph TD
-    subgraph Client["🌐 Browser Client"]
+    subgraph Client["Browser Client"]
         Browser[User Browser]
     end
 
-    subgraph Azure["☁️ Cloud Platform (Azure App Service / Docker)"]
+    subgraph Azure[" Cloud Platform (Azure App Service / Docker)"]
         Nginx[Reverse Proxy / Ingress]
         
-        subgraph Container["🐳 Docker Container (uv Slim Base)"]
+        subgraph Container[" Docker Container (uv Slim Base)"]
             Gunicorn[Gunicorn Master Process]
             Uvicorn1[Uvicorn Worker Class 1]
             Uvicorn2[Uvicorn Worker Class 2]
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 
 ### A. Gunicorn Multi-Worker Container (`backend/Dockerfile`)
 The backend is packaged using Astral's official `uv` slim image for minimal build context and ultra-fast container startup:
@@ -77,7 +77,7 @@ docker compose up --build -d
 
 ---
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 
 - **Healthcheck Probe**:
   - `GET /health` runs without touching any external LLM or scraper, serving as an instant, zero-cost liveness probe for load balancers.

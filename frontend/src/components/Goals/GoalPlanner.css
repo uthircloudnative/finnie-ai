@@ -18,7 +18,8 @@
 
 /* ── COLUMN 1: GOAL TARGETS (LEFT) ────────────────────────── */
 .column-targets {
-  width: 300px;
+  position: relative;
+  width: 310px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -27,6 +28,46 @@
   background: rgba(13, 20, 36, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
+  box-sizing: border-box;
+  transition: width 0.08s ease-out;
+}
+
+/* ── Horizontal Drag Resize Handle (Right Border) ── */
+.targets-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  transition: background 0.15s ease;
+}
+
+.targets-resize-handle:hover,
+.targets-resize-handle:active {
+  background: rgba(0, 240, 255, 0.18);
+}
+
+.targets-resize-handle .resize-handle-bar {
+  width: 2px;
+  height: 36px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.targets-resize-handle:hover .resize-handle-bar,
+.targets-resize-handle:active .resize-handle-bar {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  height: 48px;
 }
 
 .targets-card-header {
@@ -46,6 +87,39 @@
   font-weight: 700;
   margin: 0;
   color: var(--text-bright);
+}
+
+.targets-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-expand-form {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-expand-form:hover {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: var(--accent-cyan);
+}
+
+.btn-expand-form.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: rgba(0, 240, 255, 0.4);
+  color: var(--accent-cyan);
 }
 
 .targets-badge-pill {
@@ -99,6 +173,334 @@
   border-color: var(--accent-cyan);
   background: rgba(0, 240, 255, 0.05);
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.country-select-highlight {
+  border-color: rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.03);
+  font-weight: 600;
+}
+
+/* ── Progressive Disclosure Accordion: Cash Flow & Liabilities ── */
+.cashflow-accordion-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.cashflow-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.cashflow-accordion-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.accordion-title-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.accordion-arrow {
+  transition: transform 0.2s ease;
+  color: var(--accent-cyan);
+  width: 13px;
+  height: 13px;
+}
+
+.accordion-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.accordion-count-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+.cashflow-accordion-body {
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.cashflow-inputs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.column-targets.expanded .cashflow-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.column-targets.expanded .benchmark-pills-stack {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+/* ── Solvency Meter Box ── */
+.solvency-meter-box {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  transition: all 0.2s ease;
+}
+
+.solvency-meter-box.solvent {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.solvency-meter-box.deficit {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.solvency-meter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.solvency-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.solvency-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.solvency-meter-box.solvent .solvency-title {
+  color: #10b981;
+}
+
+.solvency-meter-box.deficit .solvency-title {
+  color: #ef4444;
+}
+
+.solvency-metrics-row {
+  display: flex;
+  justify-content: space-between;
+  color: #94a3b8;
+  font-size: 0.7rem;
+}
+
+.solvency-metrics-row strong {
+  color: #f1f5f9;
+}
+
+.solvency-net-badge {
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding-top: 0.25rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.solvency-meter-box.solvent .solvency-net-badge {
+  color: #10b981;
+}
+
+.solvency-meter-box.deficit .solvency-net-badge {
+  color: #ef4444;
+}
+
+/* ── Liabilities List ── */
+.liabilities-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.liabilities-header-row label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.btn-add-liability-micro {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 4px;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-add-liability-micro:hover {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: rgba(0, 240, 255, 0.45);
+}
+
+.liabilities-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.liability-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.liability-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.liability-type-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.liability-lender-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.liability-detail-sub {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.apr-alert {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.liability-action-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.liability-monthly-payment {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.btn-remove-liability {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 2px;
+  transition: color 0.15s ease;
+}
+
+.btn-remove-liability:hover {
+  color: #ef4444;
+}
+
+/* ── Inline Add Liability Form ── */
+.add-liability-form-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+.form-sub-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.form-btn-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.btn-save-liability {
+  flex: 1;
+  padding: 0.35rem;
+  background: var(--accent-cyan);
+  color: #030712;
+  font-weight: 700;
+  font-size: 0.74rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-save-liability:hover {
+  filter: brightness(1.1);
+}
+
+.btn-cancel-liability {
+  padding: 0.35rem 0.65rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 0.74rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancel-liability:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* Benchmark Presets */
@@ -231,12 +633,13 @@
   flex-direction: column;
   gap: 0.85rem;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .center-chart-card {
-  height: 228px;
-  min-height: 228px;
+  height: 210px;
+  min-height: 210px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -244,6 +647,10 @@
   background: rgba(13, 20, 36, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
+}
+
+.center-chart-card.card-amortization {
+  border-color: rgba(16, 185, 129, 0.15);
 }
 
 .telemetry-bar-header {
@@ -268,6 +675,26 @@
   white-space: nowrap;
 }
 
+.debt-status-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.interest-saved-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
 .chart-header-actions {
   display: flex;
   align-items: center;
@@ -276,11 +703,24 @@
 
 .chart-legend-subrow {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.85rem;
   font-size: 0.70rem;
   color: #94a3b8;
   margin-bottom: 0.25rem;
+}
+
+.chart-subhead-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.legend-items-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
 }
 
 .ask-finnie-toggle {
@@ -324,10 +764,144 @@
   min-height: 0;
 }
 
+/* ── Upfront Action Levers Card ── */
+.action-levers-card {
+  padding: 0.85rem 1rem;
+  background: rgba(13, 20, 36, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.levers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.levers-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: #f8fafc;
+}
+
+.levers-icon {
+  font-size: 1rem;
+}
+
+.levers-subtitle {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.levers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.lever-pill-box {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.lever-pill-box:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.03);
+}
+
+.lever-pill-box.applied {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.lever-pill-box.recommended {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.lever-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lever-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.04em;
+}
+
+.lever-tag-alert {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.lever-tag-auto {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.lever-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.lever-description {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.btn-apply-lever {
+  margin-top: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  background: rgba(0, 240, 255, 0.08);
+  color: var(--accent-cyan);
+  transition: all 0.2s ease;
+}
+
+.btn-apply-lever:hover {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: var(--accent-cyan);
+}
+
+.btn-apply-lever.active {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #10b981;
+}
+
 /* Synthesis Lower Tier */
 .center-synthesis-card {
-  flex: 1;
-  min-height: 0;
+  min-height: 280px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   padding: 0.85rem 1.15rem;
@@ -538,16 +1112,16 @@
 
 .roadmap-disclaimer {
   margin-top: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--chat-bubble-radius);
+  background: var(--chat-disclaimer-bg);
+  border: 1px solid var(--chat-disclaimer-border);
 }
 
 .disclaimer-badge {
-  font-size: 0.70rem;
+  font-size: var(--chat-font-size-role);
   font-weight: 700;
-  color: #ef4444;
+  color: var(--chat-disclaimer-badge);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -555,8 +1129,8 @@
 }
 
 .disclaimer-text {
-  font-size: 0.75rem;
-  color: #94a3b8;
+  font-size: var(--chat-font-size-disclaimer);
+  color: var(--chat-disclaimer-text);
   margin: 0;
 }
 

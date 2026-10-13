@@ -45,4 +45,26 @@
   /* ── Typography ──────────────────────────────── */
   --font-body: 'Inter', sans-serif;
   --font-heading: 'Outfit', sans-serif;
+
+  /* ── Centralized Chat & Reading Typography Scale ── */
+  --chat-font-size-title: 0.95rem;
+  --chat-font-size-body: 0.85rem;
+  --chat-font-size-input: 0.875rem;
+  --chat-font-size-role: 0.70rem;
+  --chat-font-size-time: 0.68rem;
+  --chat-font-size-disclaimer: 0.75rem;
+  --chat-line-height-body: 1.6;
+
+  /* ── Centralized Chat Bubble Surfaces & Radii ─── */
+  --chat-bubble-radius: 12px;
+  --chat-bubble-ai-bg: rgba(255, 255, 255, 0.035);
+  --chat-bubble-ai-border: var(--glass-border);
+  --chat-bubble-user-bg: rgba(0, 240, 255, 0.12);
+  --chat-bubble-user-border: rgba(0, 240, 255, 0.3);
+
+  /* ── Centralized Compliance ($NFA) Tokens ─────── */
+  --chat-disclaimer-bg: rgba(239, 68, 68, 0.06);
+  --chat-disclaimer-border: rgba(239, 68, 68, 0.22);
+  --chat-disclaimer-badge: #f87171;
+  --chat-disclaimer-text: #94a3b8;
 }

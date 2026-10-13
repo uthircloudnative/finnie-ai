@@ -19,6 +19,7 @@ interface UseChatReturn {
   error: string | null
   sendMessage: (text: string, preferredWorker?: string, analysisContext?: any) => Promise<void>
   clearMessages: () => void
+  clearChat: () => void
 }
 
 export function useChat(): UseChatReturn {
@@ -98,5 +99,5 @@ export function useChat(): UseChatReturn {
     setMessages([])
   }, [])
 
-  return { messages, isLoading, error, sendMessage, clearMessages }
+  return { messages, isLoading, error, sendMessage, clearMessages, clearChat: clearMessages }
 }

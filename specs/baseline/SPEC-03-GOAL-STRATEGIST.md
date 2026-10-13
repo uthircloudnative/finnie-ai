@@ -1,11 +1,11 @@
 # Baseline Spec: SPEC-03 — Goal Strategist & Monte Carlo GPS
 
-> **Status**: 🟢 **VERIFIED & IN PRODUCTION**  
+> **Status**:  **VERIFIED & IN PRODUCTION**  
 > **Scope**: Long-Term Wealth Planning, 10,000-Path Monte Carlo Simulation, Regional Tax RAG, Roadmap Presentation
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 - **Problem**: Investors pursuing long-term financial milestones (retirement, home purchase, college savings) often rely on naive, static compound-interest calculators that ignore market volatility, sequence-of-returns risk, and regional tax-advantaged account limits.
 - **Monte Carlo Modeling**: Projections must evaluate uncertainty using a **10,000-iteration geometric Brownian motion** simulation parameterized by the investor's current portfolio annualized volatility ($\sigma$) and expected drift ($\mu$):
   $$S_t = S_0 \exp\left(\left(\mu - \frac{1}{2}\sigma^2\right)t + \sigma \sqrt{t} Z\right)$$
@@ -17,7 +17,7 @@
 
 ---
 
-## 2. 🔌 Technical Contracts & Endpoints
+## 2. Technical Contracts & Endpoints
 
 ### A. API Endpoints
 - `GET /goals`: Fetches the authenticated user's current active goal configuration.
@@ -48,11 +48,11 @@
 - **Node Function**: Synchronous `def goal_strategist_node(state: FinnieState) -> dict`.
 - **Simulation**: Executed in `backend/src/utils/simulation.py` via vectorized NumPy operations across 10,000 trajectory paths.
 - **RAG Integration**: Queries `goal_rules` collection using semantic search conditioned on `country`.
-- **Graph Path**: `supervisor_node` ➔ `goal_strategist_node` ➔ `compliance_guardian_node` ➔ `END`.
+- **Graph Path**: `supervisor_node` -> `goal_strategist_node` -> `compliance_guardian_node` -> `END`.
 
 ---
 
-## 3. 🖥️ Frontend Architecture & Presentation
+## 3.  Frontend Architecture & Presentation
 - **Hook**: `useGoalStrategist.ts`:
   - Handles simulation parameter state, submission dispatch, and local goal persistence.
 - **Components**:
@@ -64,7 +64,7 @@
 
 ---
 
-## 4. ✅ Verified Acceptance Criteria (Regression Baseline)
+## 4. [PASS] Verified Acceptance Criteria (Regression Baseline)
 - [x] **AC-1**: Running 10,000 Monte Carlo paths produces monotonic outcomes ($P_{05} \le \text{Median} \le P_{95}$).
 - [x] **AC-2**: Specifying a 0-year target horizon returns `confidence_score = 0.0` with median equal to initial capital without division-by-zero errors.
 - [x] **AC-3**: Tax contribution limits for the selected jurisdiction (e.g. US 401(k) / IRA) are incorporated into the synthesized roadmap markdown.

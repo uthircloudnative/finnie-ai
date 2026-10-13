@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useMarketInsights } from '../../hooks/useMarketInsights'
 import CopilotDrawer from '../Chat/CopilotDrawer'
 import { useChat } from '../../hooks/useChat'
+import { renderFormattedContent } from '../Goals/RoadmapRenderer'
+import FinnieCoinIcon from '../Common/FinnieCoinIcon'
 import './MarketInsights.css'
 
 export default function MarketInsights() {
@@ -25,7 +27,7 @@ export default function MarketInsights() {
                 className="ask-finnie-toggle"
                 onClick={() => setIsChatOpen(true)}
               >
-                <span className="toggle-icon">✦</span>
+                <FinnieCoinIcon size={16} />
                 Ask Finnie
               </button>
             )}
@@ -57,12 +59,7 @@ export default function MarketInsights() {
             <div className="pulse-error">⚠️ {error}</div>
           ) : (
             <div className="pulse-content">
-              {/* Note: The 'pulse' content is pre-formatted markdown from the Finnie agent */}
-              <div className="markdown-body">
-                {pulse?.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-              </div>
+              {renderFormattedContent(pulse)}
             </div>
           )}
         </div>
@@ -87,6 +84,12 @@ export default function MarketInsights() {
           onSendMessage={handleSendMessage}
           onClearHistory={chat.clearMessages}
           onClose={() => setIsChatOpen(false)}
+          suggestionChips={[
+            "What is driving today's market sentiment?",
+            "Explain tech sector concentration risk",
+            "How do interest rate shifts impact growth stocks?",
+            "Summarize key macroeconomic trends"
+          ]}
           inputPlaceholder="Ask about ticker news, sentiment, or macro trends..."
           storageKey="finnie_market_copilot_width"
           disclaimerText="$NFA — Finnie is an AI assistant, not a licensed financial advisor. All answers are grounded in public educational sources."

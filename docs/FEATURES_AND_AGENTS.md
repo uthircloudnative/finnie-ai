@@ -25,13 +25,13 @@ This document is the authoritative technical and functional specification for al
 
 # Feature 1: Global Wealth Executive Dashboard
 
-## 1. 🎯 Business Context & Domain Rules
+## 1. Business Context & Domain Rules
 - **Problem Solved**: Beginner and intermediate investors hold assets across domestic and international accounts (e.g. US stocks and Indian equities). They lack a single, high-speed unified view of their holdings and daily net worth fluctuations.
 - **Business Rule**: The Dashboard is strictly **programmatic and deterministic** (zero LLM latency). It reads directly from SQLite and fetches live closing prices via Yahoo Finance (`yfinance`) without passing through the AI reasoning graph.
 - **Tenant Isolation**: Only the authenticated user's saved holdings are displayed.
 - **User Experience**: Immediate render with asset P&L cards, daily change percentages, and currency groupings.
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 sequenceDiagram
@@ -61,7 +61,7 @@ sequenceDiagram
     end
 ```
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 - **Endpoint**: `GET /dashboard`
 - **Security**: Requires `Authorization: Bearer <token>`
 - **Schemas**:
@@ -81,7 +81,7 @@ sequenceDiagram
   ```
 - **Caching**: Client-side state managed in `useDashboard.ts`.
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 - **Missing / Delisted Ticker**: If `yfinance` returns no price for a ticker, fallback cleanly to `0.0` rather than raising a 500 error.
 - **Zero Holdings**: Renders an informative empty state with an illustrative icon and CTA directing the user to the "My Holdings" tab.
 
@@ -89,7 +89,7 @@ sequenceDiagram
 
 # Feature 2: Multi-Market Portfolio Analyst
 
-## 1. 🎯 Business Context & Domain Rules
+## 1. Business Context & Domain Rules
 - **Problem Solved**: Investors need institutional-grade portfolio diagnostics (Market Beta, Annualized Volatility, Sector Diversification) tailored to their local geographic markets without paying high advisor fees.
 - **Domain & Compliance Rules**:
   - Must map assets to the correct local market benchmark (`^GSPC` for US, `^NSEI` for India, `^FTSE` for UK, `^GSPTSE` for Canada, `^GDAXI` for Germany, and `^GSPC` for `ALL`).
@@ -97,7 +97,7 @@ sequenceDiagram
   - **Diversification Scoring**: Computed using the **Herfindahl-Hirschman Index (HHI)** on sector concentration:
     $$HHI = \sum (\text{sector\_weight})^2 \quad \implies \quad \text{Score} = 10 \times \left(1 - \frac{HHI - HHI_{min}}{1 - HHI_{min}}\right)$$
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 sequenceDiagram
@@ -127,7 +127,7 @@ sequenceDiagram
     Hook-->>UI: Cache in session & render 3-card formatted insights
 ```
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 - **Endpoints**:
   - `GET /portfolio/analysis?country={country}`: Full risk metrics + 3-card AI insights.
   - `GET /portfolio/diversification?country={country}`: High-speed on-demand sector HHI calculation.
@@ -135,9 +135,9 @@ sequenceDiagram
   - `valid_symbols`: Both Beta and Volatility arrays are constructed strictly from symbols that exist in **both** price return and volatility dictionaries. Mismatched symbols are excluded cleanly.
 - **Scraper Retry Engine**:
   - `compute_hhi_diversification()` executes a 3-attempt exponential backoff retry loop for sector metadata lookups (`yf.Ticker().info`).
-  - On retry exhaustion, returns `diversification_score = null`, triggering the interactive `"📊 Get Diversification Score"` button in the UI.
+  - On retry exhaustion, returns `diversification_score = null`, triggering the interactive `" Get Diversification Score"` button in the UI.
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 - **Offline Test**: `test_compute_hhi_multi_sector` in `backend/tests/test_unit.py` verifies mathematical correctness using mocked ticker info.
 - **Client Caching**: `useCountryPortfolio.ts` caches tab analysis in memory, preventing duplicate LLM calls when alternating between country tabs.
 
@@ -145,14 +145,14 @@ sequenceDiagram
 
 # Feature 3: Market Insights Agent
 
-## 1. 🎯 Business Context & Domain Rules
+## 1. Business Context & Domain Rules
 - **Problem Solved**: Retail investors are bombarded with raw market noise. This agent delivers a localized "morning pulse" summarizing real-time headlines and AI sentiment for their specific holdings.
 - **Domain Rules**:
   - Tickers are converted to local exchange suffixes (e.g. `RELIANCE` -> `RELIANCE.NS`).
-  - Translates raw news sentiment into intuitive signals: 📈 **Bullish**, 📉 **Bearish**, or ➡️ **Neutral**.
+  - Translates raw news sentiment into intuitive signals: **Bullish**, **Bearish**, or -> **Neutral**.
   - **Credit Protection**: Uses a 30-minute persistent SQLite cache to prevent exceeding Alpha Vantage API rate limits.
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 graph TD
@@ -174,80 +174,89 @@ graph TD
     API -->|Market Pulse JSON| UI
 ```
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 - **Endpoint**: `GET /market/news`
 - **Cache Entity (`MarketCache`)**:
   - Key: `NEWS:<TICKERS_JOINED>`
   - Timezone-Aware Expiration: `is_expired(ttl_minutes=30)` safely normalizes UTC timestamps.
 - **Node Contract**: Synchronous `def market_insights_node(state: FinnieState) -> dict`.
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 - **API Failure Fallback**: If Alpha Vantage is rate-limited or fails, the agent gracefully returns a portfolio-level status report based on cached or fallback sentiment without raising a 500 error.
 
 ---
 
-# Feature 4: Goal Strategist (Financial GPS)
+# Feature 4: Autonomous Financial GPS & Liability-Aware Goal Planner (SPEC-10 & SPEC-11)
 
-## 1. 🎯 Business Context & Domain Rules
-- **Problem Solved**: Life goals (e.g., retirement, buying a home) require understanding long-term probabilities, not deterministic linear projections.
+## 1. Business Context & Domain Rules
+- **Problem Solved**: Life goals (e.g., retirement, buying a home) require holistic balance sheet intelligence—accounting for investments, cash flow solvency, and high-interest debt drag together rather than in isolation.
 - **Domain & Regulatory Rules**:
-  - **Monte Carlo Engine**: Runs **10,000 geometric Brownian motion scenarios** based on real portfolio risk (Beta & Volatility).
-  - **Statute-Based RAG Grounding**: Must cross-reference projections against official tax contribution limits from the `goal_rules` ChromaDB collection (e.g. 2026 US IRS 401(k) / IRA limits, or India Section 80C limits).
-  - **Structured UI Output**: Rendered with structured headers, glowing status badges (`● ON TRACK`, `▲ CAUTION`, `■ AT RISK`), milestones, and compliance callouts.
+  - **Hybrid Bootstrap Multi-Agent Flow**: Runs upfront deterministic 10,000-scenario Monte Carlo simulations, vector statutory tax retrieval, and regional portfolio scoping before LLM synthesis. Guided by a Goal Auditor reflection loop and Human-in-the-Loop (HITL) strategy lock-in.
+  - **Multi-Country Scoping**: Upfront country jurisdiction selection (USA, INDIA, UK, CANADA, GERMANY) automatically filters holdings to relevant exchanges (NASDAQ/NYSE, NSE/BSE, LSE, TSX) and aligns local currency symbols ($, ₹, £, C$, €).
+  - **Live Cash Flow Solvency Meter**: Compares monthly take-home pay against essential living expenses, discretionary spend, and debt service obligations to prevent over-committing to unfeasible savings goals.
+  - **Dynamic Debt Amortization & Step-Up Compounding**: Simulates month-by-month loan principal reduction, projects the exact **Debt-Free Year**, and models the "auto-step-up multiplier" where former monthly loan payments roll directly into future investment contributions once debts are eliminated.
+  - **Action Levers & Debt Elimination Pathways**: Evaluates Strategy 1 (Debt Avalanche payoff for liabilities >10% APR) and Strategy 2 (Post-Loan Step-Up). Synthesizes 3 concrete debt elimination pathways (Mathematical Avalanche, Discretionary Trimming, Rollover Reinvestment).
+  - **Interactive Ask Finnie Strategy Drawer**: Enables multi-turn what-if exploration backed by LangGraph thread checkpointing (`goal_{user_id}_{goal_id}`).
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant UI as GoalPlanner.tsx
     participant Hook as useGoalStrategist.ts
-    participant API as FastAPI (/goals/calculate)
+    participant API as FastAPI (main.py)
     participant Node as goal_strategist_node
-    participant MC as Monte Carlo (NumPy 10k)
+    participant MC as Cashflow Monte Carlo Engine
     participant RAG as ChromaDB (goal_rules)
     participant LLM as OpenAI GPT-4o
-    participant Comp as Compliance Guardian
-    participant Render as RoadmapRenderer.tsx
+    participant Auditor as goal_auditor_node
+    participant Comp as compliance_guardian_node
+    participant DB as SQLite (financial_goals, liabilities, checkpoints)
 
-    UI->>Hook: Configures Goal (Target $1M, 2040, US)
+    UI->>Hook: Configures Goal, Cash Flow & Liabilities
     Hook->>API: POST /goals/calculate [Bearer JWT]
-    API->>Node: Dispatch with user_id & goal config
-    Node->>MC: run_monte_carlo(10,000 paths)
-    MC-->>Node: Percentiles (p05, median, p95, confidence_score)
-    Node->>RAG: search_kb(country="US")
-    RAG-->>Node: 2026 401(k) / IRA contribution limits
-    Node->>LLM: Synthesize structured roadmap report
-    LLM-->>Node: Markdown report (### headers, status chip, milestones)
-    Node->>Comp: Route through compliance_guardian_node
+    API->>Node: Dispatch with current_user.id & goal configuration
+    Node->>MC: run_cashflow_monte_carlo(10,000 paths, liabilities, auto_step_up)
+    MC-->>Node: Percentiles, Debt-Free Year, Interest Saved, Net Worth Path
+    Node->>RAG: search_kb(country=country)
+    RAG-->>Node: Statutory Limits (401k/IRA, 80C, ISA)
+    Node->>LLM: Synthesize Holistic Roadmap (Balance Sheet, Pathways, Milestones)
+    LLM-->>Node: Markdown report (Professional typography, no emojis)
+    Node->>Auditor: Audit strategy bounds & statutory compliance
+    Auditor->>Comp: Route through compliance_guardian_node
     Comp-->>API: Verified roadmap + simulation metrics
-    API-->>Hook: Return JSON payload
-    Hook-->>UI: Render Confidence Gauge & Probability Fan Chart
-    UI->>Render: Pass raw markdown
-    Render-->>UI: Render formatted HTML with badges & milestones
+    API-->>Hook: Return JSON payload & thread_id
+    Hook-->>UI: Synchronize Twin Charts & Roadmap
+    UI->>DB: User clicks "Confirm & Lock In" (Persists audited goal)
 ```
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 - **Endpoints**:
   - `GET /goals`: Fetches user's saved primary goal.
   - `POST /goals/calculate`: Executes 10,000 Monte Carlo runs and synthesizes roadmap.
-- **Presentation Component**:
-  - [`RoadmapRenderer.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/RoadmapRenderer.tsx): Zero-dependency custom markdown parser matching status chips (`.status-on-track`, `.status-caution`, `.status-at-risk`), headers, bullet points, and `$NFA` disclaimer callouts.
+  - `GET /goals/liabilities` / `POST /goals/liabilities` / `DELETE /goals/liabilities/{id}`: CRUD operations for user loans.
+  - `GET /goals/cashflow` / `POST /goals/cashflow`: Manages net take-home and expense profiles.
+- **Components & Hooks**:
+  - [`GoalPlanner.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/GoalPlanner.tsx): Interactive 3-column workspace with twin synced charts, action levers, and 50%/30% horizontal expansion.
+  - [`useGoalStrategist.ts`](file:///Users/prajosh/Development/finnie-ai/frontend/src/hooks/useGoalStrategist.ts): Decoupled hook managing calculation, debt amortization state, and session caching.
+  - [`StrategyLockInModal.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/StrategyLockInModal.tsx): Human-in-the-Loop sign-off modal with audited metrics.
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
-- **Percentile Invariant**: Automated test `test_monte_carlo_positive_horizon` in `backend/tests/test_unit.py` verifies that $P_{05} \le \text{Median} \le P_{95}$.
-- **Zero Horizon Handling**: Safely flags immediate goals (years = 0) with `confidence_score = 0`.
+## 4.  Resilience, Edge Cases & Verification
+- **Debt-Free & Zero Liability State**: When no loans exist, returns an unencumbered balance sheet ($S_0 = \text{assets}$, $\text{debt} = 0$), rendering `Debt-Free: No Loans Reported`.
+- **Target Already Achieved**: When initial balance exceeds the target amount, the engine returns `100.0% Confidence` with status `ACHIEVED`.
+- **Cash Flow Deficit Alert**: When expenses and debt payments exceed take-home pay, the solvency meter signals `Cash-Flow Deficit` and warns against aggressive equity investing.
 
 ---
 
 # Feature 5: Financial Q&A Worker
 
-## 1. 🎯 Business Context & Domain Rules
+## 1. Business Context & Domain Rules
 - **Problem Solved**: Beginner investors have basic and intermediate questions (e.g. *"What is an ETF?"*, *"How does compound interest work?"*).
 - **Domain Rules**: Answers must be grounded in curated educational materials (Investor.gov, SEC, Vanguard textbooks) to prevent LLM hallucinations.
 - **Compliance**: Concludes with mandatory `$NFA` disclaimer.
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 graph TD
@@ -263,19 +272,19 @@ graph TD
     API --> UI
 ```
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 - **Endpoint**: `POST /chat`
-- **Schema**: `ChatRequest(message=str, portfolio_context=...)` ➔ `ChatResponse(reply=str, trace_id=...)`.
+- **Schema**: `ChatRequest(message=str, portfolio_context=...)` -> `ChatResponse(reply=str, trace_id=...)`.
 - **Retrieval**: Uses `VectorStoreManager` with semantic similarity search (`k=3`).
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 - **Vector DB Disconnection**: If ChromaDB is unavailable, falls back gracefully to standard LLM general knowledge while logging a diagnostic warning.
 
 ---
 
 # Feature 6: Identity Management, Password Recovery & Email Notification Subsystem
 
-## 1. 🎯 Business Context & Domain Rules
+## 1. Business Context & Domain Rules
 - **Problem Solved**: Provides multi-tenant security, session isolation, brute-force defense, and self-service account recovery via OTP verification codes.
 - **Domain Rules**:
   - Stateless JWT authentication with composite database unique constraints (`users`).
@@ -284,7 +293,7 @@ graph TD
   - Sliding-window rate limiter (3 requests / 15 minutes per email) and enumeration resistance.
   - Pluggable notification engine (`EmailService`) with Mailgun REST API integration and console fallback.
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 sequenceDiagram
@@ -314,12 +323,12 @@ sequenceDiagram
     API-->>UI: 200 OK {"message": "Password reset successfully"}
 ```
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 - **Endpoints**: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/forgot-password`, `POST /auth/reset-password`.
 - **Database Models**: `User` (`token_version`), `PasswordResetAudit` (UUID, timestamps, attempt tracking, dual telemetry).
 - **Notification Transports**: `BaseEmailProvider`, `MailgunEmailProvider`, `ConsoleEmailProvider`.
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 - **Sandbox Domain Resilience**: If Mailgun returns HTTP 400 due to unverified recipients, `EmailService` falls back to `ConsoleEmailProvider` to keep codes accessible in local development.
 - **Fail-Fast Defense**: Brute-force guessing locks the OTP record after 3 failed attempts (`status = "FAILED"`).
 

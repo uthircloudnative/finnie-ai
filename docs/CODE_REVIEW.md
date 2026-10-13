@@ -39,14 +39,14 @@ However, there are **critical security gaps**, **correctness issues** in financi
 
 **Score: 8 / 10** — Well-designed, one structural flaw.
 
-### ✅ Strengths
+### [PASS] Strengths
 
 - **Supervisor-Router Pattern** is correctly implemented in `src/graph.py`. The conditional `START` edge elegantly supports both supervised routing and direct API-bypass, avoiding a full LLM call when the endpoint already knows the intent.
 - **Separation of Concerns** is clean: agents are self-contained nodes, utilities are decoupled, and ORM models don't bleed into business logic.
 - **Compliance-as-a-Gateway**: routing every agent through the `compliance_guardian_node` before `END` is a sound architectural pattern — it ensures $NFA disclaimers are never skipped.
 - **Embeddings Factory** in `src/utils/embeddings_factory.py` is an excellent vendor-agnostic abstraction.
 
-### ❌ Critical Structural Flaw: Async/Sync Mismatch
+### [FAIL] Critical Structural Flaw: Async/Sync Mismatch
 
 `src/agents/market_insights.py` defines `market_insights_node` as `async def`, while all other nodes (`supervisor`, `portfolio_analyst`, `qa_agent`, `compliance`, `goal_strategist`) are **synchronous `def`**. LangGraph's compiled graph can deadlock or raise a `RuntimeError` when mixing sync and async nodes during `ainvoke()`.
 
@@ -67,7 +67,7 @@ def supervisor_node(state: FinnieState) -> dict:             # ← sync
 
 **Score: 3 / 10** — Multiple critical vulnerabilities.
 
-### 🔴 CRITICAL — No Authentication
+### [P0 - HIGH] CRITICAL — No Authentication
 
 Every endpoint is completely open. The `user_id` is accepted verbatim from the client without JWT, session, or API key validation. Any external party can:
 
@@ -86,7 +86,7 @@ rows = db.query(Holding).filter(Holding.user_id == "user_1").all()  # ← hardco
 
 ---
 
-### 🔴 HIGH — CORS Policy Too Permissive
+### [P0 - HIGH] HIGH — CORS Policy Too Permissive
 
 `backend/main.py:109–121`:
 
@@ -99,7 +99,7 @@ Combined with `allow_credentials=True`, this violates the CORS spec — browsers
 
 ---
 
-### 🟡 MEDIUM — Chroma Tenant UUID in Source Control
+### [STATUS: IN PROGRESS] MEDIUM — Chroma Tenant UUID in Source Control
 
 `backend/.env.example:29` contains a real Chroma Cloud tenant UUID:
 
@@ -111,7 +111,7 @@ CHROMA_TENANT="593f59c6-1467-4da4-9b5d-e58042e3976d"
 
 ---
 
-### 🟡 MEDIUM — No Rate Limiting on LLM Endpoints
+### [STATUS: IN PROGRESS] MEDIUM — No Rate Limiting on LLM Endpoints
 
 `POST /chat`, `POST /goals/calculate`, and `GET /portfolio/analysis/{user_id}` all trigger expensive OpenAI API calls with no throttling. A single abusive user or bot could incur massive costs.
 
@@ -119,7 +119,7 @@ CHROMA_TENANT="593f59c6-1467-4da4-9b5d-e58042e3976d"
 
 ---
 
-### 🟡 MEDIUM — No Input Sanitization on Ticker Symbols
+### [STATUS: IN PROGRESS] MEDIUM — No Input Sanitization on Ticker Symbols
 
 `src/agents/portfolio_analyst.py:47`:
 
@@ -137,17 +137,17 @@ A malicious ticker string could cause unexpected behavior. Validate tickers agai
 
 **Score: 6 / 10** — Monte Carlo engine is sound; portfolio math has defects.
 
-### ✅ Monte Carlo Simulation — Mostly Correct (`src/utils/simulations.py`)
+### [PASS] Monte Carlo Simulation — Mostly Correct (`src/utils/simulations.py`)
 
 The implementation correctly uses:
-- Monthly compounding: `monthly_mean = (1 + expected_return)^(1/12) - 1` ✅
-- Volatility scaling: `monthly_vol = volatility / sqrt(12)` ✅
-- Vectorized NumPy operations for performance ✅
-- Percentile fan chart extraction at yearly snapshots ✅
+- Monthly compounding: `monthly_mean = (1 + expected_return)^(1/12) - 1` [PASS]
+- Volatility scaling: `monthly_vol = volatility / sqrt(12)` [PASS]
+- Vectorized NumPy operations for performance [PASS]
+- Percentile fan chart extraction at yearly snapshots [PASS]
 
 ---
 
-### ❌ Bug 1 — Hardcoded 2024 Base Year
+### [FAIL] Bug 1 — Hardcoded 2024 Base Year
 
 **Location:** `src/agents/goal_strategist.py:44`
 
@@ -165,7 +165,7 @@ years = max(1, config.get("target_year", 2035) - datetime.now().year)
 
 ---
 
-### ❌ Bug 2 — Mock $100 Stock Price as Monte Carlo Input
+### [FAIL] Bug 2 — Mock $100 Stock Price as Monte Carlo Input
 
 **Location:** `src/agents/goal_strategist.py:50`
 
@@ -177,7 +177,7 @@ Assigning a flat $100 price to every holding produces wildly inaccurate Monte Ca
 
 ---
 
-### 🟡 Diversification Score Hardcoded
+### [STATUS: IN PROGRESS] Diversification Score Hardcoded
 
 **Location:** `src/agents/portfolio_analyst.py:152`
 
@@ -189,7 +189,7 @@ Replace with a real calculation — Herfindahl-Hirschman Index (HHI) of sector/c
 
 ---
 
-### 🟡 Beta Calculation Edge Cases
+### [STATUS: IN PROGRESS] Beta Calculation Edge Cases
 
 **Location:** `src/agents/portfolio_analyst.py:98-99`
 
@@ -205,7 +205,7 @@ If a symbol is missing from `volatilities` (new listing, data gap), `display_bet
 
 **Score: 7 / 10** — Solid routing, state management improvements needed.
 
-### ✅ Strengths
+### [PASS] Strengths
 
 - `RoutingDecision` Pydantic structured output in the supervisor is the correct pattern for reliable routing.
 - `add_messages` reducer in `FinnieState` correctly accumulates conversation history.
@@ -214,7 +214,7 @@ If a symbol is missing from `volatilities` (new listing, data gap), `display_bet
 
 ---
 
-### ❌ LLM Client Re-initialized on Every Request
+### [FAIL] LLM Client Re-initialized on Every Request
 
 **Location:** `src/agents/supervisor.py:32`, all other agents
 
@@ -237,7 +237,7 @@ def get_llm():
 
 ---
 
-### ❌ VectorStoreManager Created on Every Agent Call
+### [FAIL] VectorStoreManager Created on Every Agent Call
 
 **Location:** `src/agents/portfolio_analyst.py:121`, `src/agents/qa_agent.py:18`
 
@@ -249,7 +249,7 @@ db = VectorStoreManager(collection_name="analytical_kb")
 
 ---
 
-### 🟡 Session Leak Risk in Agents
+### [STATUS: IN PROGRESS] Session Leak Risk in Agents
 
 **Location:** `src/agents/portfolio_analyst.py:34–39`, `src/agents/market_insights.py`
 
@@ -265,7 +265,7 @@ Agents create raw `SessionLocal()` instances instead of receiving one via FastAP
 
 ---
 
-### 🟡 Compliance Node — Message Replacement Semantics
+### [STATUS: IN PROGRESS] Compliance Node — Message Replacement Semantics
 
 **Location:** `src/agents/compliance.py:23`
 
@@ -278,7 +278,7 @@ Returning the same message ID should trigger LangGraph's `add_messages` deduplic
 
 ---
 
-### 🟡 Goal Strategist Ignores Conversation History
+### [STATUS: IN PROGRESS] Goal Strategist Ignores Conversation History
 
 **Location:** `src/agents/goal_strategist.py:118`
 
@@ -291,7 +291,7 @@ Every other agent correctly passes the full chat history. Confirm if this is int
 
 ---
 
-### 🟡 Dead Code — `stubs.py`
+### [STATUS: IN PROGRESS] Dead Code — `stubs.py`
 
 `src/agents/stubs.py` contains old placeholder implementations for `market_insights_node` and `goal_strategist_node`. These were superseded by the real implementations but never removed. Delete this file.
 
@@ -301,7 +301,7 @@ Every other agent correctly passes the full chat history. Confirm if this is int
 
 **Score: 7 / 10** — Clean ORM, scalability concerns.
 
-### ✅ Strengths
+### [PASS] Strengths
 
 - Clean SQLAlchemy ORM with a shared `Base` declarative class.
 - `get_db()` generator with guaranteed cleanup in `finally`.
@@ -310,7 +310,7 @@ Every other agent correctly passes the full chat history. Confirm if this is int
 
 ---
 
-### ❌ No Composite Unique Constraint on Holdings
+### [FAIL] No Composite Unique Constraint on Holdings
 
 **Location:** `src/models/portfolio.py`
 
@@ -325,7 +325,7 @@ __table_args__ = (
 
 ---
 
-### 🟡 `datetime.utcnow()` is Deprecated in Python 3.12+
+### [STATUS: IN PROGRESS] `datetime.utcnow()` is Deprecated in Python 3.12+
 
 **Location:** `src/models/goal.py:30–31`, `src/models/market_cache.py:15`
 
@@ -340,7 +340,7 @@ created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezo
 
 ---
 
-### 🟡 SQLite Blocks Multi-Instance Production
+### [STATUS: IN PROGRESS] SQLite Blocks Multi-Instance Production
 
 SQLite with `check_same_thread=False` is fine for local development but:
 1. Does not support concurrent writes under load.
@@ -355,7 +355,7 @@ SQLite with `check_same_thread=False` is fine for local development but:
 
 **Score: 7 / 10** — RESTful, minor endpoint design issues.
 
-### ✅ Strengths
+### [PASS] Strengths
 
 - Consistent use of Pydantic models for request/response validation.
 - `response_model` declarations on all endpoints.
@@ -363,7 +363,7 @@ SQLite with `check_same_thread=False` is fine for local development but:
 
 ---
 
-### ❌ `GET /portfolio/analysis/{user_id}` Should Be POST
+### [FAIL] `GET /portfolio/analysis/{user_id}` Should Be POST
 
 **Location:** `backend/main.py:212`
 
@@ -371,7 +371,7 @@ This endpoint triggers an LLM invocation — a long-running, expensive, non-idem
 
 ---
 
-### 🟡 Inconsistent Error Response Schema
+### [STATUS: IN PROGRESS] Inconsistent Error Response Schema
 
 - Some endpoints return `{"status": "no_goal"}` dicts (e.g., `main.py:364`)
 - Others raise `HTTPException` with proper status codes
@@ -381,7 +381,7 @@ This endpoint triggers an LLM invocation — a long-running, expensive, non-idem
 
 ---
 
-### 🟡 Verb-Path Mixing is Inconsistent with REST
+### [STATUS: IN PROGRESS] Verb-Path Mixing is Inconsistent with REST
 
 Mixing resource-oriented paths (`/portfolio/{user_id}`) with verb-paths (`/portfolio/save`) is inconsistent. REST convention would be `POST /portfolio` (create) or `PUT /portfolio/{user_id}` (replace).
 
@@ -391,7 +391,7 @@ Mixing resource-oriented paths (`/portfolio/{user_id}`) with verb-paths (`/portf
 
 **Score: 7.5 / 10** — Clean React patterns, state management concerns.
 
-### ✅ Strengths
+### [PASS] Strengths
 
 - Custom hook pattern (`usePortfolio`, `useChat`, `useGoalStrategist`) cleanly separates API logic from UI — excellent React architecture.
 - `crypto.randomUUID()` for stable React keys in `MyHoldings`.
@@ -400,7 +400,7 @@ Mixing resource-oriented paths (`/portfolio/{user_id}`) with verb-paths (`/portf
 
 ---
 
-### ❌ Markdown Not Rendered in Goal Roadmap
+### [FAIL] Markdown Not Rendered in Goal Roadmap
 
 **Location:** `src/components/Goals/GoalPlanner.tsx:288–290`
 
@@ -425,7 +425,7 @@ import ReactMarkdown from 'react-markdown'
 
 ---
 
-### ❌ `API_BASE` Duplicated Across All Hooks
+### [FAIL] `API_BASE` Duplicated Across All Hooks
 
 **Location:** All 5+ hook files
 
@@ -442,7 +442,7 @@ export const USER_ID = 'user_1'
 
 ---
 
-### 🟡 `USER_ID` Hardcoded in Frontend
+### [STATUS: IN PROGRESS] `USER_ID` Hardcoded in Frontend
 
 ```typescript
 const USER_ID = 'user_1' // Hardcoded for Phase 3
@@ -452,7 +452,7 @@ This is correctly flagged in a comment but means every user of the deployed app 
 
 ---
 
-### 🟡 Tab State Not Persisted Across Browser Refresh
+### [STATUS: IN PROGRESS] Tab State Not Persisted Across Browser Refresh
 
 **Location:** `src/App.tsx:14`
 
@@ -464,7 +464,7 @@ Refreshing always resets to the `chat` tab. **Fix:** Use URL hash routing or `Re
 
 ---
 
-### 🟡 Heavy Components Refetch on Every Tab Switch
+### [STATUS: IN PROGRESS] Heavy Components Refetch on Every Tab Switch
 
 Components like `Dashboard` refetch live yfinance data every time they mount. When a user switches tabs back and forth, redundant API calls are made.
 
@@ -472,7 +472,7 @@ Components like `Dashboard` refetch live yfinance data every time they mount. Wh
 
 ---
 
-### 🟡 Accessibility Gap on New Holdings Rows
+### [STATUS: IN PROGRESS] Accessibility Gap on New Holdings Rows
 
 **Location:** `src/components/Portfolio/MyHoldings.tsx:123`
 
@@ -486,7 +486,7 @@ Components like `Dashboard` refetch live yfinance data every time they mount. Wh
 
 **Score: 6 / 10** — Good Docker setup, critical path mismatch.
 
-### 🔴 CRITICAL — Volume Path Mismatch
+### [P0 - HIGH] CRITICAL — Volume Path Mismatch
 
 **Location:** `docker-compose.yml:16` vs `src/utils/vector_store.py`
 
@@ -504,7 +504,7 @@ LOCAL_DB_DIR = os.path.join(BASE_DIR, "chroma_db")  # ← different directory!
 
 ---
 
-### 🟡 Deprecated `version` Key in Docker Compose
+### [STATUS: IN PROGRESS] Deprecated `version` Key in Docker Compose
 
 **Location:** `docker-compose.yml:3`
 
@@ -516,7 +516,7 @@ Remove this line.
 
 ---
 
-### 🟡 No Health Check in Docker Compose
+### [STATUS: IN PROGRESS] No Health Check in Docker Compose
 
 The `depends_on: backend` only waits for the container to *start*, not for FastAPI to be *ready*. This causes 502 errors on fresh container starts.
 
@@ -549,12 +549,12 @@ healthcheck:
 
 | Priority | Test | Rationale |
 |---|---|---|
-| 🔴 P0 | Monte Carlo math unit test | Verify simulation math against known analytical inputs |
-| 🔴 P0 | Beta/Volatility calculation unit test | Verify edge cases: NaN, missing ticker, single-asset portfolio |
-| 🔴 P0 | API endpoint integration tests (`pytest` + `TestClient`) | Prevent regressions on save/fetch/calculate endpoints |
-| 🟡 P1 | Compliance node unit test | Confirm disclaimer replaces (not duplicates) the last message |
-| 🟡 P1 | Supervisor routing test with mocked LLM | Verify correct routing decision for 5 intent types |
-| 🟡 P2 | Frontend component tests with Vitest | `MyHoldings` form validation, `GoalPlanner` chart data mapping |
+| [P0 - HIGH] | Monte Carlo math unit test | Verify simulation math against known analytical inputs |
+| [P0 - HIGH] | Beta/Volatility calculation unit test | Verify edge cases: NaN, missing ticker, single-asset portfolio |
+| [P0 - HIGH] | API endpoint integration tests (`pytest` + `TestClient`) | Prevent regressions on save/fetch/calculate endpoints |
+| [P1 - MEDIUM] | Compliance node unit test | Confirm disclaimer replaces (not duplicates) the last message |
+| [P1 - MEDIUM] | Supervisor routing test with mocked LLM | Verify correct routing decision for 5 intent types |
+|  P2 | Frontend component tests with Vitest | `MyHoldings` form validation, `GoalPlanner` chart data mapping |
 
 ---
 
@@ -564,38 +564,38 @@ healthcheck:
 
 | # | Issue | Location | Effort | Status |
 |---|---|---|---|---|
-| 1 | Add JWT authentication; derive `user_id` from token | `main.py` + `jwt.py` + `user.py` | 🔴 High | ✅ **SHIPPED** |
-| 2 | Fix async/sync node mismatch — make `market_insights_node` sync | `src/agents/market_insights.py` | 🟢 Low | ✅ **SHIPPED** |
-| 3 | Fix `chroma_data_local` vs `chroma_db` Docker volume path mismatch | `docker-compose.yml` | 🟢 Low | ✅ **SHIPPED** |
-| 4 | Fix hardcoded `2024` base year in simulation | `src/agents/goal_strategist.py:44` | 🟢 Low | ✅ **SHIPPED** |
-| 5 | Replace mock $100 price with live yfinance prices for Monte Carlo | `src/agents/goal_strategist.py:50` | 🟡 Medium | ✅ **SHIPPED** |
-| 6 | Implement real diversification score (HHI) + 3-attempt retry loop | `src/agents/portfolio_analyst.py` | 🟡 Medium | ✅ **SHIPPED** |
+| 1 | Add JWT authentication; derive `user_id` from token | `main.py` + `jwt.py` + `user.py` |  High | [PASS] **SHIPPED** |
+| 2 | Fix async/sync node mismatch — make `market_insights_node` sync | `src/agents/market_insights.py` |  Low | [PASS] **SHIPPED** |
+| 3 | Fix `chroma_data_local` vs `chroma_db` Docker volume path mismatch | `docker-compose.yml` |  Low | [PASS] **SHIPPED** |
+| 4 | Fix hardcoded `2024` base year in simulation | `src/agents/goal_strategist.py:44` |  Low | [PASS] **SHIPPED** |
+| 5 | Replace mock $100 price with live yfinance prices for Monte Carlo | `src/agents/goal_strategist.py:50` |  Medium | [PASS] **SHIPPED** |
+| 6 | Implement real diversification score (HHI) + 3-attempt retry loop | `src/agents/portfolio_analyst.py` |  Medium | [PASS] **SHIPPED** |
 
 ### Phase 2 — Quality & Correctness
 
 | # | Issue | Location | Effort | Status |
 |---|---|---|---|---|
-| 7 | Add `UniqueConstraint` to holdings table | `src/models/portfolio.py` | 🟢 Low | ✅ **SHIPPED** |
-| 8 | Replace `datetime.utcnow()` with timezone-aware equivalent | `src/models/goal.py`, `market_cache.py` | 🟢 Low | ✅ **SHIPPED** |
-| 9 | Singleton LLM and VectorStore instances | All agent files | 🟡 Medium | ⏳ Planned |
-| 10 | Add rate limiting (`slowapi`) on LLM-triggering endpoints | `main.py` | 🟡 Medium | ⏳ Planned |
-| 11 | Structured markdown rendering for roadmap | `GoalPlanner.tsx`, `RoadmapRenderer.tsx` | 🟢 Low | ✅ **SHIPPED** |
-| 12 | Centralize `API_BASE` and endpoints | All hook files → `src/config.ts` | 🟢 Low | ✅ **SHIPPED** |
-| 13 | Rotate and remove Chroma tenant UUID from `.env.example` | `.env.example` | 🟢 Low | ⏳ Planned |
-| 14 | Add `aria-live` to holdings list for accessibility | `MyHoldings.tsx` | 🟢 Low | ⏳ Planned |
-| 15 | Delete dead code `src/agents/stubs.py` | `src/agents/stubs.py` | 🟢 Low | ✅ **SHIPPED** |
+| 7 | Add `UniqueConstraint` to holdings table | `src/models/portfolio.py` |  Low | [PASS] **SHIPPED** |
+| 8 | Replace `datetime.utcnow()` with timezone-aware equivalent | `src/models/goal.py`, `market_cache.py` |  Low | [PASS] **SHIPPED** |
+| 9 | Singleton LLM and VectorStore instances | All agent files |  Medium | [PLANNED] |
+| 10 | Add rate limiting (`slowapi`) on LLM-triggering endpoints | `main.py` |  Medium | [PLANNED] |
+| 11 | Structured markdown rendering for roadmap | `GoalPlanner.tsx`, `RoadmapRenderer.tsx` |  Low | [PASS] **SHIPPED** |
+| 12 | Centralize `API_BASE` and endpoints | All hook files -> `src/config.ts` |  Low | [PASS] **SHIPPED** |
+| 13 | Rotate and remove Chroma tenant UUID from `.env.example` | `.env.example` |  Low | [PLANNED] |
+| 14 | Add `aria-live` to holdings list for accessibility | `MyHoldings.tsx` |  Low | [PLANNED] |
+| 15 | Delete dead code `src/agents/stubs.py` | `src/agents/stubs.py` |  Low | [PASS] **SHIPPED** |
 
 ### Phase 3 — Production Hardening
 
 | # | Issue | Effort |
 |---|---|---|
-| 16 | Migrate SQLite → PostgreSQL | 🔴 High |
-| 17 | Add `pytest` unit test suite targeting 80%+ coverage | 🔴 High |
-| 18 | Add Docker `healthcheck` directives to all services | 🟢 Low |
-| 19 | Implement React Router for deep-linkable tabs | 🟡 Medium |
-| 20 | Add structured logging with `structlog` | 🟡 Medium |
-| 21 | Change `GET /portfolio/analysis` to `POST` | 🟢 Low |
-| 22 | Standardize error response schema across all endpoints | 🟡 Medium |
+| 16 | Migrate SQLite → PostgreSQL |  High |
+| 17 | Add `pytest` unit test suite targeting 80%+ coverage |  High |
+| 18 | Add Docker `healthcheck` directives to all services |  Low |
+| 19 | Implement React Router for deep-linkable tabs |  Medium |
+| 20 | Add structured logging with `structlog` |  Medium |
+| 21 | Change `GET /portfolio/analysis` to `POST` |  Low |
+| 22 | Standardize error response schema across all endpoints |  Medium |
 
 ---
 
@@ -613,11 +613,11 @@ healthcheck:
 
 | Risk | Severity | Note |
 |---|---|---|
-| Single-user architecture | 🔴 Critical | Hardcoded `user_1` cannot serve real multi-user traffic without a complete auth rework |
-| OpenAI dependency lock-in | 🟡 Medium | All LLM costs flow through OpenAI — no cost optimization or fallback for outages |
-| Alpha Vantage free tier | 🟡 Medium | Free tier rate limits will throttle Market Insights under any real usage |
-| Legal exposure from RAG content | 🟡 Medium | IRS/tax rule content could contain inaccuracies that create liability |
-| No data privacy / deletion mechanism | 🟡 Medium | Required for GDPR/CCPA compliance before any production launch |
+| Single-user architecture |  Critical | Hardcoded `user_1` cannot serve real multi-user traffic without a complete auth rework |
+| OpenAI dependency lock-in |  Medium | All LLM costs flow through OpenAI — no cost optimization or fallback for outages |
+| Alpha Vantage free tier |  Medium | Free tier rate limits will throttle Market Insights under any real usage |
+| Legal exposure from RAG content |  Medium | IRS/tax rule content could contain inaccuracies that create liability |
+| No data privacy / deletion mechanism |  Medium | Required for GDPR/CCPA compliance before any production launch |
 
 ---
 

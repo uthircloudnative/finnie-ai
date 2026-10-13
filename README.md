@@ -109,6 +109,10 @@ graph TD
 
 Finnie AI is architected for zero-maintenance, low-cost deployment (~$5–$15/month) combining GitHub Container Registry, Azure Static Web Apps, and Azure Container Apps with custom domain routing and persistent database storage:
 
+<p align="center">
+  <img src="./docs/images/azure_cloud_architecture.svg" alt="Finnie AI Azure Cloud Architecture" width="100%" />
+</p>
+
 ```mermaid
 graph TD
     User([User Web Browser]):::clientStyle

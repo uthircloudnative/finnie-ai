@@ -18,6 +18,10 @@ This document is the authoritative guide for containerizing, configuring, and de
 
 ## 2. Diagrammatic Architectural Representation
 
+<p align="center">
+  <img src="./images/azure_cloud_architecture.svg" alt="Finnie AI Azure Cloud Architecture" width="100%" />
+</p>
+
 ```mermaid
 graph TD
     User([User Web Browser]):::clientStyle

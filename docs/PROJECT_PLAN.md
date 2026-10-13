@@ -67,16 +67,26 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 - **SPEC-08 Password Recovery via OTP & Security Audit Trail**: Cryptographic 6-digit OTP generation, sliding rate limiting (3 requests/15m), strict 3-attempt brute force capping (`status = "FAILED"`), dual-origin forensic audit logging (`password_reset_audits`), automatic database migration, and active session revocation (`token_version`).
 - **SPEC-09 Reusable Email Notification Engine**: Swappable transport layer (`BaseEmailProvider`) featuring REST API integration with Mailgun, local console fallback, responsive glassmorphic HTML templates with inlined CSS, and zero-exposure privacy protection.
 
-### Phase 8: Autonomous Agentic Evolution & Production-Grade In-Session Memory (SPEC-10) [IN PROGRESS]
+### Phase 8: Autonomous Agentic Evolution & Production-Grade In-Session Memory (SPEC-10) [COMPLETED]
 - **Focus**: Production-grade In-Session Thread Memory, Autonomous Dynamic Tools, and Human-in-the-Loop Gatekeeper.
-- **Step 1: Modular Tool Manifest (`src/tools/goal_tools.py`)**: Dynamic tool definitions (`fetch_user_portfolio_valuation`, `run_monte_carlo_engine`, `lookup_tax_and_contribution_limits`) bound via `llm.bind_tools()`.
-- **Step 2: Dual-Mode Checkpointer & Thread Memory**: Cloud-ready checkpointer factory (`SqliteSaver` for local dev in `finnie.db`, `PostgresSaver` for Azure production) with thread persistence (`thread_id=f"goal_{user_id}_{goal_id}"`).
-- **Step 3: Multi-Turn Micro-Chat UX**: Dedicated glassmorphic refinement chat below the Strategic Roadmap in `GoalPlanner.tsx` for real-time iterative what-if scenario adjustments.
-- **Step 4: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**: Pre-compliance reflection node (`goal_auditor_node`) checking outputs against statutory limits (IRS 401(k), Section 80C) with retry critique loop.
-- **Step 5: Selective HITL Strategy Approval**: LangGraph `interrupt()` breakpoint triggering exclusively when the user clicks "Lock In & Save Goal" to keep exploration frictionless.
-- **Step 6: Real-Time Event & Token Streaming (SSE)**: Server-Sent Events endpoint streaming live thought badges (`🔍 Fetching Holdings` ➔ `🎲 Simulating 10,000 Paths` ➔ `⚖️ Auditing Limits`) to `ThoughtStream.tsx`.
+- **Accomplished**:
+  - Modular tool manifest (`src/tools/goal_tools.py`) dynamically bound via `llm.bind_tools()`.
+  - Dual-mode checkpointer factory (`SqliteSaver` / `PostgresSaver`) keyed by `thread_id=f"goal_{user_id}_{goal_id}"`.
+  - Feasibility & Regulatory Auditor node (`goal_auditor_node`) with statutory critique reflection loop.
+  - Selective Human-in-the-Loop strategy approval modal (`StrategyLockInModal.tsx`) on save.
+  - Multi-turn interactive strategy copilot drawer (`Ask Finnie`) for iterative refinement.
 
-### Phase 9: Cross-Session Long-Term Episodic Memory & Knowledge Graph (SPEC-11) [PLANNED]
+### Phase 9: Cash-Flow & Liability-Aware Financial GPS (SPEC-11) [COMPLETED]
+- **Focus**: Holistic balance sheet integration unifying multi-country equity portfolios, living expenses, and debt amortization schedules.
+- **Accomplished**:
+  - Upfront country jurisdiction selection (USA, INDIA, UK, CANADA, GERMANY) dynamically scoping portfolio assets by exchange and adjusting currency formatting.
+  - Real-time cash flow solvency meter comparing take-home pay against essential expenses and debt servicing.
+  - Multi-loan dynamic amortization engine calculating projected Debt-Free Year, interest saved, and auto-step-up compounding into goal investments.
+  - Twin synchronized charts (`syncId="finnie-goal-charts"`) for Projected Investment Growth and Real Net Worth & Loan Payoff Progress.
+  - Upfront Action Levers (Debt Avalanche & Post-Loan Step-Up) and 3 Strategic Debt Elimination Pathways.
+  - Enterprise typography audit eliminating all informal unicode emojis in favor of clean vector SVGs and status badges.
+
+### Phase 10: Cross-Session Long-Term Episodic Memory & Knowledge Graph (SPEC-12) [NEXT IN PROGRESS]
 - **Focus**: Global cross-session user memory (ChatGPT-style persistent memory) across all Finnie tabs and agents.
 - **Engine**: **Mem0 (Embedded Mode with Graph Memory)** integrated into FastAPI backend, storing extracted user facts and entity relationships in PostgreSQL / SQLite and ChromaDB.
 - **Cross-Agent Memory Injection**:
@@ -84,7 +94,7 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
   - Injects relevant long-term memory context into Live Chat, Portfolio Analyst, Market Insights, and Goal Strategist prompts.
   - Automatic contradiction resolution (e.g. updating salary or risk appetite changes over time).
 
-### Phase 10: Production Cloud Scale, Distributed Rate Limiting & Ephemeral Caching (Redis) [PLANNED]
+### Phase 11: Production Cloud Scale, Distributed Rate Limiting & Ephemeral Caching (Redis) [PLANNED]
 - **Focus**: High-concurrency enterprise infrastructure for multi-instance Azure Container Apps / AWS deployments.
 - **Distributed Rate Limiting**: Shared atomic token-bucket rate limiter across load-balanced container replicas protecting against LLM API quota exhaustion.
 - **Pub/Sub Event Streaming**: Redis Streams / Pub-Sub coordinating real-time SSE token streaming across multi-worker Gunicorn processes and container replicas.

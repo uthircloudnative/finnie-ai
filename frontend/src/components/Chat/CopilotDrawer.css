@@ -101,8 +101,10 @@
 }
 
 .copilot-title-icon {
-  color: var(--accent-cyan);
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .copilot-status-badge {
@@ -264,31 +266,34 @@
 }
 
 .copilot-empty-icon {
-  font-size: 1.25rem;
-  margin-bottom: 0.4rem;
-  color: var(--accent-cyan);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.6rem;
+  flex-shrink: 0;
 }
 
 .copilot-bubble {
   max-width: 92%;
   padding: 0.65rem 0.85rem;
+  border-radius: var(--chat-bubble-radius);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
 }
 
 .copilot-bubble.user {
   align-self: flex-end;
-  border-radius: 12px 12px 2px 12px;
-  background: rgba(0, 240, 255, 0.12);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--chat-bubble-radius) var(--chat-bubble-radius) 2px var(--chat-bubble-radius);
+  background: var(--chat-bubble-user-bg);
+  border: 1px solid var(--chat-bubble-user-border);
 }
 
 .copilot-bubble.ai,
 .copilot-bubble.assistant {
   align-self: flex-start;
-  border-radius: 12px 12px 12px 2px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--chat-bubble-radius) var(--chat-bubble-radius) var(--chat-bubble-radius) 2px;
+  background: var(--chat-bubble-ai-bg);
+  border: 1px solid var(--chat-bubble-ai-border);
 }
 
 .copilot-bubble-header {
@@ -300,7 +305,7 @@
 }
 
 .copilot-bubble-role {
-  font-size: 0.70rem;
+  font-size: var(--chat-font-size-role);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -328,14 +333,14 @@
 }
 
 .copilot-bubble-time {
-  font-size: 0.68rem;
+  font-size: var(--chat-font-size-time);
   color: #64748b;
 }
 
 .copilot-bubble-body {
   margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: var(--chat-font-size-body);
+  line-height: var(--chat-line-height-body);
   color: #cbd5e1;
 }
 
@@ -358,8 +363,10 @@
 }
 
 .copilot-thinking-orb {
-  animation: pulse 1.2s infinite;
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* ── Footer & Input Bar ── */
@@ -384,7 +391,7 @@
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--glass-border);
   color: var(--text-bright);
-  font-size: 0.82rem;
+  font-size: var(--chat-font-size-input);
   line-height: 1.5;
   font-family: inherit;
   transition: border-color 0.2s ease;

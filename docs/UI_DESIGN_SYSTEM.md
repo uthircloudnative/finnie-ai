@@ -70,6 +70,16 @@ Provides a consistent, reusable side-panel interaction pattern across all multi-
 - **Single Close Button**: Top-right corner `✕ Close` button (`.copilot-close-btn`), with parent header triggers automatically hiding when open.
 - **Optional Questionnaire Section**: `suggestionChips?: string[]` renders prompt chips only when provided; completely hidden when omitted (e.g. Portfolio Analyst and Market Insights).
 
+### E. Goal Planner Dynamic Layout & Twin Synchronized Charts (`GoalPlanner.tsx`)
+Provides an expansive, responsive workspace for holistic balance sheet planning:
+- **Dynamic Horizontal Expansion**: The Goal Targets configurator includes an expand/collapse toggle (`btn-expand-form`) that widens the form to `50%` of the viewport for comfortable multi-loan entry. When the Ask Finnie Strategy Drawer is activated, the configurator auto-contracts to `380px` (`30%`) to eliminate layout collisions.
+- **Twin Synchronized Charts (`syncId="finnie-goal-charts"`)**:
+  - **Chart 1**: Projected Investment Growth (Median outcome with shaded market volatility range).
+  - **Chart 2**: Real Net Worth & Loan Payoff Progress (Real Net Worth vs Remaining Loan Amortization).
+  - Crosshair cursor and timeline hovering synchronously track across both upper and lower charts.
+- **Upfront Action Levers**: High-impact scenario cards for Debt Avalanche (tackling debt >10% APR first) and Post-Loan Step-Up (reinvesting former monthly debt payments).
+- **Strict Professional Iconography**: Zero informal unicode emojis; all badges and headers utilize pure SVG vector icons, pulse status dots, and clean Glassmorphism typography.
+
 ---
 
 ## 4. 🛡️ Resilience, Edge Cases & Verification

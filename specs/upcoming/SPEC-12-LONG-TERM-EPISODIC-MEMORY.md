@@ -1,4 +1,4 @@
-# Feature Spec: SPEC-11 — Cross-Session Long-Term Episodic Memory & Knowledge Graph
+# Feature Spec: SPEC-12 — Cross-Session Long-Term Episodic Memory & Knowledge Graph
 
 > **Status**: ⚪ **PROPOSED / FUTURE ROADMAP (PHASE 9)**  
 > **Author**: Antigravity & Lead Engineer  

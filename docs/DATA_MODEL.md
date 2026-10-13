@@ -33,6 +33,8 @@ Below is the complete system Entity-Relationship diagram. Every column includes 
 erDiagram
     users ||--o{ holdings : "owns (1:N, cascade delete)"
     users ||--o{ financial_goals : "targets (1:N, cascade delete)"
+    users ||--o{ liabilities : "owes (1:N, cascade delete, SPEC-11)"
+    users ||--o| user_cashflow_profiles : "earns & spends (1:1, cascade delete, SPEC-11)"
     users ||--o{ password_reset_audits : "audited_by (1:N, cascade delete)"
     financial_goals ||--o| checkpoints : "persists_state_in (1:1, thread linkage)"
 
@@ -44,6 +46,29 @@ erDiagram
         string base_currency "Home currency code (USD, INR, GBP, CAD, EUR)"
         int token_version "Session revocation counter (increment revokes JWTs)"
         datetime created_at "Account creation UTC timestamp"
+    }
+
+    liabilities {
+        int id PK "Autoincrement primary key"
+        string user_id FK "Multi-tenant tenant ID (indexed)"
+        string liability_type "Type: CREDIT_CARD, MORTGAGE, AUTO_LOAN, STUDENT_LOAN, PERSONAL"
+        string lender_name "Display name of creditor or financial institution"
+        float current_balance "Outstanding debt principal"
+        float interest_rate_apr "Annual Percentage Rate (e.g. 24.0 for 24%)"
+        float monthly_payment "Contractual monthly EMI or minimum payment"
+        int remaining_months "Remaining repayment horizon in months"
+        string country "Country jurisdiction (USA, INDIA, UK, CANADA)"
+        datetime created_at "Record creation UTC timestamp"
+    }
+
+    user_cashflow_profiles {
+        int id PK "Autoincrement primary key"
+        string user_id FK "Multi-tenant tenant ID (unique, indexed)"
+        float monthly_take_home "Net monthly salary or earnings"
+        float fixed_living_costs "Essential fixed expenses (rent, utilities, groceries)"
+        float monthly_discretionary_spend "Rolling average credit card and lifestyle spend"
+        string country "Country jurisdiction (USA, INDIA, UK, CANADA)"
+        datetime updated_at "Latest update UTC timestamp"
     }
 
     holdings {
@@ -236,6 +261,41 @@ erDiagram
 
 ---
 
+### Table 8: `liabilities` (SPEC-11)
+* **File Location**: `backend/src/models/liability.py`
+* **Purpose**: Persists user debt instruments (credit cards, mortgages, auto loans, student loans, personal loans) with contractual APRs and amortization timelines.
+
+| Column Name | Type | Constraints | Purpose & Domain Rule | Security / Tenant |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | **PK**, Autoincrement | Internal sequence identifier. | Internal ID |
+| `user_id` | `VARCHAR(64)` | **FK** (`users.id`), Index, Not Null | Multi-tenant tenant ID. Derived strictly from JWT session. | **Tenant Isolation** |
+| `liability_type` | `VARCHAR(32)` | Not Null | Debt category: `CREDIT_CARD`, `MORTGAGE`, `AUTO_LOAN`, `STUDENT_LOAN`, `PERSONAL`. | Analytics Classification |
+| `lender_name` | `VARCHAR(100)` | Default: `'Standard Lender'` | Human-readable creditor name (e.g. Chase, HDFC, Barclays). | Display Label |
+| `current_balance`| `FLOAT` | Not Null, Check: `ge 0` | Remaining principal debt obligation in local currency. | Financial Liability |
+| `interest_rate_apr`| `FLOAT` | Not Null, Check: `ge 0` | Annual Percentage Rate (e.g. 24.0 for 24% card APR). | Debt Drag Engine |
+| `monthly_payment`| `FLOAT` | Not Null, Check: `ge 0` | Monthly debt servicing cost (EMI or minimum payment). | Cash Flow Drag |
+| `remaining_months`| `INTEGER` | Not Null, Check: `ge 0` | Months to complete payoff under current amortization. | Amortization Horizon |
+| `country` | `VARCHAR(16)` | Default: `'USA'`, Not Null | Country jurisdiction (USA, INDIA, UK, CANADA). | Regional Scope |
+| `created_at` | `TIMESTAMP` | Default: `UTC now` | Liability record creation timestamp. | Audit |
+
+---
+
+### Table 9: `user_cashflow_profiles` (SPEC-11)
+* **File Location**: `backend/src/models/cashflow.py`
+* **Purpose**: Persists monthly income, living expenses, and rolling average credit card spend to establish true free cash flow capacity.
+
+| Column Name | Type | Constraints | Purpose & Domain Rule | Security / Tenant |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | **PK**, Autoincrement | Internal sequence identifier. | Internal ID |
+| `user_id` | `VARCHAR(64)` | **FK** (`users.id`), **Unique**, Index, Not Null | 1:1 multi-tenant linkage to user account. | **Tenant Isolation** |
+| `monthly_take_home` | `FLOAT` | Default: `0.0`, Check: `ge 0` | Net monthly salary or after-tax earned income. | Inflow Capacity |
+| `fixed_living_costs` | `FLOAT` | Default: `0.0`, Check: `ge 0` | Essential living expenses (rent, utilities, groceries, insurance). | Fixed Outflow |
+| `monthly_discretionary_spend`| `FLOAT` | Default: `0.0`, Check: `ge 0`| Rolling average monthly lifestyle and credit card expenditure. | Variable Outflow |
+| `country` | `VARCHAR(16)` | Default: `'USA'`, Not Null | Country jurisdiction (USA, INDIA, UK, CANADA). | Regional Scope |
+| `updated_at` | `TIMESTAMP` | Default: `UTC now`, OnUpdate | Cash flow profile latest update timestamp. | Audit |
+
+---
+
 ## 4. 🔒 Multi-Tenant Isolation & Security Invariants
 
 1. **No Client-Supplied User IDs**:
@@ -268,9 +328,9 @@ When adding new columns to existing tables:
 
 ---
 
-## 6. 🚀 Future Extensions: Reserved Table Schemas (SPEC-11 Hook)
+## 6. 🚀 Future Extensions: Reserved Table Schemas (SPEC-12 Hook)
 
-To support **SPEC-11: Cross-Session Long-Term Episodic Memory (Mem0)** without schema conflicts, the following table namespace is formally reserved in `finnie.db`:
+To support **SPEC-12: Cross-Session Long-Term Episodic Memory (Mem0)** without schema conflicts, the following table namespace is formally reserved in `finnie.db`:
 
 ### Reserved Table: `user_memories` (Planned for Phase 9)
 ```sql

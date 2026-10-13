@@ -34,6 +34,8 @@ from src.database import get_db, init_db              # noqa: E402
 from src.models.portfolio import Holding              # noqa: E402
 from src.models.market_metadata import MarketExchange # noqa: E402
 from src.models.goal import FinancialGoal           # noqa: E402
+from src.models.liability import Liability, LiabilityCreate, LiabilityResponse # noqa: E402
+from src.models.cashflow import UserCashflowProfile, CashflowProfileCreate, CashflowProfileResponse # noqa: E402
 from src.utils.telemetry import TraceContextMiddleware, setup_telemetry_logging, trace_id_var, get_llm_call_count, get_graph_config # noqa: E402
 from src.utils.dashboard_engine import build_dashboard_payload # noqa: E402
 from src.agents.portfolio_analyst import compute_hhi_diversification # noqa: E402
@@ -106,6 +108,11 @@ class GoalCalculationRequest(BaseModel):
     prompt: Optional[str] = None  # Follow-up micro-chat query
     has_baseline: Optional[bool] = Field(default=False)
     chat_history: Optional[List[Dict[str, str]]] = Field(default=None)
+    # SPEC-11 Cash-flow and liability profile
+    monthly_take_home: Optional[float] = None
+    fixed_living_costs: Optional[float] = None
+    monthly_discretionary_spend: Optional[float] = None
+    liabilities: Optional[List[Dict[str, Any]]] = None
 
 
 # Backward compatibility alias
@@ -709,6 +716,94 @@ def get_user_goal(
     }
 
 
+@app.get("/goals/liabilities", response_model=List[LiabilityResponse], tags=["Goals"])
+def get_user_liabilities(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Fetch active liabilities for the authenticated user."""
+    return db.query(Liability).filter(Liability.user_id == current_user.id).all()
+
+
+@app.post("/goals/liabilities", response_model=LiabilityResponse, tags=["Goals"])
+def create_user_liability(
+    req: LiabilityCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new liability for the authenticated user."""
+    liability = Liability(
+        user_id=current_user.id,
+        liability_type=req.liability_type,
+        lender_name=req.lender_name,
+        current_balance=req.current_balance,
+        interest_rate_apr=req.interest_rate_apr,
+        monthly_payment=req.monthly_payment,
+        remaining_months=req.remaining_months,
+        country=req.country or "USA"
+    )
+    db.add(liability)
+    db.commit()
+    db.refresh(liability)
+    return liability
+
+
+@app.delete("/goals/liabilities/{liability_id}", tags=["Goals"])
+def delete_user_liability(
+    liability_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a liability ensuring multi-tenant isolation."""
+    item = db.query(Liability).filter(Liability.id == liability_id, Liability.user_id == current_user.id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Liability not found")
+    db.delete(item)
+    db.commit()
+    return {"status": "deleted", "id": liability_id}
+
+
+@app.get("/goals/cashflow", response_model=CashflowProfileResponse, tags=["Goals"])
+def get_user_cashflow(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Fetch cash flow profile for the authenticated user."""
+    profile = db.query(UserCashflowProfile).filter(UserCashflowProfile.user_id == current_user.id).first()
+    if not profile:
+        profile = UserCashflowProfile(
+            user_id=current_user.id,
+            monthly_take_home=0.0,
+            fixed_living_costs=0.0,
+            monthly_discretionary_spend=0.0,
+            country="USA"
+        )
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+    return profile
+
+
+@app.put("/goals/cashflow", response_model=CashflowProfileResponse, tags=["Goals"])
+def update_user_cashflow(
+    req: CashflowProfileCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update cash flow profile for the authenticated user."""
+    profile = db.query(UserCashflowProfile).filter(UserCashflowProfile.user_id == current_user.id).first()
+    if not profile:
+        profile = UserCashflowProfile(user_id=current_user.id)
+        db.add(profile)
+    profile.monthly_take_home = req.monthly_take_home
+    profile.fixed_living_costs = req.fixed_living_costs
+    profile.monthly_discretionary_spend = req.monthly_discretionary_spend
+    profile.country = req.country or "USA"
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+
 def is_financial_query(query: str) -> bool:
     """
     Guardrail to ensure queries sent to the Goal Strategist micro-chat
@@ -820,7 +915,11 @@ async def calculate_goal_roadmap(
             "thread_id": active_thread,
             "has_baseline": req.has_baseline,
             "is_refinement": bool(req.prompt),
-            "chat_history": req.chat_history
+            "chat_history": req.chat_history,
+            "monthly_take_home": req.monthly_take_home,
+            "fixed_living_costs": req.fixed_living_costs,
+            "monthly_discretionary_spend": req.monthly_discretionary_spend,
+            "liabilities": req.liabilities
         },
         "next_step": "GOAL_STRATEGIST",
         "user_id": effective_id,

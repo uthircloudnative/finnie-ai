@@ -227,48 +227,43 @@
 
 ---
 
-## 🚀 Plan of Action (Next Session — Phase 8: Autonomous Financial GPS & Production In-Session Memory)
+---
 
-Our primary focus is implementing complete, production-grade **In-Session Memory (SPEC-10)**, designed to be cloud-ready for Azure and cleanly extendable to **Long-Term Episodic Memory (SPEC-11)**:
+## ✅ Accomplishments (October 12, 2026 — SPEC-10 & SPEC-11 Completed & Verified)
 
-### Phase 8: Autonomous Agentic Evolution & In-Session Memory (SPEC-10)
-- [ ] **Step 1: Tool Manifest & Dynamic Tool Invocation (`src/tools/goal_tools.py`)**:
-  - Modular `@tool` functions: `fetch_user_portfolio_valuation`, `run_monte_carlo_engine`, `lookup_tax_and_contribution_limits`.
-  - Dynamic tool binding via `.bind_tools()` with LangGraph `ToolNode` execution loop.
-- [ ] **Step 2: Dual-Mode Checkpointing & In-Session Memory**:
-  - Cloud-ready checkpointer factory (`SqliteSaver` for local dev in `finnie.db`, `PostgresSaver` for Azure production).
-  - Thread persistence keyed by `thread_id=f"goal_{user_id}_{goal_id}"` eliminating single-turn amnesia.
-  - Reserved state fields (`memory_context`, `user_profile`) for SPEC-11 forward compatibility.
-- [ ] **Step 3: Multi-Turn Micro-Chat UX (`GoalChatRefinement.tsx`)**:
-  - Implement "Refine Roadmap with Finnie" micro-chat prompt below the Strategic Roadmap report in `GoalPlanner.tsx`.
-  - Wire custom hook `useGoalStrategist.ts` to submit follow-up prompts against the persistent goal thread.
-- [ ] **Step 4: Feasibility & Regulatory Auditor (Critic / Reflection Loop)**:
-  - Add `goal_auditor_node` verifying LLM savings advice against statutory contribution limits (IRS 401(k), Section 80C).
-  - Self-correcting critique loop routing back to the strategist if limits are breached (capped at 2 retries).
-- [ ] **Step 5: Selective HITL Strategy Approval on Lock-In ("On Save")**:
-  - Insert LangGraph `interrupt()` breakpoint triggering **only when user clicks "Lock In & Save Goal"**.
-  - Interactive confirmation modal (`[Confirm & Commit]` vs `[Cancel / Tweak]`) before writing to `financial_goals`.
-- [ ] **Step 6: Real-Time Event & Token Streaming (SSE)**:
-  - Implement `POST /goals/calculate/stream` Server-Sent Events endpoint using `astream_events`.
-  - Stream live thought telemetry badges (`🔍 Fetching Holdings` ➔ `🎲 Simulating 10,000 Paths` ➔ `⚖️ Auditing Limits`) to `ThoughtStream.tsx`.
+### 1. SPEC-10: Autonomous Financial GPS & Multi-Agent Goal Strategist
+- **Hybrid Bootstrap Pattern**: Upfront deterministic 10,000-scenario Monte Carlo simulation and vector statutory tax limit retrieval (401k/IRA, Section 80C) executed with 0 LLM token overhead prior to synthesis.
+- **LangGraph Checkpointer & In-Session Memory**: Cloud-ready `SqliteSaver`/`PostgresSaver` session thread continuity (`thread_id=f"goal_{user_id}_{goal_id}"`) eliminating single-turn amnesia in what-if strategy exploration.
+- **Feasibility & Statutory Auditor Node (`goal_auditor_node`)**: Deterministic critic reflection loop ensuring financial projections strictly conform to regional statutory ceilings.
+- **Human-in-the-Loop Strategy Lock-in (`hitl_gatekeeper_node`)**: Interactive sign-off modal (`StrategyLockInModal.tsx`) confirming key targets before database persistence.
 
-### Phase 9: Future Cross-Session Long-Term Episodic Memory (SPEC-11)
-- [ ] Integrate **Mem0 (Embedded Mode with Graph Memory)** into FastAPI backend.
-- [ ] Implement autonomous memory extraction (`save_user_memory` tool) capturing user preferences, risk tolerance, life events, and family context.
-- [ ] Inject persistent memory profile on session boot across all agents (Chat, Portfolio, Goals, Market).
+### 2. SPEC-11: Cash-Flow & Liability-Aware Financial GPS
+- **Multi-Country Jurisdiction Scoping**: Upfront country selector (USA, INDIA, UK, CANADA, GERMANY) dynamically scopes market holdings by regional exchange map (`COUNTRY_EXCHANGE_MAP`) and adjusts local currency symbols.
+- **Live Cash Flow Solvency Meter**: Compares take-home pay, living expenses, discretionary spend, and total debt service to calculate free cash flow and net solvency margin.
+- **Multi-Loan Dynamic Amortization & Step-Up Compounding**: Month-by-month loan principal reduction simulating the exact Debt-Free Year and auto-redirecting freed-up loan payments directly into investment compounding.
+- **Upfront Action Levers**: High-impact strategy toggles for Debt Avalanche (tackling liabilities >10% APR first) and Post-Loan Step-Up.
+- **3 Debt Elimination Pathways**: Strategic Roadmap outputs concrete options: Mathematical Avalanche, Discretionary Trimming, and Rollover Reinvestment.
+- **Enterprise Typography & Responsive Layout**: Horizontal form expansion (50% wide mode auto-adjusting to 30% when Ask Finnie opens), twin synchronized charts (`syncId="finnie-goal-charts"`), and zero unicode emojis (pure SVG vector icons).
+
+### 🧪 Verification Metrics (100% Passing)
+- **Backend Test Suite**: `uv run python -m unittest discover -s tests` → 47/47 passing (OK)
+- **Frontend Integration Test Suite**: `npm test -- --run` → 29/29 tests passing across 9 test suites (OK)
+- **Frontend Production Bundle Build**: `npm run build` → 0 errors, 0 warnings (built in 1.33s)
+
+---
+
+## 🚀 Plan of Action (Next Phase — SPEC-12: Long-Term Episodic Memory & Mem0 Integration)
+
+Our primary focus transitions to **SPEC-12 (Long-Term Episodic Memory)**:
+1. **Mem0 Architecture**: Integrate embedded Mem0 graph memory into FastAPI backend.
+2. **Autonomous Memory Extraction**: Implement `save_user_memory` tool capturing user preferences, risk tolerance, life events, and family constraints across sessions.
+3. **Omni-Agent Context Injection**: Inject persistent episodic memory profile on session boot across all agents (Supervisor, Deep Q&A, Portfolio Analyst, Market Insights, and Goal Strategist).
 
 ---
 
 ## 📂 Key Files to Review Upon Resume
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md) — Phase 8, 9, 10 roadmap
-- [specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md](../specs/upcoming/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) — Production specification
-- [backend/src/models/state.py](../backend/src/models/state.py) — Extended state definitions
-- [backend/src/tools/goal_tools.py](../backend/src/tools/goal_tools.py) — Target tool manifest
-- [backend/src/graph.py](../backend/src/graph.py) — Graph topology & checkpointer factory
-- [backend/src/agents/goal_strategist.py](../backend/src/agents/goal_strategist.py) — Target agent node
-- [frontend/src/components/Goals/GoalPlanner.tsx](../frontend/src/components/Goals/GoalPlanner.tsx) — Target UI view
-
-
-
----
-
+- [`specs/baseline/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md`](../specs/baseline/SPEC-10-AUTONOMOUS-FINANCIAL-GPS.md) — Production baseline spec
+- [`specs/baseline/SPEC-11-LIABILITY-AWARE-GOAL-PLANNING.md`](../specs/baseline/SPEC-11-LIABILITY-AWARE-GOAL-PLANNING.md) — Production baseline spec
+- [`specs/upcoming/SPEC-12-LONG-TERM-EPISODIC-MEMORY.md`](../specs/upcoming/SPEC-12-LONG-TERM-EPISODIC-MEMORY.md) — Next target feature spec
+- [`docs/DATA_MODEL.md`](./DATA_MODEL.md) — Data schema single source of truth
+- [`docs/FEATURES_AND_AGENTS.md`](./FEATURES_AND_AGENTS.md) — Feature architecture guide

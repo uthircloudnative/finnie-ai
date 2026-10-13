@@ -57,7 +57,7 @@ describe('GoalPlannerFlow Integration Tests', () => {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({
-            reply: '### 🎯 Your Strategic Roadmap: Retirement\nOn track with $30,500 annual IRS limits.',
+            reply: '### Strategic Roadmap: Retirement\nOn track with $30,500 annual IRS limits.',
             analysis_results: {
               simulation: {
                 confidence_score: 84.5,

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCountryPortfolio } from '../../hooks/useCountryPortfolio'
 import { useChat } from '../../hooks/useChat'
 import CopilotDrawer from '../Chat/CopilotDrawer'
+import FinnieCoinIcon from '../Common/FinnieCoinIcon'
 import './PortfolioAnalyst.css'
 
 // ── Insight section definitions ─────────────────────────────────────────────
@@ -130,7 +131,7 @@ export default function PortfolioAnalyst() {
                 className="ask-finnie-toggle"
                 onClick={() => setIsChatOpen(true)}
               >
-                <span className="toggle-icon">✦</span>
+                <FinnieCoinIcon size={16} />
                 Ask Finnie
               </button>
             )}
@@ -378,6 +379,12 @@ export default function PortfolioAnalyst() {
           onSendMessage={handleSendMessage}
           onClearHistory={chat.clearMessages}
           onClose={() => setIsChatOpen(false)}
+          suggestionChips={[
+            'How can I lower my portfolio beta?',
+            'Evaluate my geographical diversification',
+            'What are defensive rebalancing steps?',
+            'Explain my portfolio Sharpe ratio'
+          ]}
           inputPlaceholder="Ask about beta, volatility, or diversification..."
           storageKey="finnie_portfolio_copilot_width"
           disclaimerText="$NFA — Finnie is an AI assistant, not a licensed financial advisor. All answers are grounded in public educational sources."

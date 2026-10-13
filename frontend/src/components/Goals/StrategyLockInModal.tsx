@@ -41,7 +41,21 @@ export default function StrategyLockInModal({
         background: '#0d1117'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>🔒</span>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'rgba(0, 240, 255, 0.1)',
+            border: '1px solid rgba(0, 240, 255, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <svg style={{ width: '20px', height: '20px', color: 'var(--accent-cyan)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
           <div>
             <h2 style={{ margin: 0, fontSize: '1.35rem', color: 'var(--text-bright)' }}>
               Lock In Strategy
@@ -127,7 +141,7 @@ export default function StrategyLockInModal({
               fontWeight: 600
             }}
           >
-            {isLoading ? 'Locking In...' : 'Confirm & Lock In 🔒'}
+            {isLoading ? 'Locking In...' : 'Confirm & Lock In'}
           </button>
         </div>
       </div>

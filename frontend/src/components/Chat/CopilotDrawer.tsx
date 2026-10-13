@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { renderFormattedContent } from '../Goals/RoadmapRenderer'
+import FinnieCoinIcon from '../Common/FinnieCoinIcon'
 import './CopilotDrawer.css'
 
 export interface CopilotMessage {
@@ -154,7 +155,9 @@ export default function CopilotDrawer({
         <div className="copilot-title-group">
           <div className="copilot-title-row">
             <h3 className="copilot-title">
-              <span className="copilot-title-icon">✦</span>
+              <span className="copilot-title-icon">
+                <FinnieCoinIcon size={20} />
+              </span>
               {title}
             </h3>
             {statusBadge && (
@@ -219,7 +222,9 @@ export default function CopilotDrawer({
       <div className="copilot-thread">
         {messages.length === 0 ? (
           <div className="copilot-empty-state">
-            <span className="copilot-empty-icon">✦</span>
+            <span className="copilot-empty-icon">
+              <FinnieCoinIcon size={32} />
+            </span>
             {suggestionChips && suggestionChips.length > 0
               ? 'Click a suggested question chip above or ask any question below to interact.'
               : 'Ask any question below to start an interactive consultation.'}
@@ -256,7 +261,9 @@ export default function CopilotDrawer({
 
         {isLoading && (
           <div className="copilot-thinking">
-            <span className="copilot-thinking-orb">✦</span>
+            <span className="copilot-thinking-orb">
+              <FinnieCoinIcon size={18} />
+            </span>
             <span>{loadingText}</span>
           </div>
         )}

@@ -2,20 +2,20 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.13-3776AB.svg?style=flat&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/LangGraph-1C3C3C?style=flat&logo=langchain&logoColor=white" alt="LangGraph" />
-  <img src="https://img.shields.io/badge/OpenAI-412991?style=flat&logo=openai&logoColor=white" alt="OpenAI" />
-  <img src="https://img.shields.io/badge/React-19-20232A?style=flat&logo=react&logoColor=61DAFB" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-B73BFE?style=flat&logo=vite&logoColor=FFD62E" alt="Vite" />
-  <img src="https://img.shields.io/badge/SQLAlchemy_2.0-D71F00?style=flat&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy 2.0" />
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white" alt="SQLite" />
-  <img src="https://img.shields.io/badge/ChromaDB-FF6B6B?style=flat" alt="ChromaDB" />
-  <img src="https://img.shields.io/badge/Mailgun-F05A28?style=flat&logo=mailgun&logoColor=white" alt="Mailgun" />
-  <img src="https://img.shields.io/badge/JWT_Auth-000000?style=flat&logo=jsonwebtokens&logoColor=white" alt="JWT Auth" />
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Docker_Compose-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker Compose" />
-  <img src="https://img.shields.io/badge/Azure-0089D6?style=flat&logo=microsoft-azure&logoColor=white" alt="Azure" />
+  <img src="https://img.shields.io/badge/FastAPI-009688.svg?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/LangGraph-1C3C3C.svg?style=flat&logo=langchain&logoColor=white" alt="LangGraph" />
+  <img src="https://img.shields.io/badge/OpenAI-412991.svg?style=flat&logo=openai&logoColor=white" alt="OpenAI" />
+  <img src="https://img.shields.io/badge/React-19-20232A.svg?style=flat&logo=react&logoColor=%2361DAFB" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC.svg?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE.svg?style=flat&logo=vite&logoColor=%23FFD62E" alt="Vite" />
+  <img src="https://img.shields.io/badge/SQLAlchemy-2.0-D71F00.svg?style=flat&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy 2.0" />
+  <img src="https://img.shields.io/badge/SQLite-003B57.svg?style=flat&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/ChromaDB-FF6B6B.svg?style=flat" alt="ChromaDB" />
+  <img src="https://img.shields.io/badge/Mailgun-F05A28.svg?style=flat&logo=mailgun&logoColor=white" alt="Mailgun" />
+  <img src="https://img.shields.io/badge/JWT_Auth-000000.svg?style=flat&logo=jsonwebtokens&logoColor=white" alt="JWT Auth" />
+  <img src="https://img.shields.io/badge/Docker-2496ED.svg?style=flat&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Docker_Compose-2496ED.svg?style=flat&logo=docker&logoColor=white" alt="Docker Compose" />
+  <img src="https://img.shields.io/badge/Azure-0089D6.svg?style=flat&logo=microsoftazure&logoColor=white" alt="Azure" />
 </p>
 
 ## 🧠 What is Finnie AI?
@@ -100,7 +100,7 @@ graph TD
 | **Deep Q&A Chat** | `/chat` | **AI Agentic** | **Multi-Agent Router** | ChromaDB RAG search | Supervisor Agent routes intent to Financial Q&A Agent → RAG search → Compliance Agent. |
 | **Portfolio Analyst** | `/portfolio/analysis` | **AI Agentic** | **Multi-Agent (Country-Aware)** | Benchmark routing + yfinance + ChromaDB RAG | Calculates Beta/Volatility/HHI, conducts 2-pass RAG, synthesizes 3-card formatted insights, and provides on-demand `CopilotDrawer` interaction. |
 | **Market Insights** | `/market/news` | **AI Agentic** | **Single Agent** | Alpha Vantage API + 30-min SQLite Cache | Direct route to Market Insights Agent for stock news & sentiment analysis with on-demand `CopilotDrawer` ticker deep-dive. |
-| **Goal Planner** | `/goals/calculate` | **AI Agentic** | **Single Agent** | 10,000 Monte Carlo simulations + ChromaDB Tax RAG | Direct route to Goal Strategist Agent for retirement roadmap generation with multi-turn `CopilotDrawer` what-if refinement and optional prompt chips. |
+| **Goal Planner (Financial GPS)** | `/goals/calculate`<br/>`/goals`<br/>`/goals/liabilities`<br/>`/goals/cashflow` | **AI Agentic + Deterministic Math** | **Hybrid Bootstrap Multi-Agent** (`goal_strategist` + `goal_auditor` + `hitl_gatekeeper`) | 10k Monte Carlo Engine + Dynamic Debt Amortization + Tax Limit RAG + Regional Portfolio Scoping | Autonomous financial GPS with country-scoped equity ingestion, live cash flow solvency meters, multi-loan amortization, twin synchronized charts (Projected Growth & Real Net Worth), upfront action levers (Debt Avalanche & Post-Loan Step-Up), human-in-the-loop strategy lock-in, and interactive `Ask Finnie` what-if copilot. |
 
 
 > 👁️ **Curious what it looks like?** Check out the [UI Preview Gallery](./docs/UI_PREVIEW.md) to see high-fidelity mockups of the finished Dashboard and Market Insights interfaces before you start the installation!

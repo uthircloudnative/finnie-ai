@@ -273,3 +273,89 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   height: 0;
 }
+
+/* ── Statutory Compliance & $NFA Disclaimer Callout ──────── */
+.chat-compliance-disclaimer {
+  margin-top: 0.85rem;
+  margin-bottom: 0.35rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--chat-bubble-radius);
+  background: var(--chat-disclaimer-bg);
+  border: 1px solid var(--chat-disclaimer-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-sizing: border-box;
+}
+
+.chat-compliance-badge {
+  font-size: var(--chat-font-size-role);
+  font-weight: 700;
+  color: var(--chat-disclaimer-badge);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chat-compliance-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.chat-compliance-text {
+  font-size: var(--chat-font-size-disclaimer);
+  line-height: 1.5;
+  color: var(--chat-disclaimer-text);
+  margin: 0;
+}
+
+.chat-divider {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.65rem 0;
+}
+
+.chat-h3 {
+  font-family: var(--font-heading);
+  font-size: var(--chat-font-size-title);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0.75rem 0 0.35rem 0;
+  letter-spacing: -0.01em;
+}
+
+.chat-h4 {
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin: 0.65rem 0 0.25rem 0;
+  letter-spacing: -0.01em;
+}
+
+.chat-bullet {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  font-size: var(--chat-font-size-body);
+  line-height: var(--chat-line-height-body);
+  color: #cbd5e1;
+}
+
+.chat-bullet-dot {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.chat-paragraph {
+  margin: 0 0 0.5rem 0;
+  font-size: var(--chat-font-size-body);
+  line-height: var(--chat-line-height-body);
+  color: #cbd5e1;
+}
+

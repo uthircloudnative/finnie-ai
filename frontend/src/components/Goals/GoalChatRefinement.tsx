@@ -21,14 +21,16 @@ export default function GoalChatRefinement({
   onClose
 }: GoalChatRefinementProps) {
   const promptChips = [
+    'Should I pay down high-interest debt first or invest in equities?',
     'What if I increase monthly savings by $500?',
+    'How does my debt balance affect my goal timeline and net worth?',
     country === 'INDIA' || country === 'IN'
       ? 'How do Section 80C and NPS caps affect my strategy?'
       : country === 'UK'
       ? 'How does the £20,000 ISA allowance apply here?'
       : 'How should I split savings between 401(k) and brokerage?',
     'What happens if portfolio volatility increases by 5%?',
-    'What is my estimated capital accumulation at retirement?'
+    'Can I deduct mortgage / home loan interest under current tax rules?'
   ]
 
   return (

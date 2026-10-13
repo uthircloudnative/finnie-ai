@@ -90,7 +90,7 @@ def hitl_approval_node(state: FinnieState) -> Dict[str, Any]:
                 db.commit()
                 db.refresh(goal)
                 confirm_msg = (
-                    f"🎉 **Strategy Locked & Saved!** Your **{goal_name}** roadmap is now permanently locked "
+                    f"**Strategy Locked & Saved!** Your **{goal_name}** roadmap is now permanently locked "
                     f"with a target of ${target_amount:,.0f} by {target_year} and an audited confidence score of {confidence:.1f}%."
                 )
                 return {
@@ -100,7 +100,7 @@ def hitl_approval_node(state: FinnieState) -> Dict[str, Any]:
             except Exception as e:
                 db.rollback()
                 print(f"[FINNIE-AI] ❌ Database error saving goal: {e}")
-                err_msg = f"⚠️ Could not lock in goal due to a storage error: {e}"
+                err_msg = f"Could not lock in goal due to a storage error: {e}"
                 return {
                     "messages": [AIMessage(content=err_msg)],
                     "is_save_intent": False

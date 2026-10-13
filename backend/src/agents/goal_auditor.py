@@ -90,6 +90,33 @@ def goal_auditor_node(state: FinnieState) -> Dict[str, Any]:
                     f"The roadmap MUST advise splitting savings between tax-advantaged and taxable investment vehicles."
                 )
 
+    # Toxic Debt Drag Check (SPEC-11 / AC-3)
+    liabilities = config.get("liabilities") or []
+    toxic_debts = [
+        l for l in liabilities
+        if float(l.get("interest_rate_apr", 0.0)) >= 10.0 and float(l.get("current_balance", 0.0)) > 0
+    ]
+    if toxic_debts and not violation:
+        last_ai_content = ""
+        for m in reversed(messages):
+            if hasattr(m, "type") and m.type == "ai":
+                last_ai_content = m.content.lower()
+                break
+
+        debt_mitigation_keywords = ["credit card", "debt", "avalanche", "pay off", "interest rate", "toxic debt"]
+        has_debt_mitigation = any(kw in last_ai_content for kw in debt_mitigation_keywords)
+
+        if not has_debt_mitigation:
+            worst_debt = max(toxic_debts, key=lambda d: float(d.get("interest_rate_apr", 0.0)))
+            debt_name = worst_debt.get("liability_type", "Debt").replace("_", " ").title()
+            apr = float(worst_debt.get("interest_rate_apr", 0.0))
+            bal = float(worst_debt.get("current_balance", 0.0))
+            violation = (
+                f"The user carries Toxic Debt ({debt_name} at {apr:.1f}% APR, balance: ${bal:,.2f}). "
+                f"Investing in equities while carrying high-interest debt produces a guaranteed negative return drag. "
+                f"The roadmap MUST advise a Debt Avalanche strategy prioritizing clearing this toxic debt first."
+            )
+
     if violation:
         if retry_count < 2:
             print(f"[FINNIE-AI] ⚠️ Goal Auditor detected violation (attempt {retry_count + 1}/2): {violation}")
@@ -101,7 +128,7 @@ def goal_auditor_node(state: FinnieState) -> Dict[str, Any]:
             print(f"[FINNIE-AI] ⚠️ Goal Auditor retry threshold reached ({retry_count}). Appending statutory callout.")
             # Gracefully append caution callout to avoid crashing
             last_msg = messages[-1] if messages else None
-            callout = f"\n\n> ⚠️ **Statutory Notice**: {violation}"
+            callout = f"\n\n> **Statutory Notice**: {violation}"
             updates: Dict[str, Any] = {
                 "critic_feedback": None,
                 "critic_retry_count": retry_count

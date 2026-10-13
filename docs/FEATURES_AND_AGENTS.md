@@ -186,14 +186,17 @@ graph TD
 
 ---
 
-# Feature 4: Goal Strategist (Financial GPS)
+# Feature 4: Autonomous Financial GPS & Liability-Aware Goal Planner (SPEC-10 & SPEC-11)
 
 ## 1. 🎯 Business Context & Domain Rules
-- **Problem Solved**: Life goals (e.g., retirement, buying a home) require understanding long-term probabilities, not deterministic linear projections.
+- **Problem Solved**: Life goals (e.g., retirement, buying a home) require holistic balance sheet intelligence—accounting for investments, cash flow solvency, and high-interest debt drag together rather than in isolation.
 - **Domain & Regulatory Rules**:
-  - **Monte Carlo Engine**: Runs **10,000 geometric Brownian motion scenarios** based on real portfolio risk (Beta & Volatility).
-  - **Statute-Based RAG Grounding**: Must cross-reference projections against official tax contribution limits from the `goal_rules` ChromaDB collection (e.g. 2026 US IRS 401(k) / IRA limits, or India Section 80C limits).
-  - **Structured UI Output**: Rendered with structured headers, glowing status badges (`● ON TRACK`, `▲ CAUTION`, `■ AT RISK`), milestones, and compliance callouts.
+  - **Hybrid Bootstrap Multi-Agent Flow**: Runs upfront deterministic 10,000-scenario Monte Carlo simulations, vector statutory tax retrieval, and regional portfolio scoping before LLM synthesis. Guided by a Goal Auditor reflection loop and Human-in-the-Loop (HITL) strategy lock-in.
+  - **Multi-Country Scoping**: Upfront country jurisdiction selection (USA, INDIA, UK, CANADA, GERMANY) automatically filters holdings to relevant exchanges (NASDAQ/NYSE, NSE/BSE, LSE, TSX) and aligns local currency symbols ($, ₹, £, C$, €).
+  - **Live Cash Flow Solvency Meter**: Compares monthly take-home pay against essential living expenses, discretionary spend, and debt service obligations to prevent over-committing to unfeasible savings goals.
+  - **Dynamic Debt Amortization & Step-Up Compounding**: Simulates month-by-month loan principal reduction, projects the exact **Debt-Free Year**, and models the "auto-step-up multiplier" where former monthly loan payments roll directly into future investment contributions once debts are eliminated.
+  - **Action Levers & Debt Elimination Pathways**: Evaluates Strategy 1 (Debt Avalanche payoff for liabilities >10% APR) and Strategy 2 (Post-Loan Step-Up). Synthesizes 3 concrete debt elimination pathways (Mathematical Avalanche, Discretionary Trimming, Rollover Reinvestment).
+  - **Interactive Ask Finnie Strategy Drawer**: Enables multi-turn what-if exploration backed by LangGraph thread checkpointing (`goal_{user_id}_{goal_id}`).
 
 ## 2. 🏗️ Diagrammatic Architectural Representation
 
@@ -202,41 +205,47 @@ sequenceDiagram
     autonumber
     participant UI as GoalPlanner.tsx
     participant Hook as useGoalStrategist.ts
-    participant API as FastAPI (/goals/calculate)
+    participant API as FastAPI (main.py)
     participant Node as goal_strategist_node
-    participant MC as Monte Carlo (NumPy 10k)
+    participant MC as Cashflow Monte Carlo Engine
     participant RAG as ChromaDB (goal_rules)
     participant LLM as OpenAI GPT-4o
-    participant Comp as Compliance Guardian
-    participant Render as RoadmapRenderer.tsx
+    participant Auditor as goal_auditor_node
+    participant Comp as compliance_guardian_node
+    participant DB as SQLite (financial_goals, liabilities, checkpoints)
 
-    UI->>Hook: Configures Goal (Target $1M, 2040, US)
+    UI->>Hook: Configures Goal, Cash Flow & Liabilities
     Hook->>API: POST /goals/calculate [Bearer JWT]
-    API->>Node: Dispatch with user_id & goal config
-    Node->>MC: run_monte_carlo(10,000 paths)
-    MC-->>Node: Percentiles (p05, median, p95, confidence_score)
-    Node->>RAG: search_kb(country="US")
-    RAG-->>Node: 2026 401(k) / IRA contribution limits
-    Node->>LLM: Synthesize structured roadmap report
-    LLM-->>Node: Markdown report (### headers, status chip, milestones)
-    Node->>Comp: Route through compliance_guardian_node
+    API->>Node: Dispatch with current_user.id & goal configuration
+    Node->>MC: run_cashflow_monte_carlo(10,000 paths, liabilities, auto_step_up)
+    MC-->>Node: Percentiles, Debt-Free Year, Interest Saved, Net Worth Path
+    Node->>RAG: search_kb(country=country)
+    RAG-->>Node: Statutory Limits (401k/IRA, 80C, ISA)
+    Node->>LLM: Synthesize Holistic Roadmap (Balance Sheet, Pathways, Milestones)
+    LLM-->>Node: Markdown report (Professional typography, no emojis)
+    Node->>Auditor: Audit strategy bounds & statutory compliance
+    Auditor->>Comp: Route through compliance_guardian_node
     Comp-->>API: Verified roadmap + simulation metrics
-    API-->>Hook: Return JSON payload
-    Hook-->>UI: Render Confidence Gauge & Probability Fan Chart
-    UI->>Render: Pass raw markdown
-    Render-->>UI: Render formatted HTML with badges & milestones
+    API-->>Hook: Return JSON payload & thread_id
+    Hook-->>UI: Synchronize Twin Charts & Roadmap
+    UI->>DB: User clicks "Confirm & Lock In" (Persists audited goal)
 ```
 
 ## 3. ⚙️ Detailed Technical Implementation
 - **Endpoints**:
   - `GET /goals`: Fetches user's saved primary goal.
   - `POST /goals/calculate`: Executes 10,000 Monte Carlo runs and synthesizes roadmap.
-- **Presentation Component**:
-  - [`RoadmapRenderer.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/RoadmapRenderer.tsx): Zero-dependency custom markdown parser matching status chips (`.status-on-track`, `.status-caution`, `.status-at-risk`), headers, bullet points, and `$NFA` disclaimer callouts.
+  - `GET /goals/liabilities` / `POST /goals/liabilities` / `DELETE /goals/liabilities/{id}`: CRUD operations for user loans.
+  - `GET /goals/cashflow` / `POST /goals/cashflow`: Manages net take-home and expense profiles.
+- **Components & Hooks**:
+  - [`GoalPlanner.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/GoalPlanner.tsx): Interactive 3-column workspace with twin synced charts, action levers, and 50%/30% horizontal expansion.
+  - [`useGoalStrategist.ts`](file:///Users/prajosh/Development/finnie-ai/frontend/src/hooks/useGoalStrategist.ts): Decoupled hook managing calculation, debt amortization state, and session caching.
+  - [`StrategyLockInModal.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/StrategyLockInModal.tsx): Human-in-the-Loop sign-off modal with audited metrics.
 
 ## 4. 🛡️ Resilience, Edge Cases & Verification
-- **Percentile Invariant**: Automated test `test_monte_carlo_positive_horizon` in `backend/tests/test_unit.py` verifies that $P_{05} \le \text{Median} \le P_{95}$.
-- **Zero Horizon Handling**: Safely flags immediate goals (years = 0) with `confidence_score = 0`.
+- **Debt-Free & Zero Liability State**: When no loans exist, returns an unencumbered balance sheet ($S_0 = \text{assets}$, $\text{debt} = 0$), rendering `Debt-Free: No Loans Reported`.
+- **Target Already Achieved**: When initial balance exceeds the target amount, the engine returns `100.0% Confidence` with status `ACHIEVED`.
+- **Cash Flow Deficit Alert**: When expenses and debt payments exceed take-home pay, the solvency meter signals `Cash-Flow Deficit` and warns against aggressive equity investing.
 
 ---
 

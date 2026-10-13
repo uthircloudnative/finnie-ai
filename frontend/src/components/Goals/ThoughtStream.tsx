@@ -1,3 +1,5 @@
+import FinnieCoinIcon from '../Common/FinnieCoinIcon'
+
 interface ThoughtStreamProps {
   thoughts: string[]
   isStreaming: boolean
@@ -19,9 +21,7 @@ export default function ThoughtStream({ thoughts, isStreaming }: ThoughtStreamPr
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '0.9rem', color: 'var(--accent-cyan)', animation: isStreaming ? 'pulse 1.2s infinite' : 'none' }}>
-            ✦
-          </span>
+          <FinnieCoinIcon size={16} isSpinning={isStreaming} />
           <span style={{
             fontSize: '0.8rem',
             fontWeight: 600,

@@ -1,6 +1,6 @@
 # Feature Spec: SPEC-11 — Cash-Flow & Liability-Aware Financial GPS
 
-> **Status**: 🟢 **BASELINE / PRODUCTION VERIFIED**  
+> **Status**:  **BASELINE / PRODUCTION VERIFIED**  
 > **Author**: Antigravity & Lead Engineer  
 > **Scope**: Full-Stack (Backend Models, Cash-Flow Simulation Engine, LangGraph Multi-Agent, React 19 Twin Visualizations)  
 > **Target Release**: v0.9.0 (Phase 9)  
@@ -8,7 +8,7 @@
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 
 ### 1.1 Problem Statement
 While the current Goal Planner successfully executes 10,000-scenario Monte Carlo simulations against investment portfolios, it operates under an **asset-only assumption**:
@@ -20,7 +20,7 @@ While the current Goal Planner successfully executes 10,000-scenario Monte Carlo
 ### 1.2 Core Domain Rules & Financial Invariants
 
 1. **Mandatory Upfront Country Scoping (Prerequisite)**:
-   - Before calculating or viewing a goal roadmap, the user **must select their Country of Residence / Plan Jurisdiction** (e.g., 🇺🇸 USA, 🇮🇳 India, 🇬🇧 UK, 🇨🇦 Canada).
+   - Before calculating or viewing a goal roadmap, the user **must select their Country of Residence / Plan Jurisdiction** (e.g., [US] USA, [IN] India, [UK] UK, [CA] Canada).
    - **Portfolio Filtering**: `fetch_user_portfolio_valuation` automatically isolates holdings matching the selected country's exchange (e.g., NASDAQ/NYSE for USA, NSE/BSE for India, LSE for UK) and denominations in local currency ($, ₹, £).
    - **Automatic Portfolio Ingestion**: If regional holdings exist, the total market valuation becomes the initial capital ($S_0$) and historical holdings variance defines $\sigma$. If 0 regional holdings exist, $S_0 = 0.0$ and a standard 15.0% broad-market benchmark equity standard deviation is applied for future savings.
 
@@ -46,7 +46,7 @@ While the current Goal Planner successfully executes 10,000-scenario Monte Carlo
 
 ---
 
-## 2. 🔌 Technical Contracts & Architecture
+## 2. Technical Contracts & Architecture
 
 ### 2.1 REST API Endpoints
 
@@ -173,20 +173,20 @@ flowchart TD
 
 ---
 
-## 3. 🖥️ Frontend Presentation & UI/UX Design
+## 3.  Frontend Presentation & UI/UX Design
 
 The interface retains the proven **3-Column Expansive Glass Workspace** in [GoalPlanner.tsx](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/GoalPlanner.tsx):
 
 ### 3.1 Column 1: Goal Targets & Cash Flow Configurator
 1. **Mandatory Country Selector (Top)**:
-   - Visual country dropdown with flags: 🇺🇸 United States (USD), 🇮🇳 India (INR), 🇬🇧 United Kingdom (GBP), 🇨🇦 Canada (CAD).
+   - Visual country dropdown with flags: [US] United States (USD), [IN] India (INR), [UK] United Kingdom (GBP), [CA] Canada (CAD).
    - Selecting a country updates all currency symbols and scopes holdings.
 2. **Standard Targets**: Goal Title, Target Amount, Target Year, Committed Monthly Savings.
 3. **Progressive Disclosure Accordion: "Cash Flow & Liabilities (Optional)"**:
    - **Cash Flow Inputs**: Monthly Take-Home Pay, Fixed Living Expenses, Average Credit Card / Discretionary Spend.
    - **Free Cash Flow Meter**: Live calculated badge showing:
-     - 🟢 `Available Free Cash Flow: $1,850/mo` (Solvent)
-     - 🔴 `⚠️ Deficit: -$350/mo (Savings Exceeds Free Cash Flow)` (Warning)
+     -  `Available Free Cash Flow: $1,850/mo` (Solvent)
+     -  `[WARN] Deficit: -$350/mo (Savings Exceeds Free Cash Flow)` (Warning)
    - **Active Liabilities Table**:
      - Lists individual loans with type badge, remaining balance, APR %, and monthly payment.
      - **`+ Add Liability`** micro-button (modal or inline row) supporting Credit Card, Mortgage, Auto Loan, Student Loan, Personal Loan.
@@ -211,7 +211,7 @@ Instead of cramming all data into one distorted graph, Center Stage presents **T
 
 ┌────────────────────────────────────────────────────────────────────────┐
 │ CARD 2: NET WORTH & DEBT AMORTIZATION (Financial Freedom Horizon)     │
-│ Telemetry: 📍 Debt-Free in 2029 (Year 4) · Interest Saved: $14,200     │
+│ Telemetry:  Debt-Free in 2029 (Year 4) · Interest Saved: $14,200     │
 ├────────────────────────────────────────────────────────────────────────┤
 │ [Recharts Line: Crimson Line = Total Debt Balance ($26k -> $0)         │
 │  Emerald Line = True Net Worth (Assets - Debt climbing to +$1.1M)      │
@@ -219,11 +219,11 @@ Instead of cramming all data into one distorted graph, Center Stage presents **T
 └────────────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────────────┐
-│ 💡 UPFRONT ACTION LEVERS (Interactive Scenario Levers)                 │
+│ UPFRONT ACTION LEVERS (Interactive Scenario Levers)                 │
 ├──────────────────────────────────┬─────────────────────────────────────┤
-│ ⚡ LEVER 1: DEBT AVALANCHE       │ 🚀 LEVER 2: POST-LOAN STEP-UP       │
+│  LEVER 1: DEBT AVALANCHE       │  LEVER 2: POST-LOAN STEP-UP       │
 │ "Pay extra $150/mo on 24% Card"  │ "Auto-redirect $450 car EMI in 2028"│
-│ • Debt-Free: 5 months faster     │ • Success Probability: 72% ➔ 89%    │
+│ • Debt-Free: 5 months faster     │ • Success Probability: 72% -> 89%    │
 │ • Interest Saved: +$1,850        │ • Net Worth at 2045: +$64,000       │
 │ [ Apply Lever ]                  │ [ Apply Lever ]                     │
 └──────────────────────────────────┴─────────────────────────────────────┘
@@ -234,7 +234,7 @@ Instead of cramming all data into one distorted graph, Center Stage presents **T
 │ • Phase 1: High-Interest Debt Cleansing (Months 1-8)                   │
 │ • Phase 2: Core Tax-Advantaged Investing (Years 2-4)                   │
 │ • Phase 3: Post-Amortization Accelerated Compounding (Year 4+)         │
-│ 🛡️ SEC/FINRA Compliance Disclaimer ($NFA)                              │
+│  SEC/FINRA Compliance Disclaimer ($NFA)                              │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -252,7 +252,7 @@ Hovering over Year $X$ on Card 1 automatically highlights the exact correspondin
 
 ---
 
-## 4. 🛡️ Edge Cases, Failure Modes & Resilience
+## 4.  Edge Cases, Failure Modes & Resilience
 
 | Edge Case | Risk / Failure Mode | Defense / Resolution Mechanism |
 | :--- | :--- | :--- |
@@ -264,7 +264,7 @@ Hovering over Year $X$ on Card 1 automatically highlights the exact correspondin
 
 ---
 
-## 5. ✅ Acceptance Criteria & Test Plan
+## 5. [PASS] Acceptance Criteria & Test Plan
 
 - [ ] **AC-1 (Upfront Country Scoping)**: Selecting Country isolates regional holdings (e.g. NSE/BSE for India, NASDAQ/NYSE for US), updates currency formatting, and pulls correct statutory tax rules.
 - [ ] **AC-2 (Cash-Flow Calculation)**: $\text{Free Cash Flow} = \text{Income} - \text{Living Expenses} - \text{CC Spend} - \sum \text{EMIs}$ is computed accurately.

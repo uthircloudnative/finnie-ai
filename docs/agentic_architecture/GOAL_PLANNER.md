@@ -4,7 +4,7 @@ This document is the authoritative, end-to-end technical and functional specific
 
 ---
 
-## 1. 🎯 Plain-English Business Use Cases
+## 1. Plain-English Business Use Cases
 
 Traditional retirement calculators rely on static linear formulas (e.g. assuming an investment grows by a constant 8% every single year without interruption). In real life, markets do not move in straight lines—they experience recessions, bull runs, crashes, and prolonged sideways recoveries. 
 
@@ -12,7 +12,7 @@ The Goal Planner replaces static calculators with an **adaptive, mathematically 
 
 ---
 
-### 📖 Plain-English Financial Primer (Zero-Finance Background Guide)
+### Plain-English Financial Primer (Zero-Finance Background Guide)
 
 | Financial Term | Technical Definition | Plain-English Explanation & Metaphor |
 |---|---|---|
@@ -42,12 +42,12 @@ The Goal Planner replaces static calculators with an **adaptive, mathematically 
 
 #### UC-GP-3: Conversational What-If Scenario Exploration via Universal Copilot
 - **The Problem**: If a user wonders *"What if I save $500 more?"* or *"What if I retire 2 years earlier?"*, legacy tools force them to wipe the screen, change numbers, and re-read everything from scratch.
-- **The Solution**: The user clicks **✦ Ask Finnie** to open the **Universal Copilot Drawer** ([`CopilotDrawer.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Chat/CopilotDrawer.tsx)). Users can click preset suggested question chips or type custom what-if queries.
+- **The Solution**: The user clicks **Ask Finnie** to open the **Universal Copilot Drawer** ([`CopilotDrawer.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Chat/CopilotDrawer.tsx)). Users can click preset suggested question chips or type custom what-if queries.
 - **The Outcome**: The copilot directly answers the specific what-if question without re-generating the baseline roadmap or wiping prior questions. All previous dialogue remains visible in an immutable, read-only history.
 
 #### UC-GP-4: Human-in-the-Loop Strategy Commitment ("Lock-In")
 - **The Problem**: Financial tools generate recommendations that vanish as soon as the user closes their browser, leaving no actionable plan.
-- **The Solution**: A prominent **🔒 Lock-In Target** button opens a confirmation modal ([`StrategyLockInModal.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/StrategyLockInModal.tsx)). Upon confirmation, the roadmap and targets are permanently committed to the database with `status = "LOCKED"`.
+- **The Solution**: A prominent **Lock-In Target** button opens a confirmation modal ([`StrategyLockInModal.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/StrategyLockInModal.tsx)). Upon confirmation, the roadmap and targets are permanently committed to the database with `status = "LOCKED"`.
 
 #### UC-GP-5: Zero-Holding Truth Invariant & Risk Calibration
 - **The Problem**: If a user creates a retirement goal before linking any stock holdings, AI models tend to hallucinate phrases like *"based on your stock portfolio"* or *"as per your 15% stock variation"*.
@@ -55,7 +55,7 @@ The Goal Planner replaces static calculators with an **adaptive, mathematically 
 
 ---
 
-## 2. 💾 Session Storage Architecture & Client-Side State Persistence
+## 2. Session Storage Architecture & Client-Side State Persistence
 
 A critical requirement of the Goal Planner is that **navigating between tabs (e.g., switching from Goal Planner to Dashboard and back) MUST NOT lose calculation results, roadmap text, or conversational history.**
 
@@ -76,13 +76,13 @@ The application uses three dedicated `sessionStorage` keys:
 
 ```mermaid
 graph TD
-    subgraph BrowserStorage["📦 Browser sessionStorage (Domain-Scoped)"]
+    subgraph BrowserStorage["Browser sessionStorage (Domain-Scoped)"]
         K1["finnie_goal_session<br/>(GoalSessionCache JSON)"]
         K2["finnie_copilot_open<br/>(Boolean String: 'true' | 'false')"]
         K3["finnie_copilot_width<br/>(Number String: '380' | '580' | custom)"]
     end
 
-    subgraph StateHydration["⚙️ React Hook & Component Hydration"]
+    subgraph StateHydration["React Hook & Component Hydration"]
         K1 -->|loadSessionCache()| Hook["useGoalStrategist.ts<br/>• goal<br/>• roadmap<br/>• simulationResults<br/>• confidenceScore<br/>• status<br/>• chatHistory"]
         K2 -->|sessionStorage.getItem| GP["GoalPlanner.tsx<br/>• isCopilotOpen"]
         K3 -->|sessionStorage.getItem| CD["CopilotDrawer.tsx<br/>• width"]
@@ -218,13 +218,13 @@ In the Goal Planner use case, session tracking operates across **five distinct, 
 
 ```mermaid
 graph TD
-    subgraph ClientLayers["📱 Client-Side Identifiers"]
+    subgraph ClientLayers["Client-Side Identifiers"]
         AuthToken["1. User Auth Token<br/>(JWT in sessionStorage['finnie_auth_token'])"]
         DraftCache["2. Client Session Cache<br/>(JSON in sessionStorage['finnie_goal_session'])"]
         MsgID["3. Conversational Message IDs<br/>('usr_1790556821432', 'ai_1790556825100')"]
     end
 
-    subgraph BackendLayers["⚙️ Backend & Agentic Identifiers"]
+    subgraph BackendLayers["Backend & Agentic Identifiers"]
         TenantID["4. Effective Tenant ID<br/>(UUID extracted from verified JWT)"]
         ThreadID["5. Goal Strategy Thread ID<br/>('goal_{user_id}_{goal_slug}')"]
         TraceID["6. Distributed Request Trace ID<br/>(UUIDv4 generated per HTTP request)"]
@@ -301,27 +301,27 @@ The **Thread ID** is the primary agentic session identifier linking the user's f
 
 ---
 
-## 3. 🏗️ Dedicated End-to-End Sequence Diagram
+## 3.  Dedicated End-to-End Sequence Diagram
 
 The following diagram tracks the exact end-to-end dataflow, component boundaries, and asynchronous handoffs for the Goal Planner:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 👤 Investor
-    participant UI as 🖥️ GoalPlanner.tsx (React 19)
-    participant Storage as 📦 sessionStorage
-    participant Hook as ⚙️ useGoalStrategist.ts
-    participant Copilot as 💬 CopilotDrawer.tsx
-    participant API as 🚀 FastAPI Route (/goals/calculate)
-    participant Auth as 🔐 Auth & Tenant Gateway
-    participant Graph as 🧠 LangGraph Orchestrator
-    participant ToolVal as 💼 Portfolio Valuation Tool
-    participant ToolMC as 🎲 Monte Carlo Engine (simulations.py)
-    participant ToolRAG as 📚 Statutory Limits Tool (ChromaDB)
-    participant Agent as 🤖 Goal Strategist Agent (GPT-4o)
-    participant Comp as ⚖️ Compliance Guardian Node
-    participant DB as 🗄️ SQLite Database (goals table)
+    actor User as Investor
+    participant UI as GoalPlanner.tsx (React 19)
+    participant Storage as sessionStorage
+    participant Hook as useGoalStrategist.ts
+    participant Copilot as CopilotDrawer.tsx
+    participant API as FastAPI Route (/goals/calculate)
+    participant Auth as Auth & Tenant Gateway
+    participant Graph as LangGraph Orchestrator
+    participant ToolVal as Portfolio Valuation Tool
+    participant ToolMC as Monte Carlo Engine (simulations.py)
+    participant ToolRAG as Statutory Limits Tool (ChromaDB)
+    participant Agent as Goal Strategist Agent (GPT-4o)
+    participant Comp as Compliance Guardian Node
+    participant DB as SQLite Database (goals table)
 
     %% Flow 1: Full Baseline Generation
     rect rgb(13, 20, 36)
@@ -363,7 +363,7 @@ sequenceDiagram
     %% Flow 2: Multi-Turn Copilot Interaction
     rect rgb(15, 23, 42)
     Note over User, DB: Flow 2: Multi-Turn Scenario Refinement via Copilot Drawer
-    User->>UI: Click "✦ Ask Finnie" toggle
+    User->>UI: Click "Ask Finnie" toggle
     UI->>Storage: setItem("finnie_copilot_open", "true")
     UI->>Copilot: Render CopilotDrawer (suggestionChips=[...])
     User->>Copilot: Click Chip: "What if I increase monthly savings by $500?"
@@ -397,7 +397,7 @@ sequenceDiagram
     %% Flow 4: Human-in-the-Loop Lock-in
     rect rgb(10, 15, 30)
     Note over User, DB: Flow 4: Human-in-the-Loop Commitment ("Lock-In")
-    User->>UI: Click "🔒 Lock-In Target"
+    User->>UI: Click "Lock-In Target"
     UI->>UI: Open StrategyLockInModal.tsx
     User->>UI: Confirm Commitment
     UI->>Hook: lockIn()
@@ -406,13 +406,13 @@ sequenceDiagram
     DB-->>API: Record committed
     API-->>Hook: 200 OK (status="LOCKED")
     Hook->>Storage: saveSessionCache({ status: "LOCKED" })
-    Hook->>UI: Update status badge to "🔒 COMMITTED"
+    Hook->>UI: Update status badge to "[COMMITTED]"
     end
 ```
 
 ---
 
-## 4. ⚙️ Critical Technical Implementation Details
+## 4.  Critical Technical Implementation Details
 
 ### A. Backend Architecture & Calculations
 
@@ -473,7 +473,7 @@ sequenceDiagram
 #### 1. 3-Column / Center-Stage Layout ([`frontend/src/components/Goals/GoalPlanner.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/GoalPlanner.tsx))
 - **Column 1 (`.column-targets`)**: Parameter controls (Target Amount, Target Year, Monthly Savings, Country selector, Benchmark Presets).
 - **Column 2 (`.column-center-stage`)**:
-  - **Upper Card (`.center-chart-card`)**: Recharts Fan Chart rendering $P_{05}$, $P_{25}$, $P_{50}$, $P_{75}$, $P_{95}$ area curves with dynamic SVG linear gradients. Contains the `✦ Ask Finnie` trigger button (hidden when drawer is open).
+  - **Upper Card (`.center-chart-card`)**: Recharts Fan Chart rendering $P_{05}$, $P_{25}$, $P_{50}$, $P_{75}$, $P_{95}$ area curves with dynamic SVG linear gradients. Contains the `Ask Finnie` trigger button (hidden when drawer is open).
   - **Lower Card (`.center-synthesis-card`)**: Scrollable container hosting [`RoadmapRenderer.tsx`](file:///Users/prajosh/Development/finnie-ai/frontend/src/components/Goals/RoadmapRenderer.tsx) with compliance badges.
 - **Column 3 (`CopilotDrawer`)**: On-demand strategy refinement side panel.
 
@@ -486,7 +486,7 @@ sequenceDiagram
   }
   ```
 - **Single-Click Width Toggle**: `⤢ Expand` shifts width to `580px`; `⤡ Compact` shifts back to `380px`.
-- **Single Close Button**: Top-right `✕ Close` button (`.copilot-close-btn`). Header trigger buttons automatically hide while open to prevent duplicate controls.
+- **Single Close Button**: Top-right `Close` button (`.copilot-close-btn`). Header trigger buttons automatically hide while open to prevent duplicate controls.
 - **Optional Questionnaire Chips (`suggestionChips`)**:
   Country-aware prompt chips passed dynamically:
   ```typescript
@@ -507,7 +507,7 @@ sequenceDiagram
 
 ---
 
-## 5. 🛡️ Verification & Test Coverage Matrix
+## 5.  Verification & Test Coverage Matrix
 
 | Component | Test File | Verification Scope | Status |
 |---|---|---|---|

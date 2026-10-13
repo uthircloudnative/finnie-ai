@@ -4,7 +4,7 @@ This document is the authoritative engineering specification for Finnie AI's sta
 
 ---
 
-## 1. 🎯 Business Context & Architectural Vision
+## 1. Business Context & Architectural Vision
 
 - **Mission**: Deliver institutional-grade financial guidance for retail investors through a **"Dashboard-First, Agent-Assisted"** experience.
 - **Architectural Pillars**:
@@ -15,13 +15,13 @@ This document is the authoritative engineering specification for Finnie AI's sta
 
 ---
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ### A. End-to-End System Topography
 
 ```mermaid
 graph TD
-    subgraph Client["📱 Frontend (React 19 + TypeScript + Vite)"]
+    subgraph Client["Frontend (React 19 + TypeScript + Vite)"]
         UI[Glass-Finance Dashboard & Views]
         AuthCtx[AuthContext · Token Store & Bearer Injection]
         AuthMod[AuthModal · Sign In / Register]
@@ -31,12 +31,12 @@ graph TD
 
     AuthCtx -->|HTTPS + Bearer JWT| Backend[FastAPI Backend · Python 3.13]
 
-    subgraph Security["🔐 Security & Data Layer"]
+    subgraph Security["Security & Data Layer"]
         Backend -->|Verify Token| JWT[JWT Core & bcrypt · jwt.py]
         Backend -->|Tenant Scoped DB Queries| ORM[(SQLAlchemy ORM<br/>SQLite / PostgreSQL)]
     end
 
-    subgraph MultiAgent["🧠 Stateful LangGraph Engine (Hub-and-Spoke)"]
+    subgraph MultiAgent["Stateful LangGraph Engine (Hub-and-Spoke)"]
         Backend -->|Start Workflow| Router{Start Node Bypass?}
         Router -->|Direct API Intent| Workers
         Router -->|General Chat Query| Sup[Supervisor Node · GPT-4o]
@@ -54,7 +54,7 @@ graph TD
         Comp -->|Attach $NFA| END((END))
     end
 
-    subgraph External["🌐 External Integrations & Telemetry"]
+    subgraph External["External Integrations & Telemetry"]
         QA -.-|Semantic Search| Chroma[(ChromaDB Collections)]
         PA -.-|Prices & Sectors| YF[yfinance Scraper]
         MI -.-|Live News| AV[Alpha Vantage API]
@@ -95,7 +95,7 @@ stateDiagram-v2
 
 ---
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 
 ### A. Graph Memory (`FinnieState`)
 The state is a typed POJO passed between all nodes:
@@ -127,14 +127,14 @@ class FinnieState(TypedDict):
 - **Encapsulated Controls**:
   - Horizontal drag resize handle (`copilot-resize-handle`) with dynamic width bounds (`320px` to `720px`).
   - Single-click horizontal expand/compact toggle (`⤢ Expand` / `⤡ Compact`).
-  - Single `✕ Close` button at top-right corner; parent header buttons automatically hide while drawer is open to prevent duplicate close buttons.
+  - Single `Close` button at top-right corner; parent header buttons automatically hide while drawer is open to prevent duplicate close buttons.
   - Session-storage width memory per domain (`finnie_copilot_width`, `finnie_portfolio_copilot_width`, `finnie_market_copilot_width`).
 - **Clean Markdown Bubble Rendering**: All chat messages process through `renderFormattedContent()`, transforming raw asterisks (`**bold**`), bullets, and code into styled typography without printing raw markdown.
 - **Optional Suggestion Section**: Questionnaire / suggestion chips (`suggestionChips?: string[]`) are purely optional and only render when passed (e.g. Goal Planner what-if scenarios), keeping views like Portfolio Analyst and Market Insights clean and flexible.
 
 ---
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 
 - **Sync/Async Node Uniformity**: All LangGraph node functions are synchronous (`def node(state: FinnieState) -> dict`) to prevent async event-loop deadlocks.
 - **Verification Commands**:

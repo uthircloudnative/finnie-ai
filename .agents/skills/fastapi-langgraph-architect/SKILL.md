@@ -17,7 +17,7 @@ Finnie AI uses a stateful hub-and-spoke graph topology defined in `backend/src/g
 All agent nodes receive `state: FinnieState` and return a dictionary delta. Never modify the input state dictionary directly.
 
 ```python
-# ✅ Correct
+# [PASS] Correct
 def my_agent_node(state: FinnieState) -> dict:
     user_message = state["messages"][-1].content
     # Compute or call LLM...

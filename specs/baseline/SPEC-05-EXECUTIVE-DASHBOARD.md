@@ -1,11 +1,11 @@
 # Baseline Spec: SPEC-05 — Global Wealth Executive Dashboard
 
-> **Status**: 🟢 **VERIFIED & IN PRODUCTION**  
+> **Status**:  **VERIFIED & IN PRODUCTION**  
 > **Scope**: High-Speed Holdings Overview, Batch Market Data Ingestion, Programmatic P&L Calculations
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 - **Problem**: Investors managing holdings across domestic and international accounts require an instantaneous, aggregated overview of their positions, current valuations, and daily unrealized profit/loss (P&L) without enduring LLM generation latency.
 - **Zero-LLM Latency Rule**: The Executive Dashboard is strictly **programmatic and deterministic**. It bypasses the AI reasoning graph entirely, querying the relational database and downloading batched market prices directly.
 - **Tenant Isolation**: Only positions owned by the authenticated tenant (`current_user.id`) are queried and aggregated.
@@ -13,7 +13,7 @@
 
 ---
 
-## 2. 🔌 Technical Contracts & Endpoints
+## 2. Technical Contracts & Endpoints
 
 ### A. API Endpoints
 - `GET /dashboard`: Fetches real-time valuations and daily performance metrics for all user holdings.
@@ -43,7 +43,7 @@ If price history is unavailable for a given ticker, the system defensively assig
 
 ---
 
-## 3. 🖥️ Frontend Architecture & Presentation
+## 3.  Frontend Architecture & Presentation
 - **Hook**: `useDashboard.ts`:
   - Communicates with `GET /dashboard` via `API_ENDPOINTS.DASHBOARD`.
   - Manages cached dashboard metrics, loading states, and error propagation.
@@ -54,7 +54,7 @@ If price history is unavailable for a given ticker, the system defensively assig
 
 ---
 
-## 4. ✅ Verified Acceptance Criteria (Regression Baseline)
+## 4. [PASS] Verified Acceptance Criteria (Regression Baseline)
 - [x] **AC-1**: Requesting `/dashboard` executes with sub-second response times without invoking LangGraph agent nodes.
 - [x] **AC-2**: Users with zero positions receive `{ "total_assets": 0, "assets": [] }` with HTTP 200 OK.
 - [x] **AC-3**: Ticker symbols across multiple exchanges (e.g. US and Indian equities) are queried in a consolidated batch download.

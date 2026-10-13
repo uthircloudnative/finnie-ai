@@ -1,6 +1,6 @@
 # Finnie AI — Canonical Database Architecture & Data Dictionary
 
-> **Status**: 🟢 **CANONICAL ARCHITECTURAL SPECIFICATION**  
+> **Status**:  **CANONICAL ARCHITECTURAL SPECIFICATION**  
 > **Target Audience**: All AI Agents (Antigravity, Cursor, Copilot) & Human Engineers  
 > **Database Engines**: SQLite 3 (Local Development & Testing) · PostgreSQL 16+ (Azure Cloud Production)  
 > **ORM Layer**: SQLAlchemy 2.0  
@@ -8,7 +8,7 @@
 
 ---
 
-## 1. 🏛️ Overview & Dual-Engine Architecture
+## 1.  Overview & Dual-Engine Architecture
 
 Finnie AI employs a **cloud-agnostic relational database architecture** managed through SQLAlchemy 2.0 ORM. The platform operates identically across two environments with zero business logic changes:
 
@@ -25,7 +25,7 @@ Finnie AI employs a **cloud-agnostic relational database architecture** managed 
 
 ---
 
-## 2. 🗺️ Annotated Entity-Relationship (ER) Diagram
+## 2.  Annotated Entity-Relationship (ER) Diagram
 
 Below is the complete system Entity-Relationship diagram. Every column includes an inline annotation explaining its role, and each relationship explicitly defines foreign key constraints and cardinality.
 
@@ -141,7 +141,7 @@ erDiagram
 
 ---
 
-## 3. 📖 Detailed Table-by-Table Data Dictionary
+## 3. Detailed Table-by-Table Data Dictionary
 
 ### Table 1: `users`
 * **File Location**: `backend/src/models/user.py`
@@ -296,7 +296,7 @@ erDiagram
 
 ---
 
-## 4. 🔒 Multi-Tenant Isolation & Security Invariants
+## 4. Multi-Tenant Isolation & Security Invariants
 
 1. **No Client-Supplied User IDs**:
    * API endpoints MUST NEVER accept `user_id` from request bodies or URL path parameters to identify the active user.
@@ -309,7 +309,7 @@ erDiagram
 
 ---
 
-## 5. 🔄 Zero-Downtime Database Migration Pattern
+## 5. Zero-Downtime Database Migration Pattern
 
 Finnie AI uses an **idempotent, automatic migration pattern** inside `init_db()` in `backend/src/database.py`.
 
@@ -328,7 +328,7 @@ When adding new columns to existing tables:
 
 ---
 
-## 6. 🚀 Future Extensions: Reserved Table Schemas (SPEC-12 Hook)
+## 6. Future Extensions: Reserved Table Schemas (SPEC-12 Hook)
 
 To support **SPEC-12: Cross-Session Long-Term Episodic Memory (Mem0)** without schema conflicts, the following table namespace is formally reserved in `finnie.db`:
 

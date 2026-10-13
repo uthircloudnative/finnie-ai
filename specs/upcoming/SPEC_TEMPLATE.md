@@ -1,13 +1,13 @@
 # Feature Spec: [SPEC-ID] — [Feature Name]
 
-> **Status**: 🟡 **DRAFT / IN REVIEW / IN IMPLEMENTATION / VERIFIED**  
+> **Status**:  **DRAFT / IN REVIEW / IN IMPLEMENTATION / VERIFIED**  
 > **Author**: [Author / Agent Name]  
 > **Scope**: [Backend, Frontend, Agent, Database, Security]  
 > **Target Release**: [vX.Y.Z]
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 - **Problem Statement**: What specific user pain point or business challenge does this feature solve?
 - **Domain Rules & Invariants**:
   - What core financial or algorithmic logic governs this feature?
@@ -20,7 +20,7 @@
 
 ---
 
-## 2. 🔌 Technical Contracts & Architecture
+## 2. Technical Contracts & Architecture
 
 ### A. API Endpoints
 - `METHOD /path`: Description of endpoint behavior.
@@ -55,12 +55,12 @@
 ### C. Agent Topology & LangGraph Wiring (If Applicable)
 - **Node Function**: `def feature_node(state: FinnieState) -> dict` (Maintain uniform synchronous signature).
 - **Graph Topology**: Where does this node sit in `src/graph.py`?
-  - Example: `supervisor_node` ➔ `feature_node` ➔ `compliance_guardian_node` ➔ `END`.
+  - Example: `supervisor_node` -> `feature_node` -> `compliance_guardian_node` -> `END`.
 - **Knowledge Base**: Collections queried in ChromaDB (`analytical_kb`, `goal_rules`, or new).
 
 ---
 
-## 3. 🖥️ Frontend Presentation & State
+## 3.  Frontend Presentation & State
 
 ### A. Route & Configuration
 - Route defined in `src/config.ts` (`API_ENDPOINTS.FEATURE`).
@@ -80,14 +80,14 @@
 
 ---
 
-## 4. 🛡️ Edge Cases, Failure Modes & Resilience
+## 4.  Edge Cases, Failure Modes & Resilience
 - **External Dependency Failure**: How does the system handle third-party timeouts (e.g. yfinance, Alpha Vantage, OpenAI)?
 - **Defensive Data Handling**: Handling empty arrays, null values, mismatched symbols, or zero horizons.
 - **Rate-Limiting / Caching**: Does this require persistent or in-memory caching to protect API quotas?
 
 ---
 
-## 5. ✅ Acceptance Criteria & Test Plan
+## 5. [PASS] Acceptance Criteria & Test Plan
 
 ### A. Automated Unit Tests (`backend/tests/test_unit.py`)
 - [ ] **AC-1**: [Describe test case and expected assertion].

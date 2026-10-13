@@ -4,7 +4,7 @@ This document specifies the vector storage architecture, data ingestion pipeline
 
 ---
 
-## 1. 🎯 Business Context & Domain Rules
+## 1. Business Context & Domain Rules
 
 - **Why RAG?**: LLMs produce generic or outdated financial answers and frequently hallucinate statutory contribution limits and regulatory definitions.
 - **Domain Rules**:
@@ -14,17 +14,17 @@ This document specifies the vector storage architecture, data ingestion pipeline
 
 ---
 
-## 2. 🏗️ Diagrammatic Architectural Representation
+## 2.  Diagrammatic Architectural Representation
 
 ```mermaid
 graph TD
-    subgraph DataSourcing["📥 Raw Sourcing & Scraping"]
+    subgraph DataSourcing[" Raw Sourcing & Scraping"]
         SRC1[Investor.gov Financial Glossary]
         SRC2[Analytical Finance Academic Papers]
         SRC3[2026 US IRS & India Tax Codes]
     end
 
-    subgraph Pipeline["⚙️ Ingestion Pipeline (scripts/ingest/)"]
+    subgraph Pipeline["Ingestion Pipeline (scripts/ingest/)"]
         SRC1 --> Scraper[investor_gov_scraper.py]
         SRC2 --> Loader[load_html_analytical_kb.py]
         SRC3 --> IngestTax[ingest_regulatory_kb.py]
@@ -34,13 +34,13 @@ graph TD
         IngestTax --> Factory
     end
 
-    subgraph Storage["🗄️ ChromaDB Vector Collections"]
+    subgraph Storage["ChromaDB Vector Collections"]
         Factory -->|Chunk & Embed| Coll1[(educational_kb)]
         Factory -->|Chunk & Embed| Coll2[(analytical_kb)]
         Factory -->|Chunk & Embed| Coll3[(goal_rules)]
     end
 
-    subgraph Runtime["⚡ Runtime RAG Querying"]
+    subgraph Runtime[" Runtime RAG Querying"]
         QA[financial_qa_node] -->|Similarity Search| Coll1
         Analyst[portfolio_analyst_node] -->|Context Grounding| Coll2
         Goal[goal_strategist_node] -->|Metadata Filter: country| Coll3
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 3. ⚙️ Detailed Technical Implementation
+## 3.  Detailed Technical Implementation
 
 ### A. Vector Store Taxonomy ("One DB, Three Active Collections")
 
@@ -61,9 +61,9 @@ graph TD
 
 ### B. The Embeddings Factory (`backend/src/utils/embeddings_factory.py`)
 Driven by environment variables for vendor agility:
-- `EMBEDDING_PROVIDER="openai"` ➔ `text-embedding-3-small`
-- `EMBEDDING_PROVIDER="azure"` ➔ Azure OpenAI Embeddings deployment
-- `EMBEDDING_PROVIDER="huggingface"` ➔ Local CPU/GPU sentence transformers
+- `EMBEDDING_PROVIDER="openai"` -> `text-embedding-3-small`
+- `EMBEDDING_PROVIDER="azure"` -> Azure OpenAI Embeddings deployment
+- `EMBEDDING_PROVIDER="huggingface"` -> Local CPU/GPU sentence transformers
 
 ### C. Ingestion CLI Commands
 ```bash
@@ -82,7 +82,7 @@ uv run python scripts/ingest/ingest_regulatory_kb.py --db cloud --reset
 
 ---
 
-## 4. 🛡️ Resilience, Edge Cases & Verification
+## 4.  Resilience, Edge Cases & Verification
 
 - **Idempotent Ingestion**: Scripts support the `--reset` flag to purge and rebuild collections without duplicating chunks.
 - **Offline / Missing Database Fallback**: If ChromaDB is unavailable or collections are empty, agent nodes log a diagnostic warning and proceed with standard general knowledge without raising 500 errors.

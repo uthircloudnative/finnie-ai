@@ -9,7 +9,7 @@ This skill governs the end-to-end Spec-Driven Development lifecycle across **Fin
 
 ---
 
-## 🧭 The SDD Lifecycle Overview
+## The SDD Lifecycle Overview
 
 ```text
 ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
@@ -21,14 +21,14 @@ This skill governs the end-to-end Spec-Driven Development lifecycle across **Fin
                                                         ▼
 ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
 │ 6. PROMOTION   │ ◄─── │ 5. VERIFY      │ ◄─── │ 4. IMPLEMENT   │
-│ Move to        │      │ Unit Tests Pass│      │ Backend ➔ UI   │
+│ Move to        │      │ Unit Tests Pass│      │ Backend -> UI   │
 │ specs/baseline │      │ Build Clean    │      │ Clean code     │
 └────────────────┘      └────────────────┘      └────────────────┘
 ```
 
 ---
 
-## 🛠️ Phase-by-Phase Execution
+##  Phase-by-Phase Execution
 
 ### Phase 1: Specify (`specs/upcoming/`)
 - When a new feature or major enhancement is requested, **never jump directly into code**.
@@ -74,7 +74,7 @@ Before concluding any implementation or PR, execute the mandatory 3-step pipelin
 ### Phase 6: Spec Promotion & Human-in-the-Loop Doc Gate
 - Once all verification tests pass:
   1. Update spec status in `specs/upcoming/SPEC-[XX]-[NAME].md` to:
-     `> **Status**: 🟢 **VERIFIED & IN PRODUCTION**`
+     `> **Status**:  **VERIFIED & IN PRODUCTION**`
   2. Move the spec from `specs/upcoming/` to `specs/baseline/`.
   3. Follow **Golden Rule #10** and the [`doc-architect`](file:///.agents/skills/doc-architect/SKILL.md) skill:
      - Summarize changes.

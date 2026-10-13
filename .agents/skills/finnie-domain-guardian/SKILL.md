@@ -54,7 +54,7 @@ When computing portfolio Beta or Annualized Volatility:
 - Normalised to a 0–10 scale:
   $$\text{score} = 10 \times \left(1 - \frac{HHI - HHI_{min}}{1 - HHI_{min}}\right)$$
 - **Scraper Resilience**: Fetching sector info via `yf.Ticker().info` is network-dependent and can be throttled. The function `compute_hhi_diversification` MUST use a 3-attempt exponential backoff retry loop.
-- **UI Degradation**: If all 3 attempts fail, return `diversification_score = null`. The frontend tile will render an interactive `"📊 Get Diversification Score"` button rather than crashing.
+- **UI Degradation**: If all 3 attempts fail, return `diversification_score = null`. The frontend tile will render an interactive `" Get Diversification Score"` button rather than crashing.
 
 ### C. Monte Carlo Projections (Goal Strategist)
 - Run 10,000 simulations using vectorized `numpy` geometric Brownian motion.

@@ -137,7 +137,7 @@ Finnie is a state-of-the-art multi-agent system designed to bridge the financial
 
 ### 5.2 Future Use Case Roadmap — Portfolio Analyst
 
-#### 🔵 UC-PA-1: Full Portfolio Health Dashboard
+#### [READY] UC-PA-1: Full Portfolio Health Dashboard
 **Priority:** High | **Effort:** Medium
 
 Extend Stage 2 (Math Engine) to compute additional metrics from the already-fetched yfinance data:
@@ -154,7 +154,7 @@ All inputs exist in the current yfinance fetch — no new API calls needed.
 
 ---
 
-#### 🔵 UC-PA-2: What-If / Trade Simulator
+#### [READY] UC-PA-2: What-If / Trade Simulator
 **Priority:** High | **Effort:** Medium
 
 Allow the user to input a proposed trade (e.g., "Add 10 NVDA") and get a **before vs after** comparison of key risk metrics — Beta, Volatility, Sharpe Ratio, Diversification Score — without executing the trade. Useful for daily investment decision-making.
@@ -167,7 +167,7 @@ Allow the user to input a proposed trade (e.g., "Add 10 NVDA") and get a **befor
 
 ---
 
-#### 🔵 UC-PA-3: Daily Morning Brief (Proactive Agent)
+#### [READY] UC-PA-3: Daily Morning Brief (Proactive Agent)
 **Priority:** High | **Effort:** Medium-High
 
 Instead of requiring the user to manually trigger analysis, a scheduled or on-login proactive brief:
@@ -179,7 +179,7 @@ Instead of requiring the user to manually trigger analysis, a scheduled or on-lo
 
 ---
 
-#### 🔵 UC-PA-4: Technical Signal Layer
+#### [READY] UC-PA-4: Technical Signal Layer
 **Priority:** Medium | **Effort:** Medium
 
 Add classic technical indicators computed on the same 1-year OHLCV data already fetched:
@@ -195,7 +195,7 @@ LLM then interprets the combination of signals, not each in isolation.
 
 ---
 
-#### 🟡 UC-PA-5: Rebalancing Advisor
+#### [STATUS: IN PROGRESS] UC-PA-5: Rebalancing Advisor
 **Priority:** Medium | **Effort:** High
 
 User defines a target allocation (e.g., 60% equities, 20% bonds, 20% international). Agent:
@@ -206,7 +206,7 @@ User defines a target allocation (e.g., 60% equities, 20% bonds, 20% internation
 
 ---
 
-#### 🟡 UC-PA-6: Multi-Currency P&L Tracker
+#### [STATUS: IN PROGRESS] UC-PA-6: Multi-Currency P&L Tracker
 **Priority:** Medium | **Effort:** Medium
 
 For portfolios spanning USD, INR, GBP, EUR:

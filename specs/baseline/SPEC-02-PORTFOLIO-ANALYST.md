@@ -1,19 +1,19 @@
 # Baseline Spec: SPEC-02 — Multi-Market Portfolio Analyst
 
-> **Status**: 🟢 **VERIFIED & IN PRODUCTION**  
+> **Status**:  **VERIFIED & IN PRODUCTION**  
 > **Scope**: Portfolio Diagnostics, Country Benchmarks, HHI Diversification, LangGraph Agent
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 - **Problem**: Individual investors holding assets across multi-jurisdictional markets (US, India, UK, Canada, Germany) lack institutional-grade portfolio risk diagnostics (Market Beta, Annualized Volatility, Sector Diversification) tailored to their local geographic markets without expensive advisory fees.
 - **Country Benchmark Mapping**: Every country portfolio must be benchmarked against its primary domestic index:
-  - `US` ➔ `^GSPC` (S&P 500)
-  - `IN` ➔ `^NSEI` (NIFTY 50)
-  - `UK` ➔ `^FTSE` (FTSE 100)
-  - `CA` ➔ `^GSPTSE` (S&P/TSX Composite)
-  - `DE` ➔ `^GDAXI` (DAX Performance Index)
-  - `ALL` ➔ `^GSPC` (Global baseline)
+  - `US` -> `^GSPC` (S&P 500)
+  - `IN` -> `^NSEI` (NIFTY 50)
+  - `UK` -> `^FTSE` (FTSE 100)
+  - `CA` -> `^GSPTSE` (S&P/TSX Composite)
+  - `DE` -> `^GDAXI` (DAX Performance Index)
+  - `ALL` -> `^GSPC` (Global baseline)
 - **Herfindahl-Hirschman Index (HHI) Diversification**: Sector concentration is calculated strictly via HHI:
   $$HHI = \sum (\text{sector\_weight}_i)^2$$
   $$\text{Diversification Score} = 10 \times \left(1 - \frac{HHI - HHI_{min}}{1 - HHI_{min}}\right)$$
@@ -22,7 +22,7 @@
 
 ---
 
-## 2. 🔌 Technical Contracts & Endpoints
+## 2. Technical Contracts & Endpoints
 
 ### A. API Endpoints
 - `GET /portfolio/analysis?country={country}`: Returns comprehensive risk metrics (Beta, Volatility, HHI score, sector breakdown) and AI 3-card strategic insights.
@@ -41,11 +41,11 @@
 ### C. Agent Topology & LangGraph Wiring
 - **Node Function**: Synchronous `def portfolio_analyst_node(state: FinnieState) -> dict`.
 - **Knowledge Base**: Retrieves quantitative risk heuristics from ChromaDB collection `analytical_kb` (`k=3`).
-- **Graph Path**: `supervisor_node` ➔ `portfolio_analyst_node` ➔ `compliance_guardian_node` ➔ `END`.
+- **Graph Path**: `supervisor_node` -> `portfolio_analyst_node` -> `compliance_guardian_node` -> `END`.
 
 ---
 
-## 3. 🖥️ Frontend Architecture & Presentation
+## 3.  Frontend Architecture & Presentation
 - **Hook**: `useCountryPortfolio.ts` handles:
   - Multi-tab country switching (`ALL`, `US`, `IN`, `UK`, etc.).
   - Session-level caching in state to prevent duplicate LLM invocations when switching between tabs.
@@ -57,7 +57,7 @@
 
 ---
 
-## 4. ✅ Verified Acceptance Criteria (Regression Baseline)
+## 4. [PASS] Verified Acceptance Criteria (Regression Baseline)
 - [x] **AC-1**: Requesting `/portfolio/analysis?country=IN` evaluates covariance against `^NSEI` rather than `^GSPC`.
 - [x] **AC-2**: Portfolios with a single holding yield an HHI score of 0.0 (maximum sector concentration).
 - [x] **AC-3**: Portfolios with missing ticker price history exclude the delisted ticker via `valid_symbols` guard and calculate remaining portfolio metrics without throwing a 500 error.

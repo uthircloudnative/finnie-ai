@@ -11,7 +11,7 @@ This document establishes the mandatory architectural, security, and coding stan
   - `datetime.utcnow()` is strictly banned (deprecated in Python 3.12+).
   - Use `datetime.now(timezone.utc)` for all timestamps and default factory callables:
     ```python
-    # ✅ Correct
+    # [PASS] Correct
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     ```
   - When calculating ages against timestamps retrieved from legacy SQLite storage (which might strip timezone metadata), defensively normalize naive timestamps before subtraction:

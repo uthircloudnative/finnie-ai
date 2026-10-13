@@ -1,23 +1,23 @@
 # Baseline Spec: SPEC-01 — Multi-Tenancy & User Authentication
 
-> **Status**: 🟢 **VERIFIED & IN PRODUCTION**  
+> **Status**:  **VERIFIED & IN PRODUCTION**  
 > **Scope**: Backend Auth Core, Tenant Isolation & Frontend Session
 
 ---
 
-## 1. 🎯 Business Objective & Domain Rules
+## 1. Business Objective & Domain Rules
 - **Problem**: Multi-user financial assistance requires absolute data privacy. Users must only access their own portfolios, goals, and chat histories without any cross-tenant data leakage.
 - **Stateless Cloud Scaling**: Architecture adheres to 12-Factor principles; tokens must be cryptographically verified independently across distributed cloud workers (e.g. Azure App Service replicas) without server-side session stores.
 - **Tenant Derivation Rule**: NEVER accept client-supplied `user_id` query parameters or JSON body fields for authorization. Always derive tenant identity from the decoded JWT Bearer token (`effective_id = current_user.id`).
 
 ---
 
-## 2. 🔌 Technical Contracts & Endpoints
+## 2. Technical Contracts & Endpoints
 
 ### A. Authentication Endpoints
-- `POST /auth/register`: Takes `email`, `password`, `full_name`, `base_currency` ➔ Returns `access_token`, `token_type: "bearer"`, and `UserProfile`.
-- `POST /auth/login`: Takes `email`, `password` ➔ Returns `access_token` and `UserProfile`.
-- `GET /auth/me`: Requires `Authorization: Bearer <token>` ➔ Returns authenticated `UserProfile`.
+- `POST /auth/register`: Takes `email`, `password`, `full_name`, `base_currency` -> Returns `access_token`, `token_type: "bearer"`, and `UserProfile`.
+- `POST /auth/login`: Takes `email`, `password` -> Returns `access_token` and `UserProfile`.
+- `GET /auth/me`: Requires `Authorization: Bearer <token>` -> Returns authenticated `UserProfile`.
 
 ### B. Security Implementation
 - **JWT Signing**: HMAC-SHA256 via `python-jose` with environment secret `JWT_SECRET_KEY` (30-day token expiration).
@@ -45,7 +45,7 @@ __table_args__ = (
 
 ---
 
-## 3. 🖥️ Frontend Session Architecture
+## 3.  Frontend Session Architecture
 - **Context**: `AuthContext.tsx` stores `{ user, token, isAuthenticated, login, register, logout, getAuthHeaders }`.
 - **Persistence**: Persists token in browser `localStorage`.
 - **Header Injection**: All custom hooks (`usePortfolio`, `useCountryPortfolio`, `useDashboard`, `useGoalStrategist`, `useMarketInsights`, `useChat`) attach `Authorization: Bearer <token>` headers via `getAuthHeaders()`.
@@ -53,7 +53,7 @@ __table_args__ = (
 
 ---
 
-## 4. ✅ Verified Acceptance Criteria (Regression Baseline)
+## 4. [PASS] Verified Acceptance Criteria (Regression Baseline)
 - [x] **AC-1**: Registering a user hashes the password with bcrypt (raw password never stored).
 - [x] **AC-2**: User A and User B can both hold `AAPL` without primary key collisions or cross-user visibility.
 - [x] **AC-3**: Requesting `/portfolio` without a Bearer token returns `401 Unauthorized`.
